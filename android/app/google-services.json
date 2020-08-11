@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "630044970416",
+    "firebase_url": "https://login-test-655ec.firebaseio.com",
+    "project_id": "login-test-655ec",
+    "storage_bucket": "login-test-655ec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:630044970416:android:ee0be9d0363a56a0725a75",
+        "android_client_info": {
+          "package_name": "com.tusharsadhwani.instachat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "630044970416-57blmvorc7uqfiain8j55bu8kals76jh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tusharsadhwani.instachat",
+            "certificate_hash": "7e352db01665ae4cf61348fe9654e01409e941e3"
+          }
+        },
+        {
+          "client_id": "630044970416-onhpqa1bk4c21ogbr2cjglcn0t0n8n5b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7jZuyhcfBz9on891ukPJbtB5sdjIQ6m4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "630044970416-onhpqa1bk4c21ogbr2cjglcn0t0n8n5b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
