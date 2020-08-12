@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'models/chat.dart';
+import 'widgets/insta_app_bar.dart';
+import 'widgets/search_bar.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -11,9 +15,20 @@ class MyApp extends StatelessWidget {
       title: 'InstaChat',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
-        primaryColor: Colors.blue,
-        appBarTheme: AppBarTheme(color: Colors.grey.shade900),
+        primaryColor: Colors.black,
+        accentColor: Color.fromRGBO(54, 54, 54, 1),
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: AppBarTheme(color: Color.fromRGBO(27, 27, 27, 1)),
+        textTheme: TextTheme(
+          headline6: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+          bodyText1: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
       home: MyHomePage(title: 'InstaChat'),
     );
@@ -30,22 +45,45 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final chats = <Chat>[
+    Chat(id: '1', name: 'Test Log', imageUrl: 'https://i.pravatar.cc/50?img=2'),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InstaAppBar(title: widget.title),
+            SearchBar(),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 16),
+              child: Text(
+                'Messages',
+                style: Theme.of(context).textTheme.bodyText1,
+              ),
             ),
-            Text(
-              '42',
-              style: Theme.of(context).textTheme.headline4,
+            Expanded(
+              child: ListView.separated(
+                separatorBuilder: (_, __) => SizedBox(height: 8),
+                itemCount: chats.length,
+                itemBuilder: (_, i) => InkWell(
+                  onTap: () {},
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      radius: 28,
+                      backgroundImage: NetworkImage(chats[i].imageUrl),
+                    ),
+                    title: Text(chats[i].name),
+                    subtitle: Text(
+                      'Liked a message',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
