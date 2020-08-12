@@ -53,18 +53,28 @@ class _ChatPageState extends State<ChatPage> {
             title: 'Test Log',
           ),
           body: Padding(
-            padding: const EdgeInsets.only(bottom: 50),
-            child: ListView.builder(
-              shrinkWrap: true,
-              reverse: true,
-              padding: const EdgeInsets.all(8),
-              itemBuilder: (_, i) {
-                final message = messages[messages.length - 1 - i];
-                return message.senderId == 'sender'
-                    ? MessageLeft(message)
-                    : MessageRight(message);
-              },
-              itemCount: messages.length,
+            padding: const EdgeInsets.only(bottom: 70),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: ListView.builder(
+                shrinkWrap: true,
+                reverse: true,
+                padding: const EdgeInsets.all(8),
+                itemBuilder: (_, i) {
+                  final message = messages[messages.length - 1 - i];
+                  // TODO: hearts disappear on every new message
+                  return message.senderId == 'sender'
+                      ? MessageLeft(
+                          key: ValueKey(message.id),
+                          message: message,
+                        )
+                      : MessageRight(
+                          key: ValueKey(message.id),
+                          message: message,
+                        );
+                },
+                itemCount: messages.length,
+              ),
             ),
           ),
           bottomSheet: _messageBox,
