@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
           bodyText1: TextStyle(
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
             InstaAppBar(title: widget.title),
             SearchBar(),
             Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 'Messages',
                 style: Theme.of(context).textTheme.bodyText1,
