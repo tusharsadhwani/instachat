@@ -23,6 +23,7 @@ class MessageLeft extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(3),
             child: Likeable(
+              key: ValueKey(message.id),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(

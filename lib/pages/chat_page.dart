@@ -24,6 +24,7 @@ class _ChatPageState extends State<ChatPage> {
     ),
   ];
   MessageBox _messageBox;
+  ScrollController _scrollController;
 
   void addMessage(String newMessage) {
     setState(() {
@@ -32,13 +33,30 @@ class _ChatPageState extends State<ChatPage> {
         senderName: 'Test',
         content: newMessage,
       ));
+
+      Future.delayed(
+        // TODO: why do we need to delay this?
+        Duration(milliseconds: 50),
+        () => _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 200),
+          curve: Curves.easeOutQuad,
+        ),
+      );
     });
   }
 
   @override
   void initState() {
     _messageBox = MessageBox(addMessage);
+    _scrollController = ScrollController();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,27 +72,16 @@ class _ChatPageState extends State<ChatPage> {
           ),
           body: Padding(
             padding: const EdgeInsets.only(bottom: 70),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: ListView.builder(
-                shrinkWrap: true,
-                reverse: true,
-                padding: const EdgeInsets.all(8),
-                itemBuilder: (_, i) {
-                  final message = messages[messages.length - 1 - i];
-                  // TODO: hearts disappear on every new message
-                  return message.senderId == 'sender'
-                      ? MessageLeft(
-                          key: ValueKey(message.id),
-                          message: message,
-                        )
-                      : MessageRight(
-                          key: ValueKey(message.id),
-                          message: message,
-                        );
-                },
-                itemCount: messages.length,
-              ),
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(8),
+              itemBuilder: (_, i) {
+                final message = messages[i];
+                return message.senderId == 'sender'
+                    ? MessageLeft(message: message)
+                    : MessageRight(message: message);
+              },
+              itemCount: messages.length,
             ),
           ),
           bottomSheet: _messageBox,
@@ -126,6 +133,7 @@ class _MessageBoxState extends State<MessageBox> {
                     controller: _messageController,
                     textInputAction: TextInputAction.newline,
                     decoration: InputDecoration(
+                      hintText: 'Message...',
                       isDense: true,
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(

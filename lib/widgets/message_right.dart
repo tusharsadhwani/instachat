@@ -14,18 +14,20 @@ class MessageRight extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: Padding(
         padding: const EdgeInsets.all(3),
-        child: Likeable(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).appBarTheme.color,
-              borderRadius: BorderRadius.circular(24),
+        child: Builder(builder: (_) {
+          return Likeable(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).appBarTheme.color,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text(message.content),
+              ),
             ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Text(message.content),
-            ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
