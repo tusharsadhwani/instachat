@@ -14,4 +14,10 @@ class Message {
     @required this.senderName,
     @required this.content,
   }) : id = uuid.v4();
+
+  Message.fromMap(Map<String, dynamic> message)
+      : senderId = message['sender'],
+        senderName = message['name'],
+        content = message['content'],
+        id = uuid.v4();
 }

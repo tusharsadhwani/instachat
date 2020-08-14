@@ -10,4 +10,9 @@ class Chat {
     @required this.name,
     @required this.imageUrl,
   });
+
+  Chat.fromMap(Map<String, dynamic> chat)
+      : id = chat['id'],
+        name = chat['name'],
+        imageUrl = chat['imageUrl'];
 }

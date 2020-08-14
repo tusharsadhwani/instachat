@@ -9,7 +9,7 @@ class SearchBar extends StatelessWidget {
         height: 36,
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).accentColor,
+            color: Color.fromRGBO(54, 54, 54, 1),
             borderRadius: BorderRadius.circular(5),
           ),
           child: Padding(

@@ -1,0 +1,37 @@
+import 'package:flutter/material.dart';
+import 'package:instachat/pages/chats_page.dart';
+import 'package:provider/provider.dart';
+
+import '../models/auth_user.dart';
+import '../widgets/insta_app_bar.dart';
+
+class LoginPage extends StatefulWidget {
+  static const routeName = '/login';
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  Future<void> _handleSignIn() async {
+    final authUser = Provider.of<AuthUser>(context, listen: false);
+    try {
+      await authUser.signIn();
+      Navigator.of(context).pushReplacementNamed(ChatsPage.routeName);
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: InstaAppBar(title: 'Login'),
+      body: Center(
+        child: RaisedButton(
+          onPressed: _handleSignIn,
+          child: Text('Login'),
+        ),
+      ),
+    );
+  }
+}

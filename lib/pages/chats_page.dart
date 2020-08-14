@@ -1,22 +1,67 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:instachat/pages/new_chat_page.dart';
+import 'package:provider/provider.dart';
+
+import '../models/auth_user.dart';
 import '../models/chat.dart';
 import '../widgets/insta_app_bar.dart';
 import '../widgets/search_bar.dart';
-
-import 'chat_page.dart';
+import '../widgets/chat_tile.dart';
 
 class ChatsPage extends StatefulWidget {
+  static const routeName = '/chats';
+
   @override
   _ChatsPageState createState() => _ChatsPageState();
 }
 
 class _ChatsPageState extends State<ChatsPage> {
-  final chats = <Chat>[
-    Chat(id: '1', name: 'Test Log', imageUrl: 'https://i.pravatar.cc/80?img=2'),
-  ];
+  AuthUser _authUser;
+  List<Chat> chats = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _authUser = Provider.of<AuthUser>(context);
+    refreshChats();
+  }
+
+  void refreshChats() async {
+    final userChats = await Firestore.instance
+        .collection('user')
+        .document(_authUser.account.id)
+        .collection('chat')
+        .getDocuments();
+
+    final chatIds = userChats.documents.map((doc) => doc.data['id']).toList();
+
+    // TODO: this could break for more than 10 chatIds
+    if (chatIds.length > 0) {
+      final chatDocs = await Firestore.instance
+          .collection('chat')
+          .where('id', whereIn: chatIds)
+          .getDocuments();
+
+      setState(() {
+        chats = chatDocs.documents.map((d) => Chat.fromMap(d.data)).toList();
+      });
+    }
+  }
+
+  void newChat() async {
+    final refresh = await Navigator.of(context).push(
+      MaterialPageRoute<bool>(
+        builder: (_) => NewChatPage(),
+      ),
+    );
+    if (refresh == true) refreshChats();
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('chats build');
+    print(_authUser.account);
     return SafeArea(
       child: Scaffold(
         appBar: InstaAppBar(
@@ -24,7 +69,7 @@ class _ChatsPageState extends State<ChatsPage> {
           actions: [
             IconButton(
               icon: Icon(Icons.add),
-              onPressed: () {},
+              onPressed: newChat,
             ),
           ],
         ),
@@ -43,24 +88,7 @@ class _ChatsPageState extends State<ChatsPage> {
               child: ListView.separated(
                 separatorBuilder: (_, __) => SizedBox(height: 8),
                 itemCount: chats.length,
-                itemBuilder: (_, i) => InkWell(
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(ChatPage.routeName),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 28,
-                      backgroundImage: NetworkImage(chats[i].imageUrl),
-                    ),
-                    title: Text(
-                      chats[i].name,
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    subtitle: Text(
-                      'Liked a message',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ),
+                itemBuilder: (_, i) => ChatTile(chat: chats[i]),
               ),
             ),
           ],
