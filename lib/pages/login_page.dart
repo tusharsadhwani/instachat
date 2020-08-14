@@ -16,7 +16,8 @@ class _LoginPageState extends State<LoginPage> {
     final authUser = Provider.of<AuthUser>(context, listen: false);
     try {
       await authUser.signIn();
-      Navigator.of(context).pushReplacementNamed(ChatsPage.routeName);
+      if (authUser.account != null)
+        Navigator.of(context).pushReplacementNamed(ChatsPage.routeName);
     } catch (error) {
       print(error);
     }
