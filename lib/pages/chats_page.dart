@@ -14,7 +14,7 @@ class ChatsPage extends StatefulWidget {
 
 class _ChatsPageState extends State<ChatsPage> {
   final chats = <Chat>[
-    Chat(id: '1', name: 'Test Log', imageUrl: 'https://i.pravatar.cc/50?img=2'),
+    Chat(id: '1', name: 'Test Log', imageUrl: 'https://i.pravatar.cc/80?img=2'),
   ];
 
   @override

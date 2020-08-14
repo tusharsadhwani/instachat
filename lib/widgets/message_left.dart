@@ -17,7 +17,7 @@ class MessageLeft extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/50?img=2'),
+            backgroundImage: NetworkImage('https://i.pravatar.cc/80?img=2'),
           ),
           SizedBox(width: 8),
           Padding(

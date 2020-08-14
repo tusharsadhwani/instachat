@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.black,
         accentColor: Color.fromRGBO(54, 54, 54, 1),
         scaffoldBackgroundColor: Colors.black,
-        appBarTheme: AppBarTheme(color: Color.fromRGBO(27, 27, 27, 1)),
+        appBarTheme: AppBarTheme(color: Color.fromRGBO(36, 36, 36, 1)),
         textTheme: TextTheme(
           headline6: TextStyle(
             fontSize: 18,
