@@ -10,19 +10,20 @@ class MessageLeft extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/80?img=2'),
-          ),
-          SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.all(3),
-            child: Likeable(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SizedBox(width: 4),
+            CircleAvatar(
+              radius: 17,
+              backgroundImage: NetworkImage('https://i.pravatar.cc/80?img=2'),
+            ),
+            SizedBox(width: 12),
+            Likeable(
               key: ValueKey(message.id),
               child: Container(
                 decoration: BoxDecoration(
@@ -32,16 +33,13 @@ class MessageLeft extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Text(
-                    message.content,
-                    style: Theme.of(context).textTheme.bodyText2,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Text(message.content),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

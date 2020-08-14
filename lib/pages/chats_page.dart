@@ -43,7 +43,10 @@ class _ChatsPageState extends State<ChatsPage> {
                       radius: 28,
                       backgroundImage: NetworkImage(chats[i].imageUrl),
                     ),
-                    title: Text(chats[i].name),
+                    title: Text(
+                      chats[i].name,
+                      style: TextStyle(fontSize: 14),
+                    ),
                     subtitle: Text(
                       'Liked a message',
                       style: TextStyle(fontSize: 14),

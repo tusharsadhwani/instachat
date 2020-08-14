@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
           ),
           bodyText2: TextStyle(
             fontSize: 16,
-            height: 1.5,
+            height: 1.3,
           ),
         ),
       ),

@@ -22,7 +22,7 @@ class MessageRight extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Text(message.content),
               ),
             ),

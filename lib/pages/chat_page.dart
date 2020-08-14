@@ -71,7 +71,7 @@ class _ChatPageState extends State<ChatPage> {
         padding: const EdgeInsets.only(bottom: 70),
         child: ListView.builder(
           controller: _scrollController,
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(12),
           itemBuilder: (_, i) {
             final message = messages[i];
             return message.senderId == 'sender'
@@ -118,13 +118,13 @@ class _MessageBoxState extends State<MessageBox> {
             border: Border.all(
               color: Theme.of(context).accentColor,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(28),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(10),
                   child: TextField(
                     minLines: 1,
                     maxLines: 5,
