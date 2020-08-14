@@ -19,7 +19,15 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: InstaAppBar(title: 'InstaChat'),
+        appBar: InstaAppBar(
+          title: 'InstaChat',
+          actions: [
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {},
+            ),
+          ],
+        ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

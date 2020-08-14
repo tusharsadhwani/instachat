@@ -64,9 +64,7 @@ class _ChatPageState extends State<ChatPage> {
       });
     }
     return Scaffold(
-      appBar: InstaAppBar(
-        title: 'Test Log',
-      ),
+      appBar: InstaAppBar(title: 'Test Log'),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 70),
         child: ListView.builder(

@@ -7,10 +7,12 @@ class InstaAppBar extends StatelessWidget with PreferredSizeWidget {
   InstaAppBar({
     Key key,
     @required this.title,
+    this.actions,
   })  : preferredSize = Size.fromHeight(50.0),
         super(key: key);
 
   final String title;
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -19,12 +21,7 @@ class InstaAppBar extends StatelessWidget with PreferredSizeWidget {
         title,
         style: Theme.of(context).textTheme.headline6,
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: () {},
-        ),
-      ],
+      actions: actions,
     );
   }
 }
