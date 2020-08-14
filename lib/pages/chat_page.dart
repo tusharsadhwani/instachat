@@ -103,6 +103,7 @@ class _ChatPageState extends State<ChatPage> {
           },
         ),
       ),
+      bottomSheet: _messageBox,
     );
   }
 }
