@@ -99,7 +99,7 @@ class _CreateRoomState extends State<CreateRoom> {
     await Firestore.instance.collection('chat').add({
       'id': roomId,
       'name': roomName,
-      'imageUrl': 'https://i.pravatar.cc/80?img=2',
+      'imageUrl': 'https://picsum.photos/id/327/120',
     });
 
     final authUser = Provider.of<AuthUser>(context, listen: false);

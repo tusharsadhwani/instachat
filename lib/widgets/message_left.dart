@@ -20,7 +20,7 @@ class MessageLeft extends StatelessWidget {
             SizedBox(width: 4),
             CircleAvatar(
               radius: 17,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/80?img=2'),
+              backgroundImage: NetworkImage('https://picsum.photos/id/327/120'),
             ),
             SizedBox(width: 12),
             Likeable(

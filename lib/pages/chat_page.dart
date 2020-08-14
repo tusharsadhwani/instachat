@@ -1,17 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:instachat/models/auth_user.dart';
 import 'package:provider/provider.dart';
 
+import '../models/auth_user.dart';
+import '../models/chat.dart';
 import '../models/message.dart';
 import '../widgets/insta_app_bar.dart';
 import '../widgets/message_left.dart';
 import '../widgets/message_right.dart';
 
 class ChatPage extends StatefulWidget {
-  final String chatId;
+  final Chat chat;
 
-  ChatPage(this.chatId);
+  ChatPage(this.chat);
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -25,7 +26,17 @@ class _ChatPageState extends State<ChatPage> {
   ScrollController _scrollController;
   bool _needsScrollToBottom = false;
 
-  void addMessage(String newMessage) {}
+  void addMessage(String newMessage) {
+    Firestore.instance
+        .collection('chat')
+        .document(chatDocId)
+        .collection('message')
+        .add({
+      'sender': authUser.account.id,
+      'name': authUser.account.displayName,
+      'content': newMessage,
+    });
+  }
 
   @override
   void initState() {
@@ -40,11 +51,13 @@ class _ChatPageState extends State<ChatPage> {
     authUser = Provider.of<AuthUser>(context);
     final docs = await Firestore.instance
         .collection('chat')
-        .where('id', isEqualTo: widget.chatId)
+        .where('id', isEqualTo: widget.chat.id)
         .limit(1)
         .getDocuments();
     docs.documents.forEach((docs) {
-      chatDocId = docs.documentID;
+      setState(() {
+        chatDocId = docs.documentID;
+      });
     });
   }
 
@@ -66,7 +79,7 @@ class _ChatPageState extends State<ChatPage> {
       });
     }
     return Scaffold(
-      appBar: InstaAppBar(title: 'Test Log'),
+      appBar: InstaAppBar(title: widget.chat.name),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 70),
         child: StreamBuilder<QuerySnapshot>(
@@ -94,8 +107,8 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (_, i) {
                     final message = messages[i];
                     return message.senderId == authUser.account.id
-                        ? MessageLeft(message: message)
-                        : MessageRight(message: message);
+                        ? MessageRight(message: message)
+                        : MessageLeft(message: message);
                   },
                   itemCount: messages.length,
                 );

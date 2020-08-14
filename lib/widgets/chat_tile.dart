@@ -13,7 +13,7 @@ class ChatTile extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => ChatPage(chat.id),
+          builder: (_) => ChatPage(chat),
         ),
       ),
       child: ListTile(
