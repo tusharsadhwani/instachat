@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../models/message.dart';
 import '../widgets/insta_app_bar.dart';
@@ -23,8 +22,10 @@ class _ChatPageState extends State<ChatPage> {
       content: 'Looks like insta\nright?',
     ),
   ];
+
   MessageBox _messageBox;
   ScrollController _scrollController;
+  bool _needsScrollToBottom = false;
 
   void addMessage(String newMessage) {
     setState(() {
@@ -34,15 +35,7 @@ class _ChatPageState extends State<ChatPage> {
         content: newMessage,
       ));
 
-      Future.delayed(
-        // TODO: why do we need to delay this?
-        Duration(milliseconds: 50),
-        () => _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 200),
-          curve: Curves.easeOutQuad,
-        ),
-      );
+      _needsScrollToBottom = true;
     });
   }
 
@@ -61,32 +54,34 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Theme.of(context).appBarTheme.color,
+    if (_needsScrollToBottom) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 200),
+          curve: Curves.easeOutQuad,
+        );
+      });
+    }
+    return Scaffold(
+      appBar: InstaAppBar(
+        title: 'Test Log',
       ),
-      child: SafeArea(
-        child: Scaffold(
-          appBar: InstaAppBar(
-            title: 'Test Log',
-          ),
-          body: Padding(
-            padding: const EdgeInsets.only(bottom: 70),
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(8),
-              itemBuilder: (_, i) {
-                final message = messages[i];
-                return message.senderId == 'sender'
-                    ? MessageLeft(message: message)
-                    : MessageRight(message: message);
-              },
-              itemCount: messages.length,
-            ),
-          ),
-          bottomSheet: _messageBox,
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 70),
+        child: ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(8),
+          itemBuilder: (_, i) {
+            final message = messages[i];
+            return message.senderId == 'sender'
+                ? MessageLeft(message: message)
+                : MessageRight(message: message);
+          },
+          itemCount: messages.length,
         ),
       ),
+      bottomSheet: _messageBox,
     );
   }
 }
@@ -104,15 +99,18 @@ class _MessageBoxState extends State<MessageBox> {
   var _messageController = TextEditingController();
 
   void _sendMessage() {
-    widget.addMessage(_messageController.text);
-    _messageController.clear();
+    final messageText = _messageController.text.trim();
+    if (messageText != '') {
+      widget.addMessage(messageText);
+      _messageController.clear();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
-      padding: EdgeInsets.all(12),
+      padding: EdgeInsets.all(14),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -138,7 +136,7 @@ class _MessageBoxState extends State<MessageBox> {
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 2,
+                        vertical: 4,
                       ),
                     ),
                     style: Theme.of(context).textTheme.bodyText2,
