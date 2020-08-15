@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:instachat/models/auth_user.dart';
-import 'package:instachat/pages/new_chat_page.dart';
 import 'package:provider/provider.dart';
 
+import 'models/auth_user.dart';
 import 'pages/splash_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/chats_page.dart';
+import 'pages/new_chat_page.dart';
 
 void main() {
   runApp(MyApp());

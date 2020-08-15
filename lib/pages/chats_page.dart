@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:instachat/pages/new_chat_page.dart';
 import 'package:provider/provider.dart';
 
 import '../models/auth_user.dart';
 import '../models/chat.dart';
+import '../pages/new_chat_page.dart';
 import '../widgets/insta_app_bar.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/chat_tile.dart';

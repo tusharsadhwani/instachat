@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:instachat/models/chat.dart';
 
+import '../models/chat.dart';
 import '../pages/chat_page.dart';
 
 class ChatTile extends StatelessWidget {
