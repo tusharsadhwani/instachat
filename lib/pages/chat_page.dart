@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:suspense/suspense.dart';
 
 import '../models/auth_user.dart';
 import '../models/chat.dart';
@@ -20,7 +21,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   AuthUser authUser;
-  String chatDocId = '?'; //TODO: rename RoomId to room username or sth
+  String chatId;
 
   MessageBox _messageBox;
   ScrollController _scrollController;
@@ -29,12 +30,13 @@ class _ChatPageState extends State<ChatPage> {
   void addMessage(String newMessage) {
     Firestore.instance
         .collection('chat')
-        .document(chatDocId)
+        .document(chatId)
         .collection('message')
         .add({
       'sender': authUser.account.id,
       'name': authUser.account.displayName,
       'content': newMessage,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
   }
 
@@ -56,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
         .getDocuments();
     docs.documents.forEach((docs) {
       setState(() {
-        chatDocId = docs.documentID;
+        chatId = docs.documentID;
       });
     });
   }
@@ -78,41 +80,35 @@ class _ChatPageState extends State<ChatPage> {
         );
       });
     }
+
     return Scaffold(
       appBar: InstaAppBar(title: widget.chat.name),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 70),
-        child: StreamBuilder<QuerySnapshot>(
+        child: Suspense<QuerySnapshot>.stream(
           stream: Firestore.instance
               .collection('chat')
-              .document(chatDocId)
+              .document(chatId)
               .collection('message')
+              .orderBy('timestamp')
               .snapshots(),
-          builder: (
-            BuildContext context,
-            AsyncSnapshot<QuerySnapshot> snapshot,
-          ) {
-            if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return new Text('Loading...');
-              default:
-                print('messages: ${snapshot.data.documents.length}');
-                List<Message> messages = snapshot.data.documents
-                    .map((e) => Message.fromMap(e.data))
-                    .toList();
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(12),
-                  itemBuilder: (_, i) {
-                    final message = messages[i];
-                    return message.senderId == authUser.account.id
-                        ? MessageRight(message: message)
-                        : MessageLeft(message: message);
-                  },
-                  itemCount: messages.length,
-                );
-            }
+          fallback: Center(child: CircularProgressIndicator()),
+          builder: (snapshot) {
+            List<Message> messages = snapshot.documents
+                .map((doc) => Message.fromMap(doc.data))
+                .toList();
+
+            return ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(12),
+              itemBuilder: (_, i) {
+                final message = messages[i];
+                return message.senderId == authUser.account.id
+                    ? MessageRight(message: message)
+                    : MessageLeft(message: message);
+              },
+              itemCount: messages.length,
+            );
           },
         ),
       ),

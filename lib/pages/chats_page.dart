@@ -27,7 +27,7 @@ class _ChatsPageState extends State<ChatsPage> {
     refreshChats();
   }
 
-  void refreshChats() async {
+  Future<void> refreshChats() async {
     final userChats = await Firestore.instance
         .collection('user')
         .document(_authUser.account.id)
@@ -73,25 +73,29 @@ class _ChatsPageState extends State<ChatsPage> {
             ),
           ],
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SearchBar(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                'Messages',
-                style: Theme.of(context).textTheme.bodyText1,
+        body: RefreshIndicator(
+          onRefresh: refreshChats,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SearchBar(),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  'Messages',
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                separatorBuilder: (_, __) => SizedBox(height: 8),
-                itemCount: chats.length,
-                itemBuilder: (_, i) => ChatTile(chat: chats[i]),
+              Expanded(
+                child: ListView.separated(
+                  separatorBuilder: (_, __) => SizedBox(height: 8),
+                  itemCount: chats.length,
+                  itemBuilder: (_, i) => ChatTile(chat: chats[i]),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
