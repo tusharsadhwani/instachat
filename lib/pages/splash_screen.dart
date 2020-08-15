@@ -11,10 +11,9 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void didChangeDependencies() async {
-    print('splash schreen auth init');
     super.didChangeDependencies();
 
-    final authUser = Provider.of<AuthUser>(context);
+    final authUser = Provider.of<AuthUser>(context, listen: false);
     await authUser.trySignInSilently();
     if (authUser.account != null)
       Navigator.of(context).pushReplacementNamed('/chats');

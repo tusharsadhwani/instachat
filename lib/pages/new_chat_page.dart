@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../helpers.dart';
 import '../models/auth_user.dart';
 import '../widgets/insta_app_bar.dart';
 import 'login_page.dart';
 
 class NewChatPage extends StatefulWidget {
+  static const routeName = '/newchat';
+
   @override
   _NewChatPageState createState() => _NewChatPageState();
 }
@@ -260,14 +263,4 @@ class _JoinRoomState extends State<JoinRoom> {
       ),
     );
   }
-}
-
-void showAlert(BuildContext context, String s) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: Text("Error"),
-      content: Text(s),
-    ),
-  );
 }

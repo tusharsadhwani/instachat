@@ -23,7 +23,7 @@ class _ChatsPageState extends State<ChatsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _authUser = Provider.of<AuthUser>(context);
+    _authUser = Provider.of<AuthUser>(context, listen: false);
     refreshChats();
   }
 
@@ -50,18 +50,13 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   void newChat() async {
-    final refresh = await Navigator.of(context).push(
-      MaterialPageRoute<bool>(
-        builder: (_) => NewChatPage(),
-      ),
-    );
-    if (refresh == true) refreshChats();
+    final refresh =
+        await Navigator.of(context).pushNamed(NewChatPage.routeName) ?? false;
+    if (refresh) refreshChats();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('chats build');
-    print(_authUser.account);
     return SafeArea(
       child: Scaffold(
         appBar: InstaAppBar(

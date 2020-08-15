@@ -1,23 +1,25 @@
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthUser {
-  final _googleSignIn = GoogleSignIn();
-  GoogleSignInAccount account;
+  GoogleSignIn _googleSignIn;
+  GoogleSignInAccount _account;
+
+  GoogleSignInAccount get account => _account;
 
   AuthUser() {
-    print('creating new auth user');
+    _googleSignIn = GoogleSignIn();
   }
 
   Future<void> trySignInSilently() async {
-    account = await _googleSignIn.signInSilently();
+    _account = await _googleSignIn.signInSilently();
   }
 
   Future<void> signIn() async {
-    account = await _googleSignIn.signIn();
+    _account = await _googleSignIn.signIn();
   }
 
   Future<void> signOut() async {
     await _googleSignIn.signOut();
-    account = null;
+    _account = null;
   }
 }

@@ -50,7 +50,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    authUser = Provider.of<AuthUser>(context);
+    authUser = Provider.of<AuthUser>(context, listen: false);
     final docs = await Firestore.instance
         .collection('chat')
         .where('id', isEqualTo: widget.chat.id)

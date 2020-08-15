@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:instachat/pages/chats_page.dart';
 import 'package:provider/provider.dart';
 
+import '../pages/chats_page.dart';
 import '../models/auth_user.dart';
 import '../widgets/insta_app_bar.dart';
+import '../helpers.dart';
 
 class LoginPage extends StatefulWidget {
   static const routeName = '/login';
@@ -19,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
       if (authUser.account != null)
         Navigator.of(context).pushReplacementNamed(ChatsPage.routeName);
     } catch (error) {
-      print(error);
+      showAlert(context, error.toString());
     }
   }
 

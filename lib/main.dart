@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:instachat/models/auth_user.dart';
+import 'package:instachat/pages/new_chat_page.dart';
 import 'package:provider/provider.dart';
 
 import 'pages/splash_screen.dart';
@@ -46,10 +47,17 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        routes: {
-          '/': (_) => SplashScreen(),
-          LoginPage.routeName: (_) => LoginPage(),
-          ChatsPage.routeName: (_) => ChatsPage(),
+        onGenerateRoute: (route) {
+          if (route.name == '/')
+            return MaterialPageRoute(builder: (_) => SplashScreen());
+          else if (route.name == LoginPage.routeName)
+            return MaterialPageRoute(builder: (_) => LoginPage());
+          else if (route.name == ChatsPage.routeName)
+            return MaterialPageRoute(builder: (_) => ChatsPage());
+          else if (route.name == NewChatPage.routeName)
+            return MaterialPageRoute<bool>(builder: (_) => NewChatPage());
+          else
+            return MaterialPageRoute(builder: (_) => SplashScreen());
         },
       ),
     );
