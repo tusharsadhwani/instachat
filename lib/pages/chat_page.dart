@@ -24,10 +24,10 @@ class _ChatPageState extends State<ChatPage> {
 
   MessageBox _messageBox;
   ScrollController _scrollController;
-  bool _needsScrollToBottom = false;
+  int messageCount;
 
-  void addMessage(String newMessage) async {
-    await Firestore.instance
+  void addMessage(String newMessage) {
+    Firestore.instance
         .collection('chat')
         .document(chatId)
         .collection('message')
@@ -37,16 +37,14 @@ class _ChatPageState extends State<ChatPage> {
       'content': newMessage,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
-    setState(() {
-      _needsScrollToBottom = true;
-    });
   }
 
   @override
   void initState() {
+    super.initState();
     _messageBox = MessageBox(addMessage);
     _scrollController = ScrollController();
-    super.initState();
+    messageCount = 0;
   }
 
   @override
@@ -73,16 +71,6 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_needsScrollToBottom) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 200),
-          curve: Curves.easeOutQuad,
-        );
-      });
-    }
-
     return Scaffold(
       appBar: InstaAppBar(title: widget.chat.name),
       body: Padding(
@@ -99,6 +87,16 @@ class _ChatPageState extends State<ChatPage> {
             List<Message> messages = snapshot.documents
                 .map((doc) => Message.fromMap(doc.data))
                 .toList();
+            if (messages.length != messageCount) {
+              messageCount = messages.length;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollController.animateTo(
+                  _scrollController.position.maxScrollExtent,
+                  duration: Duration(milliseconds: 200),
+                  curve: Curves.easeOutQuad,
+                );
+              });
+            }
 
             return ListView.builder(
               controller: _scrollController,
