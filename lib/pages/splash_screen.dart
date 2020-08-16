@@ -15,9 +15,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     final authUser = Provider.of<AuthUser>(context, listen: false);
     await authUser.trySignInSilently();
-    if (authUser.account != null)
-      Navigator.of(context).pushReplacementNamed('/chats');
-    else
+    if (authUser.account == null)
       Navigator.of(context).pushReplacementNamed('/login');
   }
 

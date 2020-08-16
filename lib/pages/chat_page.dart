@@ -7,8 +7,7 @@ import '../models/auth_user.dart';
 import '../models/chat.dart';
 import '../models/message.dart';
 import '../widgets/insta_app_bar.dart';
-import '../widgets/message_left.dart';
-import '../widgets/message_right.dart';
+import '../widgets/message.dart';
 
 class ChatPage extends StatefulWidget {
   final Chat chat;

@@ -10,8 +10,6 @@ import '../widgets/search_bar.dart';
 import '../widgets/chat_tile.dart';
 
 class ChatsPage extends StatefulWidget {
-  static const routeName = '/chats';
-
   @override
   _ChatsPageState createState() => _ChatsPageState();
 }
@@ -51,7 +49,8 @@ class _ChatsPageState extends State<ChatsPage> {
 
   void newChat() async {
     final refresh =
-        await Navigator.of(context).pushNamed(NewChatPage.routeName) ?? false;
+        await Navigator.of(context).pushNamed<bool>(NewChatPage.routeName) ??
+            false;
     if (refresh) refreshChats();
   }
 

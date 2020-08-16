@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../helpers.dart';
 import '../models/auth_user.dart';
 import '../widgets/insta_app_bar.dart';
-import 'login_page.dart';
 
 class NewChatPage extends StatefulWidget {
   static const routeName = '/newchat';
@@ -28,9 +27,14 @@ class _NewChatPageState extends State<NewChatPage>
     joinFocusNode = FocusNode();
 
     tabController.addListener(() {
-      if (tabController.index == 0)
-        createFocusNode.requestFocus();
-      else if (tabController.index == 1) joinFocusNode.requestFocus();
+      switch (tabController.index) {
+        case 0:
+          createFocusNode.requestFocus();
+          break;
+        case 1:
+          joinFocusNode.requestFocus();
+          break;
+      }
     });
   }
 
@@ -42,8 +46,6 @@ class _NewChatPageState extends State<NewChatPage>
 
   void _signOut(BuildContext context) {
     authUser.signOut();
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
   }
 
   @override
@@ -112,6 +114,7 @@ class _CreateRoomState extends State<CreateRoom> {
         .where('id', isEqualTo: roomId)
         .limit(1)
         .getDocuments();
+
     if (chats.documents.length > 0)
       return showAlert(context, 'Room with this ID already exists');
 
@@ -158,7 +161,7 @@ class _CreateRoomState extends State<CreateRoom> {
                 return null;
               },
               onSaved: (value) {
-                roomId = value.trim();
+                roomId = value.trim().toLowerCase();
               },
               onFieldSubmitted: (_) => nameNode.requestFocus(),
             ),
@@ -215,7 +218,6 @@ class _JoinRoomState extends State<JoinRoom> {
       return showAlert(context, 'Room not found');
 
     final authUser = Provider.of<AuthUser>(context, listen: false);
-
     await Firestore.instance
         .collection('user')
         .document(authUser.account.id)
@@ -250,7 +252,7 @@ class _JoinRoomState extends State<JoinRoom> {
                 return null;
               },
               onSaved: (value) {
-                roomId = value.trim();
+                roomId = value.trim().toLowerCase();
               },
             ),
             SizedBox(height: 10),
