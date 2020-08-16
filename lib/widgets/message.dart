@@ -17,17 +17,20 @@ class MessageBase extends StatelessWidget {
   Widget build(BuildContext context) {
     return Likeable(
       key: ValueKey(message.id),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).appBarTheme.color,
+      child: LayoutBuilder(
+        builder: (_, constraints) => Container(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.85),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).appBarTheme.color,
+            ),
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(24),
           ),
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Text(message.content),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Text(message.content),
+          ),
         ),
       ),
     );

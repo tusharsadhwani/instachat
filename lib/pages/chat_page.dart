@@ -26,8 +26,8 @@ class _ChatPageState extends State<ChatPage> {
   ScrollController _scrollController;
   bool _needsScrollToBottom = false;
 
-  void addMessage(String newMessage) {
-    Firestore.instance
+  void addMessage(String newMessage) async {
+    await Firestore.instance
         .collection('chat')
         .document(chatId)
         .collection('message')
@@ -36,6 +36,9 @@ class _ChatPageState extends State<ChatPage> {
       'name': authUser.account.displayName,
       'content': newMessage,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+    setState(() {
+      _needsScrollToBottom = true;
     });
   }
 
