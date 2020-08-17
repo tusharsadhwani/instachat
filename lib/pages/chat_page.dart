@@ -98,14 +98,26 @@ class _ChatPageState extends State<ChatPage> {
               });
             }
 
+            String prevSenderId;
             return ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(12),
               itemBuilder: (_, i) {
                 final message = messages[i];
+                final senderId = message.senderId;
+
+                bool isFirstMessageFromSender = false;
+                if (senderId != null && senderId != prevSenderId)
+                  isFirstMessageFromSender = true;
+
+                prevSenderId = senderId;
+
                 return message.senderId == authUser.account.id
                     ? MessageRight(message: message)
-                    : MessageLeft(message: message);
+                    : MessageLeft(
+                        message: message,
+                        isFirstMessageFromSender: isFirstMessageFromSender,
+                      );
               },
               itemCount: messages.length,
             );

@@ -36,8 +36,12 @@ class MessageBase extends StatelessWidget {
 
 class MessageLeft extends StatelessWidget {
   final Message message;
-
-  const MessageLeft({Key key, this.message}) : super(key: key);
+  final bool isFirstMessageFromSender;
+  const MessageLeft({
+    Key key,
+    @required this.message,
+    this.isFirstMessageFromSender = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +58,25 @@ class MessageLeft extends StatelessWidget {
               backgroundImage: NetworkImage('https://picsum.photos/id/327/120'),
             ),
             SizedBox(width: 12),
-            Expanded(child: MessageBase(message: message)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isFirstMessageFromSender)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15, bottom: 5),
+                      child: Text(
+                        message.senderName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  MessageBase(message: message),
+                ],
+              ),
+            ),
             SizedBox(width: 50),
           ],
         ),
