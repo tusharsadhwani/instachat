@@ -18,12 +18,13 @@ class ChatPage extends StatefulWidget {
   _ChatPageState createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   AuthUser authUser;
   String chatId;
 
   MessageBox _messageBox;
   ScrollController _scrollController;
+  double _bottomInset;
   int messageCount;
 
   void addMessage(String newMessage) {
@@ -39,11 +40,22 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeOutQuad,
+      );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    _messageBox = MessageBox(addMessage);
+    WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController();
+    _messageBox = MessageBox(addMessage);
     messageCount = 0;
   }
 
@@ -66,7 +78,17 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    final newBottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+    if (newBottomInset != _bottomInset) {
+      _scrollToBottom();
+      _bottomInset = newBottomInset;
+    }
   }
 
   @override
@@ -89,13 +111,7 @@ class _ChatPageState extends State<ChatPage> {
                 .toList();
             if (messages.length != messageCount) {
               messageCount = messages.length;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: Duration(milliseconds: 200),
-                  curve: Curves.easeOutQuad,
-                );
-              });
+              _scrollToBottom();
             }
 
             String prevSenderId;
