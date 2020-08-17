@@ -17,20 +17,17 @@ class MessageBase extends StatelessWidget {
   Widget build(BuildContext context) {
     return Likeable(
       key: ValueKey(message.id),
-      child: LayoutBuilder(
-        builder: (_, constraints) => Container(
-          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.85),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).appBarTheme.color,
-            ),
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(24),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).appBarTheme.color,
           ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Text(message.content),
-          ),
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(message.content),
         ),
       ),
     );
@@ -57,7 +54,8 @@ class MessageLeft extends StatelessWidget {
               backgroundImage: NetworkImage('https://picsum.photos/id/327/120'),
             ),
             SizedBox(width: 12),
-            MessageBase(message: message),
+            Expanded(child: MessageBase(message: message)),
+            SizedBox(width: 50),
           ],
         ),
       ),
@@ -76,9 +74,19 @@ class MessageRight extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: Padding(
         padding: const EdgeInsets.all(3),
-        child: MessageBase(
-          message: message,
-          backgroundColor: Theme.of(context).appBarTheme.color,
+        child: Row(
+          children: [
+            SizedBox(width: 50),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: MessageBase(
+                  message: message,
+                  backgroundColor: Theme.of(context).appBarTheme.color,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
