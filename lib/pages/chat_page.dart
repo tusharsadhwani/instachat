@@ -23,7 +23,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String chatId;
 
   MessageBox _messageBox;
-  ScrollController _scrollController;
+  ScrollController _controller;
   double _bottomInset;
 
   Stream<QuerySnapshot> _msgStream = Stream.empty();
@@ -44,8 +44,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+      _controller.animateTo(
+        _controller.position.maxScrollExtent,
         duration: Duration(milliseconds: 200),
         curve: Curves.easeOutQuad,
       );
@@ -56,7 +56,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _scrollController = ScrollController();
+    _controller = ScrollController();
     _messageBox = MessageBox(addMessage);
   }
 
@@ -102,7 +102,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -111,8 +111,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void didChangeMetrics() {
     final newBottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
     if (newBottomInset != _bottomInset) {
-      _scrollToBottom();
-      _bottomInset = newBottomInset;
+      if (_controller.position.maxScrollExtent - _controller.offset < 10) {
+        _scrollToBottom();
+        _bottomInset = newBottomInset;
+      }
     }
   }
 
@@ -121,50 +123,53 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     print('build');
     return Scaffold(
       appBar: InstaAppBar(title: widget.chat.name),
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 70),
-        child: Suspense<QuerySnapshot>.stream(
-          stream: _msgStream,
-          fallback: Center(child: CircularProgressIndicator()),
-          builder: (snapshot) {
-            if (snapshot.documentChanges.length > 0) {
-              final lastDoc = snapshot.documentChanges.last.document;
-              Message newMessage =
-                  Message.fromMap(lastDoc.documentID, lastDoc.data);
-              if (messageCache.isNotEmpty &&
-                  messageCache.last.id != newMessage.id) {
-                messageCache.add(newMessage);
-              }
-              _scrollToBottom();
-            }
+      body: Column(
+        children: [
+          Expanded(
+            child: Suspense<QuerySnapshot>.stream(
+              stream: _msgStream,
+              fallback: Center(child: CircularProgressIndicator()),
+              builder: (snapshot) {
+                if (snapshot.documentChanges.length > 0) {
+                  final lastDoc = snapshot.documentChanges.last.document;
+                  Message newMessage =
+                      Message.fromMap(lastDoc.documentID, lastDoc.data);
+                  if (messageCache.isNotEmpty &&
+                      messageCache.last.id != newMessage.id) {
+                    messageCache.add(newMessage);
+                  }
+                  _scrollToBottom();
+                }
 
-            String prevSenderId;
-            return ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(12),
-              itemBuilder: (_, i) {
-                final message = messageCache[i];
-                final senderId = message.senderId;
+                String prevSenderId;
+                return ListView.builder(
+                  controller: _controller,
+                  padding: const EdgeInsets.all(12),
+                  itemBuilder: (_, i) {
+                    final message = messageCache[i];
+                    final senderId = message.senderId;
 
-                bool isFirstMessageFromSender = false;
-                if (senderId != null && senderId != prevSenderId)
-                  isFirstMessageFromSender = true;
+                    bool isFirstMessageFromSender = false;
+                    if (senderId != null && senderId != prevSenderId)
+                      isFirstMessageFromSender = true;
 
-                prevSenderId = senderId;
+                    prevSenderId = senderId;
 
-                return message.senderId == authUser.account.id
-                    ? MessageRight(message: message)
-                    : MessageLeft(
-                        message: message,
-                        isFirstMessageFromSender: isFirstMessageFromSender,
-                      );
+                    return message.senderId == authUser.account.id
+                        ? MessageRight(message: message)
+                        : MessageLeft(
+                            message: message,
+                            isFirstMessageFromSender: isFirstMessageFromSender,
+                          );
+                  },
+                  itemCount: messageCache.length,
+                );
               },
-              itemCount: messageCache.length,
-            );
-          },
-        ),
+            ),
+          ),
+          _messageBox,
+        ],
       ),
-      bottomSheet: _messageBox,
     );
   }
 }
