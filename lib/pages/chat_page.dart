@@ -25,7 +25,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   MessageBox _messageBox;
   ScrollController _scrollController;
   double _bottomInset;
-  int messageCount;
+
+  Stream<QuerySnapshot> _msgStream = Stream.empty();
+  List<Message> messageCache = [];
 
   void addMessage(String newMessage) {
     Firestore.instance
@@ -56,7 +58,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController();
     _messageBox = MessageBox(addMessage);
-    messageCount = 0;
   }
 
   @override
@@ -68,10 +69,34 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         .where('id', isEqualTo: widget.chat.id)
         .limit(1)
         .getDocuments();
+    String newChatId;
     docs.documents.forEach((docs) {
+      newChatId = docs.documentID.toString();
       setState(() {
-        chatId = docs.documentID;
+        chatId = newChatId;
+        _msgStream = Firestore.instance
+            .collection('chat')
+            .document(chatId)
+            .collection('message')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .snapshots();
       });
+    });
+
+    final lastFewChats = await Firestore.instance
+        .collection('chat')
+        .document(newChatId)
+        .collection('message')
+        .orderBy('timestamp', descending: true)
+        .limit(20)
+        .getDocuments();
+
+    setState(() {
+      messageCache.addAll(lastFewChats.documents
+          .map((msg) => Message.fromMap(msg.documentID, msg.data))
+          .toList()
+          .reversed);
     });
   }
 
@@ -93,24 +118,23 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    print('build');
     return Scaffold(
       appBar: InstaAppBar(title: widget.chat.name),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 70),
         child: Suspense<QuerySnapshot>.stream(
-          stream: Firestore.instance
-              .collection('chat')
-              .document(chatId)
-              .collection('message')
-              .orderBy('timestamp')
-              .snapshots(),
+          stream: _msgStream,
           fallback: Center(child: CircularProgressIndicator()),
           builder: (snapshot) {
-            List<Message> messages = snapshot.documents
-                .map((doc) => Message.fromMap(doc.data))
-                .toList();
-            if (messages.length != messageCount) {
-              messageCount = messages.length;
+            if (snapshot.documentChanges.length > 0) {
+              final lastDoc = snapshot.documentChanges.last.document;
+              Message newMessage =
+                  Message.fromMap(lastDoc.documentID, lastDoc.data);
+              if (messageCache.isNotEmpty &&
+                  messageCache.last.id != newMessage.id) {
+                messageCache.add(newMessage);
+              }
               _scrollToBottom();
             }
 
@@ -119,7 +143,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               controller: _scrollController,
               padding: const EdgeInsets.all(12),
               itemBuilder: (_, i) {
-                final message = messages[i];
+                final message = messageCache[i];
                 final senderId = message.senderId;
 
                 bool isFirstMessageFromSender = false;
@@ -135,7 +159,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                         isFirstMessageFromSender: isFirstMessageFromSender,
                       );
               },
-              itemCount: messages.length,
+              itemCount: messageCache.length,
             );
           },
         ),
