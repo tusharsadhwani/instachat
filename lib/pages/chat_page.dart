@@ -122,7 +122,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: InstaAppBar(title: widget.chat.name),
+      appBar: InstaAppBar(
+        title: widget.chat.name,
+        leading: CircleAvatar(
+          backgroundImage: NetworkImage(widget.chat.imageUrl),
+          radius: 18,
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
