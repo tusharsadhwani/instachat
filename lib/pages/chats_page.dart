@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/auth_user.dart';
 import '../pages/new_chat_page.dart';
 import '../services/chats_service.dart';
 import '../widgets/chat_tile.dart';
@@ -14,15 +13,12 @@ class ChatsPage extends StatefulWidget {
 }
 
 class _ChatsPageState extends State<ChatsPage> {
-  AuthUser _authUser;
   ChatsService chatsService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _authUser = Provider.of<AuthUser>(context, listen: false);
-    chatsService = ChatsService(_authUser);
-    chatsService.addListener(() => setState(() {}));
+    chatsService = Provider.of<ChatsService>(context);
     chatsService.updateChats();
   }
 

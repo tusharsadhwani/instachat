@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:instachat/services/chats_service.dart';
 import 'package:provider/provider.dart';
 
 import './models/auth_user.dart';
@@ -49,23 +50,26 @@ class MyApp extends StatelessWidget {
       builder: (context, _) => Consumer<AuthUser>(
         builder: (_, authUser, __) {
           if (authUser.account != null) {
-            return MaterialApp(
-              key: ValueKey('Logged In'),
-              title: 'InstaChat',
-              theme: themeData,
-              home: ChatsPage(),
-              onGenerateRoute: (route) {
-                switch (route.name) {
-                  case NewChatPage.routeName:
-                    return MaterialPageRoute<bool>(
-                      builder: (_) => NewChatPage(),
-                    );
-                  default:
-                    return MaterialPageRoute(
-                      builder: (_) => ChatsPage(),
-                    );
-                }
-              },
+            return ChangeNotifierProvider(
+              create: (_) => ChatsService(authUser),
+              child: MaterialApp(
+                key: ValueKey('Logged In'),
+                title: 'InstaChat',
+                theme: themeData,
+                home: ChatsPage(),
+                onGenerateRoute: (route) {
+                  switch (route.name) {
+                    case NewChatPage.routeName:
+                      return MaterialPageRoute<bool>(
+                        builder: (_) => NewChatPage(),
+                      );
+                    default:
+                      return MaterialPageRoute(
+                        builder: (_) => ChatsPage(),
+                      );
+                  }
+                },
+              ),
             );
           }
           return MaterialApp(
