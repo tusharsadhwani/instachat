@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:instachat/models/auth_user.dart';
-import 'package:instachat/pages/new_chat_page.dart';
+import 'package:instachat/services/chats_service.dart';
 import 'package:provider/provider.dart';
 
-import 'pages/splash_screen.dart';
-import 'pages/login_page.dart';
-import 'pages/chats_page.dart';
+import './models/auth_user.dart';
+import './pages/chats_page.dart';
+import './pages/login_page.dart';
+import './pages/new_chat_page.dart';
+import './pages/splash_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -49,23 +50,26 @@ class MyApp extends StatelessWidget {
       builder: (context, _) => Consumer<AuthUser>(
         builder: (_, authUser, __) {
           if (authUser.account != null) {
-            return MaterialApp(
-              key: ValueKey('Logged In'),
-              title: 'InstaChat',
-              theme: themeData,
-              home: ChatsPage(),
-              onGenerateRoute: (route) {
-                switch (route.name) {
-                  case NewChatPage.routeName:
-                    return MaterialPageRoute<bool>(
-                      builder: (_) => NewChatPage(),
-                    );
-                  default:
-                    return MaterialPageRoute(
-                      builder: (_) => ChatsPage(),
-                    );
-                }
-              },
+            return ChangeNotifierProvider(
+              create: (_) => ChatsService(authUser),
+              child: MaterialApp(
+                key: ValueKey('Logged In'),
+                title: 'InstaChat',
+                theme: themeData,
+                home: ChatsPage(),
+                onGenerateRoute: (route) {
+                  switch (route.name) {
+                    case NewChatPage.routeName:
+                      return MaterialPageRoute<bool>(
+                        builder: (_) => NewChatPage(),
+                      );
+                    default:
+                      return MaterialPageRoute(
+                        builder: (_) => ChatsPage(),
+                      );
+                  }
+                },
+              ),
             );
           }
           return MaterialApp(

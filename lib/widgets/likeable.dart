@@ -53,7 +53,7 @@ class _LikeableState extends State<Likeable>
       builder: (_, __) => Padding(
         padding: EdgeInsets.only(bottom: 10 * _animation.value),
         child: Stack(
-          overflow: Overflow.visible,
+          clipBehavior: Clip.none,
           children: [
             GestureDetector(
               onDoubleTap: toggleLike,
@@ -82,7 +82,7 @@ class AnimatedHeart extends StatelessWidget {
       scale: scale,
       child: Stack(
         alignment: Alignment.center,
-        overflow: Overflow.visible,
+        clipBehavior: Clip.none,
         children: [
           Icon(
             Icons.favorite,

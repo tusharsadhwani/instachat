@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import './likeable.dart';
 import '../models/message.dart';
-import 'likeable.dart';
 
 class MessageBase extends StatelessWidget {
   const MessageBase({
