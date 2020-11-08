@@ -7,5 +7,8 @@ class _Chat {
   int id;
 
   @Column(unique: true)
+  String username;
+
+  @Column()
   String name;
 }

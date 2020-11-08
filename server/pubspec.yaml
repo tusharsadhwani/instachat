@@ -7,11 +7,16 @@ environment:
   sdk: ">=2.0.0 <3.0.0"
 
 dependencies:
-  aqueduct: 3.3.0+1
+  aqueduct: ^4.0.0-b1
 
 dev_dependencies:
   test: ^1.0.0
-  aqueduct_test: ^1.0.0
+  aqueduct_test: ^2.0.0-b1
 
 dependency_overrides:
   postgres: 2.1.1
+  aqueduct:
+    git:
+      url: https://github.com/stablekernel/aqueduct
+      path: aqueduct
+      ref: 0af9712a95205c1b73bdc12ebd3a6db8b141233b
