@@ -1,4 +1,5 @@
 import '../models/chat.dart';
+import '../models/user.dart';
 import '../server.dart';
 
 class ChatsController extends ResourceController {
@@ -14,7 +15,7 @@ class ChatsController extends ResourceController {
   }
 
   @Operation.get('id')
-  Future<Response> getchatByID(@Bind.path('id') int id) async {
+  Future<Response> getChatByID(@Bind.path('id') int id) async {
     final chatQuery = Query<Chat>(context)..where((h) => h.id).equalTo(id);
 
     final chat = await chatQuery.fetchOne();
@@ -26,10 +27,20 @@ class ChatsController extends ResourceController {
   }
 
   @Operation.post()
-  Future<Response> createHero(@Bind.body(ignore: ["id"]) Chat inputChat) async {
-    final query = Query<Chat>(context)..values = inputChat;
+  Future<Response> createChat(@Bind.body(ignore: ["id"]) Chat newChat) async {
+    final query = Query<Chat>(context)..values = newChat;
 
     final insertedChat = await query.insert();
+
+    final userChat = Query<UserChat>(context);
+    userChat.values.chat = insertedChat;
+
+    // assuming default user for now
+    final userQuery = Query<User>(context)..where((u) => u.id).equalTo(1);
+    final user = await userQuery.fetchOne();
+    userChat.values.user = user;
+
+    await userChat.insert();
 
     return Response.ok(insertedChat);
   }
