@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart'
-    as http; // Must include http: any package in your pubspec.yaml
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   const clientID = "com.tusharsadhwani.instachat";
   const body = "username=tushar&password=password&grant_type=password";
 
-// Note the trailing colon (:) after the clientID.
-// A client identifier secret would follow this, but there is no secret, so it is the empty string.
   final String clientCredentials =
       const Base64Encoder().convert("$clientID:".codeUnits);
 
