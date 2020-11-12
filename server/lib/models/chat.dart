@@ -11,6 +11,9 @@ class _Chat {
   @Column(unique: true)
   String address;
 
+  @Relate(#createdChats)
+  User owner;
+
   @Column()
   String name;
 

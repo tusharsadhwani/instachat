@@ -13,6 +13,8 @@ class _User extends ResourceOwnerTableDefinition {
   @Column()
   String name;
 
+  ManagedSet<UserChat> createdChats;
+
   ManagedSet<UserChat> userChats;
 }
 

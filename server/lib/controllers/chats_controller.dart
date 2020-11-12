@@ -8,9 +8,16 @@ class ChatsController extends ResourceController {
 
   @Operation.get()
   Future<Response> getChats() async {
-    final chatQuery = Query<Chat>(context);
-    final chats = await chatQuery.fetch();
+    // TODO: assuming default user for now
+    final chatQuery = Query<Chat>(context)
+      ..join(object: (chat) => chat.owner)
+      ..join(set: (chat) => chat.userChats)
+          .join(object: (uc) => uc.user)
+          .where((user) => user.id)
+          .equalTo(1);
 
+    final chats = await chatQuery.fetch();
+    chats.forEach((chat) => chat.backing.removeProperty("userChats"));
     return Response.ok(chats);
   }
 
@@ -27,17 +34,19 @@ class ChatsController extends ResourceController {
   }
 
   @Operation.post()
-  Future<Response> createChat(@Bind.body(ignore: ["id"]) Chat newChat) async {
-    final query = Query<Chat>(context)..values = newChat;
+  Future<Response> createChat(
+      @Bind.body(ignore: ["id", "owner"]) Chat newChat) async {
+    final chatQuery = Query<Chat>(context)..values = newChat;
 
-    final insertedChat = await query.insert();
+    // TODO: assuming default user for now
+    final userQuery = Query<User>(context)..where((u) => u.id).equalTo(1);
+    final user = await userQuery.fetchOne();
+
+    chatQuery.values.owner = user;
+    final insertedChat = await chatQuery.insert();
 
     final userChat = Query<UserChat>(context);
     userChat.values.chat = insertedChat;
-
-    // assuming default user for now
-    final userQuery = Query<User>(context)..where((u) => u.id).equalTo(1);
-    final user = await userQuery.fetchOne();
     userChat.values.user = user;
 
     await userChat.insert();

@@ -1,4 +1,5 @@
 import 'package:aqueduct/managed_auth.dart';
+import 'package:server/controllers/join_chat_controller.dart';
 
 import 'controllers/chats_controller.dart';
 import 'controllers/register_controller.dart';
@@ -31,6 +32,7 @@ class ServerChannel extends ApplicationChannel {
     router.route('/auth/token').link(() => AuthController(authServer));
 
     router.route("/chats[/:id]").link(() => ChatsController(context));
+    router.route("/join[/:id]").link(() => JoinChatController(context));
 
     router
         .route('/register')
