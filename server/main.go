@@ -1,15 +1,30 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-// Chat is a database field for chats in instachat
-type Chat struct {
+// DBChat is a database model for chats in instachat
+type DBChat struct {
 	gorm.Model
 	Chatid int    `gorm:"primaryKey;unique;default:floor(random() * 9000000 + 1000000)::int"`
 	Name   string `gorm:"not null"`
+}
+
+// TableName for DBChat
+func (DBChat) TableName() string {
+	return "chats"
+}
+
+// Chat is what the API will use to represent ChatModel
+type Chat struct {
+	Chatid int    `json:"id"`
+	Name   string `json:"name"`
 }
 
 func main() {
@@ -20,15 +35,16 @@ func main() {
 	}
 	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 
-	db.AutoMigrate(&Chat{})
+	db.AutoMigrate(&DBChat{})
 
-	// Create
-	for {
-		chatQuery := db.Create(&Chat{Name: "Test Chat 2"})
-		if chatQuery.Error == nil {
-			break
-		}
-	}
+	// // Create
+	// for {
+	// 	chatQuery := db.Create(&DBChat{Name: "Test Chat 1"})
+	// 	if chatQuery.Error == nil {
+	// 		break
+	// 	}
+	// }
+
 	// // Read
 	// var product Test
 	// db.First(&product, "code = ?", "D42") // find product with code D42
@@ -43,4 +59,91 @@ func main() {
 
 	// // Delete - delete product
 	// db.Delete(&product)
+
+	app := fiber.New(fiber.Config{
+		Prefork: true,
+	})
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World 👋!")
+	})
+
+	app.Get("/chat", func(c *fiber.Ctx) error {
+		var chats []Chat
+		db.Model(&DBChat{}).Find(&chats)
+
+		return c.JSON(chats)
+	})
+
+	app.Get("/chat/:id", func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.Status(400).SendString("Chat ID must be an integer")
+		}
+
+		var chat Chat
+		res := db.Model(&DBChat{}).Where(&DBChat{Chatid: id}).First(&chat)
+		if res.Error != nil {
+			return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
+		}
+
+		return c.JSON(chat)
+	})
+
+	app.Post("/chat", func(c *fiber.Ctx) error {
+		type ChatParams struct {
+			Name string `json:"name"`
+		}
+
+		validateParams := func(params *ChatParams) bool {
+			if params.Name == "" {
+				return false
+			}
+
+			return true
+		}
+
+		var params ChatParams
+		if err := c.BodyParser(&params); err != nil {
+			return c.Status(503).SendString(err.Error())
+		}
+		if !validateParams(&params) {
+			return c.Status(400).SendString("Invalid Chat Name")
+		}
+
+		dbchat := DBChat{
+			Name: params.Name,
+		}
+		for {
+			chatQuery := db.Create(&dbchat)
+			if chatQuery.Error == nil {
+				break
+			}
+		}
+
+		var chat Chat
+		db.Model(&DBChat{}).Where(&DBChat{Chatid: dbchat.Chatid}).First(&chat)
+
+		return c.JSON(chat)
+	})
+
+	app.Delete("/chat/:id", func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.Status(400).SendString("Chat ID must be an integer")
+		}
+
+		var dbchat DBChat
+		res := db.Model(&DBChat{}).Where(&DBChat{Chatid: id}).First(&dbchat)
+		if res.Error != nil {
+			return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
+		}
+
+		db.Delete(&dbchat)
+		return c.Status(200).SendString("deleted succesfully")
+	})
+
+	app.Listen(":3000")
 }
