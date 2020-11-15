@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jinzhu/copier"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -61,7 +63,7 @@ func main() {
 	// db.Delete(&product)
 
 	app := fiber.New(fiber.Config{
-		Prefork: true,
+		Prefork: os.Getenv("GO_ENV") == "production",
 	})
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -112,9 +114,8 @@ func main() {
 			return c.Status(400).SendString("Invalid Chat Name")
 		}
 
-		dbchat := DBChat{
-			Name: params.Name,
-		}
+		var dbchat DBChat
+		copier.Copy(&dbchat, &params)
 		for {
 			chatQuery := db.Create(&dbchat)
 			if chatQuery.Error == nil {
@@ -138,11 +139,13 @@ func main() {
 		var dbchat DBChat
 		res := db.Model(&DBChat{}).Where(&DBChat{Chatid: id}).First(&dbchat)
 		if res.Error != nil {
-			return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
+			return c.Status(404).SendString(
+				fmt.Sprintf("No Chat found with id: %v", id),
+			)
 		}
 
 		db.Delete(&dbchat)
-		return c.Status(200).SendString("deleted succesfully")
+		return c.SendString("deleted succesfully")
 	})
 
 	app.Listen(":3000")
