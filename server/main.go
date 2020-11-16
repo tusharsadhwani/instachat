@@ -14,8 +14,9 @@ import (
 // DBChat is a database model for chats in instachat
 type DBChat struct {
 	gorm.Model
-	Chatid int    `gorm:"primaryKey;unique;default:floor(random() * 9000000 + 1000000)::int"`
-	Name   string `gorm:"not null"`
+	Chatid   int         `gorm:"primaryKey;unique;default:floor(random() * 9000000 + 1000000)::int"`
+	Name     string      `gorm:"not null"`
+	Messages []DBMessage `gorm:"foreignKey:Chatid;references:Chatid"`
 }
 
 // TableName for DBChat
@@ -23,10 +24,30 @@ func (DBChat) TableName() string {
 	return "chats"
 }
 
-// Chat is what the API will use to represent ChatModel
+// DBMessage is the database model for messages in a chat
+type DBMessage struct {
+	gorm.Model
+	ID     int
+	Chatid int
+	Text   string
+}
+
+// TableName for DBChat
+func (DBMessage) TableName() string {
+	return "messages"
+}
+
+// Chat is what the API will use to represent DBChat
 type Chat struct {
 	Chatid int    `json:"id"`
 	Name   string `json:"name"`
+}
+
+// Message is what the API will use to represent DBMessage
+type Message struct {
+	ID     int    `json:"id"`
+	Text   string `json:"text"`
+	Chatid int    `json:"chatid"`
 }
 
 func main() {
@@ -38,6 +59,7 @@ func main() {
 	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 
 	db.AutoMigrate(&DBChat{})
+	db.AutoMigrate(&DBMessage{})
 
 	// // Create
 	// for {
@@ -93,6 +115,25 @@ func main() {
 		return c.JSON(chat)
 	})
 
+	app.Get("/chat/:id/message", func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.Status(400).SendString("Chat ID must be an integer")
+		}
+
+		var dbchat DBChat
+		res := db.Model(&DBChat{}).Where(&DBChat{Chatid: id}).First(&dbchat)
+		if res.Error != nil {
+			return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
+		}
+
+		var messages []Message
+		db.Model(&dbchat).Association("Messages").Find(&messages)
+
+		return c.JSON(messages)
+	})
+
 	app.Post("/chat", func(c *fiber.Ctx) error {
 		type ChatParams struct {
 			Name string `json:"name"`
@@ -124,9 +165,53 @@ func main() {
 		}
 
 		var chat Chat
-		db.Model(&DBChat{}).Where(&DBChat{Chatid: dbchat.Chatid}).First(&chat)
+		db.Where(&DBChat{Chatid: dbchat.Chatid}).First(&chat)
 
 		return c.JSON(chat)
+	})
+
+	app.Post("/chat/:id/message", func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.Status(400).SendString("Chat ID must be an integer")
+		}
+
+		var dbchat DBChat
+		res := db.Where(&DBChat{Chatid: id}).First(&dbchat)
+		if res.Error != nil {
+			return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
+		}
+
+		type MessageParams struct {
+			Text string `json:"text"`
+		}
+
+		validateParams := func(params *MessageParams) bool {
+			if params.Text == "" {
+				return false
+			}
+
+			return true
+		}
+
+		var params MessageParams
+		if err := c.BodyParser(&params); err != nil {
+			return c.Status(503).SendString(err.Error())
+		}
+		if !validateParams(&params) {
+			return c.Status(400).SendString("Invalid Message Body")
+		}
+
+		var dbmessage DBMessage
+		copier.Copy(&dbmessage, &params)
+		dbmessage.Chatid = dbchat.Chatid
+		db.Create(&dbmessage)
+
+		var message Message
+		db.Where(&DBMessage{ID: dbmessage.ID}).First(&message)
+
+		return c.JSON(message)
 	})
 
 	app.Delete("/chat/:id", func(c *fiber.Ctx) error {
