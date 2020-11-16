@@ -1,4 +1,4 @@
-module instachat
+module github.com/tusharsadhwani/instachat
 
 go 1.15
 
