@@ -1,11 +1,11 @@
 package main
 
 import (
-	api "github.com/tusharsadhwani/instachat/api"
-	db "github.com/tusharsadhwani/instachat/database"
+	"github.com/tusharsadhwani/instachat/api"
+	"github.com/tusharsadhwani/instachat/database"
 )
 
 func main() {
-	db.Init()
+	database.Init()
 	api.RunApp()
 }
