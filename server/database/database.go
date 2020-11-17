@@ -25,6 +25,7 @@ func Init() {
 
 	_db.AutoMigrate(&m.DBChat{})
 	_db.AutoMigrate(&m.DBMessage{})
+	_db.AutoMigrate(&m.DBUser{})
 
 	db = _db
 }

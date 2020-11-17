@@ -6,8 +6,9 @@ import "gorm.io/gorm"
 type DBMessage struct {
 	gorm.Model
 	ID     int
-	Chatid int
-	Text   string
+	Chatid *int   `gorm:"not null"`
+	Userid *int   `gorm:"not null"`
+	Text   string `gorm:"not null"`
 }
 
 // TableName for DBChat

@@ -10,9 +10,18 @@ import (
 	"github.com/tusharsadhwani/instachat/models"
 )
 
+// Message is what the API will use to represent DBMessage
+type Message struct {
+	ID     int    `json:"id"`
+	Chatid *int   `json:"chatid"`
+	Userid *int   `json:"userid"`
+	Text   string `json:"text"`
+}
+
 // GetChatMessages gets all messages in a chat
 func GetChatMessages(c *fiber.Ctx) error {
 	db := database.GetDB()
+
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -20,7 +29,7 @@ func GetChatMessages(c *fiber.Ctx) error {
 	}
 
 	var dbchat models.DBChat
-	res := db.Model(&models.DBChat{}).Where(&models.DBChat{Chatid: id}).First(&dbchat)
+	res := db.Where(&models.DBChat{Chatid: id}).First(&dbchat)
 	if res.Error != nil {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
 	}
@@ -69,8 +78,11 @@ func SendMessage(c *fiber.Ctx) error {
 
 	var dbmessage models.DBMessage
 	copier.Copy(&dbmessage, &params)
-	dbmessage.Chatid = dbchat.Chatid
-	db.Create(&dbmessage)
+	dbmessage.Chatid = &dbchat.Chatid
+	result := db.Create(&dbmessage)
+	if result.Error != nil {
+		return c.Status(500).SendString(result.Error.Error())
+	}
 
 	var message Message
 	db.Where(&models.DBMessage{ID: dbmessage.ID}).First(&message)

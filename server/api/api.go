@@ -6,19 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// Chat is what the API will use to represent DBChat
-type Chat struct {
-	Chatid int    `json:"id"`
-	Name   string `json:"name"`
-}
-
-// Message is what the API will use to represent DBMessage
-type Message struct {
-	ID     int    `json:"id"`
-	Text   string `json:"text"`
-	Chatid int    `json:"chatid"`
-}
-
 // RunApp runs the server
 func RunApp() {
 	app := fiber.New(fiber.Config{
@@ -36,6 +23,11 @@ func RunApp() {
 
 	app.Get("/chat/:id/message", GetChatMessages)
 	app.Post("/chat/:id/message", SendMessage)
+
+	app.Get("/user", GetUsers)
+	app.Get("/user/:id", GetUserByID)
+	app.Post("/user", CreateUser)
+	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Listen(":3000")
 }

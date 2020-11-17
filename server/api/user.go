@@ -10,43 +10,43 @@ import (
 	"github.com/tusharsadhwani/instachat/models"
 )
 
-// Chat is what the API will use to represent DBChat
-type Chat struct {
-	Chatid int    `json:"id"`
+// User is what the API will use to represent DBUser
+type User struct {
+	Userid int    `json:"id"`
 	Name   string `json:"name"`
 }
 
-// GetChats gets all chats
-func GetChats(c *fiber.Ctx) error {
+// GetUsers gets all chats
+func GetUsers(c *fiber.Ctx) error {
 	db := database.GetDB()
 
-	var chats []Chat
-	db.Model(&models.DBChat{}).Find(&chats)
+	var users []User
+	db.Model(&models.DBChat{}).Find(&users)
 
-	return c.JSON(chats)
+	return c.JSON(users)
 }
 
-// GetChatByID gets chat by id
-func GetChatByID(c *fiber.Ctx) error {
+// GetUserByID gets user by id
+func GetUserByID(c *fiber.Ctx) error {
 	db := database.GetDB()
 
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.Status(400).SendString("Chat ID must be an integer")
+		return c.Status(400).SendString("User ID must be an integer")
 	}
 
-	var chat Chat
-	res := db.Where(&models.DBChat{Chatid: id}).First(&chat)
+	var user User
+	res := db.Where(&models.DBUser{Userid: id}).First(&user)
 	if res.Error != nil {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
 	}
 
-	return c.JSON(chat)
+	return c.JSON(user)
 }
 
-// CreateChat creates a new chat
-func CreateChat(c *fiber.Ctx) error {
+// CreateUser creates a new user
+func CreateUser(c *fiber.Ctx) error {
 	db := database.GetDB()
 
 	type ChatParams struct {
@@ -84,24 +84,24 @@ func CreateChat(c *fiber.Ctx) error {
 	return c.JSON(chat)
 }
 
-// DeleteChat deletes a chat
-func DeleteChat(c *fiber.Ctx) error {
+// GetUserMessages gets all messages from a user
+func GetUserMessages(c *fiber.Ctx) error {
 	db := database.GetDB()
 
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.Status(400).SendString("Chat ID must be an integer")
+		return c.Status(400).SendString("User ID must be an integer")
 	}
 
-	var dbchat models.DBChat
-	res := db.Model(&models.DBChat{}).Where(&models.DBChat{Chatid: id}).First(&dbchat)
+	var dbuser models.DBUser
+	res := db.Where(&models.DBUser{Userid: id}).First(&dbuser)
 	if res.Error != nil {
-		return c.Status(404).SendString(
-			fmt.Sprintf("No Chat found with id: %v", id),
-		)
+		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
 	}
 
-	db.Delete(&dbchat)
-	return c.SendString("deleted succesfully")
+	var messages []Message
+	db.Model(&dbuser).Association("Messages").Find(&messages)
+
+	return c.JSON(messages)
 }
