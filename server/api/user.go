@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
+
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
 )
@@ -16,12 +17,54 @@ type User struct {
 	Name   string `json:"name"`
 }
 
+// GetMe returns current logged in user
+func GetMe(c *fiber.Ctx) error {
+	store := GetStore()
+
+	sess, err := store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+
+	userid := sess.Get("user")
+	return c.JSON(fiber.Map{
+		"id": userid,
+	})
+}
+
+// Login logs you in
+func Login(c *fiber.Ctx) error {
+	db := database.GetDB()
+	store := GetStore()
+
+	sess, err := store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+	defer sess.Save()
+
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(400).SendString("User ID must be an integer")
+	}
+
+	var user User
+	res := db.Where(&models.DBUser{Userid: id}).First(&user)
+	if res.Error != nil {
+		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
+	}
+
+	sess.Set("user", user.Userid)
+	return c.JSON(user)
+}
+
 // GetUsers gets all chats
 func GetUsers(c *fiber.Ctx) error {
 	db := database.GetDB()
 
 	var users []User
-	db.Model(&models.DBChat{}).Find(&users)
+	db.Model(&models.DBUser{}).Find(&users)
 
 	return c.JSON(users)
 }
@@ -39,7 +82,7 @@ func GetUserByID(c *fiber.Ctx) error {
 	var user User
 	res := db.Where(&models.DBUser{Userid: id}).First(&user)
 	if res.Error != nil {
-		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
+		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
 	}
 
 	return c.JSON(user)
@@ -49,11 +92,11 @@ func GetUserByID(c *fiber.Ctx) error {
 func CreateUser(c *fiber.Ctx) error {
 	db := database.GetDB()
 
-	type ChatParams struct {
+	type UserParams struct {
 		Name string `json:"name"`
 	}
 
-	validateParams := func(params *ChatParams) bool {
+	validateParams := func(params *UserParams) bool {
 		if params.Name == "" {
 			return false
 		}
@@ -61,27 +104,27 @@ func CreateUser(c *fiber.Ctx) error {
 		return true
 	}
 
-	var params ChatParams
+	var params UserParams
 	if err := c.BodyParser(&params); err != nil {
 		return c.Status(503).SendString(err.Error())
 	}
 	if !validateParams(&params) {
-		return c.Status(400).SendString("Invalid Chat Name")
+		return c.Status(400).SendString("Invalid User Name")
 	}
 
-	var dbchat models.DBChat
-	copier.Copy(&dbchat, &params)
+	var dbuser models.DBUser
+	copier.Copy(&dbuser, &params)
 	for {
-		chatQuery := db.Create(&dbchat)
-		if chatQuery.Error == nil {
+		userQuery := db.Create(&dbuser)
+		if userQuery.Error == nil {
 			break
 		}
 	}
 
-	var chat Chat
-	db.Where(&models.DBChat{Chatid: dbchat.Chatid}).First(&chat)
+	var user User
+	db.Where(&models.DBUser{Userid: dbuser.Userid}).First(&user)
 
-	return c.JSON(chat)
+	return c.JSON(user)
 }
 
 // GetUserMessages gets all messages from a user

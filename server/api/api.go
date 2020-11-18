@@ -12,6 +12,8 @@ func RunApp() {
 		Prefork: os.Getenv("GO_ENV") == "production",
 	})
 
+	InitStore()
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World 👋!")
 	})
@@ -28,6 +30,9 @@ func RunApp() {
 	app.Get("/user/:id", GetUserByID)
 	app.Post("/user", CreateUser)
 	app.Get("/user/:id/message", GetUserMessages)
+
+	app.Get("/me", GetMe)
+	app.Post("/login/:id", Login)
 
 	app.Listen(":3000")
 }
