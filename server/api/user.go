@@ -9,6 +9,11 @@ import (
 
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
+
+	"log"
+	"time"
+
+	jwt "github.com/form3tech-oss/jwt-go"
 )
 
 // User is what the API will use to represent DBUser
@@ -17,33 +22,11 @@ type User struct {
 	Name   string `json:"name"`
 }
 
-// GetMe returns current logged in user
-func GetMe(c *fiber.Ctx) error {
-	store := GetStore()
-
-	sess, err := store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
-	userid := sess.Get("user")
-	return c.JSON(fiber.Map{
-		"id": userid,
-	})
-}
-
-// Login logs you in
+// Login logs in the user by creating and returning a JWT
 func Login(c *fiber.Ctx) error {
 	db := database.GetDB()
-	store := GetStore()
 
-	sess, err := store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-	defer sess.Save()
-
-	idStr := c.Params("id")
+	idStr := c.FormValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.Status(400).SendString("User ID must be an integer")
@@ -55,8 +38,36 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
 	}
 
-	sess.Set("user", user.Userid)
-	return c.JSON(user)
+	// TODO: implement password
+	if false {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	// Create token
+	token := jwt.New(jwt.SigningMethodRS256)
+
+	// Set claims
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = user.Name
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+	// Generate encoded token and send it as response.
+	t, err := token.SignedString(privateKey)
+	if err != nil {
+		log.Printf("token.SignedString: %v", err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(fiber.Map{"token": t})
+}
+
+// Restricted tests if a user is logged in
+func Restricted(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	return c.SendString("Welcome " + name)
 }
 
 // GetUsers gets all chats
