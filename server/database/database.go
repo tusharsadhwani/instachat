@@ -21,7 +21,6 @@ func Init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	_db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 
 	_db.AutoMigrate(&m.DBChat{})
 	_db.AutoMigrate(&m.DBMessage{})
