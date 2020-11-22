@@ -23,8 +23,8 @@ func GetConfig() *Config {
 func Init() {
 	var privateKey *rsa.PrivateKey
 
-	privKeyBytes, e := ioutil.ReadFile("private.key")
-	if e != nil {
+	privKeyBytes, err := ioutil.ReadFile("private.key")
+	if err != nil {
 		panic("No private key file found")
 	}
 
@@ -37,15 +37,14 @@ func Init() {
 	privPemBytes = privPem.Bytes
 
 	var parsedKey interface{}
-	if parsedKey, e = x509.ParsePKCS1PrivateKey(privPemBytes); e != nil {
-		if parsedKey, e = x509.ParsePKCS8PrivateKey(privPemBytes); e != nil { // note this returns type `interface{}`
+	if parsedKey, err = x509.ParsePKCS1PrivateKey(privPemBytes); err != nil {
+		if parsedKey, err = x509.ParsePKCS8PrivateKey(privPemBytes); err != nil {
 			panic("Unable to parse RSA private key")
 		}
 	}
 
 	var ok bool
-	privateKey, ok = parsedKey.(*rsa.PrivateKey)
-	if !ok {
+	if privateKey, ok = parsedKey.(*rsa.PrivateKey); !ok {
 		panic("Unable to parse RSA private key")
 	}
 
