@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
+	"log"
 )
 
 // Config object
@@ -25,13 +26,13 @@ func Init() {
 
 	privKeyBytes, err := ioutil.ReadFile("private.key")
 	if err != nil {
-		panic("No private key file found")
+		log.Fatalln("No private key file found")
 	}
 
 	privPem, _ := pem.Decode(privKeyBytes)
 	var privPemBytes []byte
 	if privPem.Type != "RSA PRIVATE KEY" {
-		panic("RSA private key is of the wrong type")
+		log.Fatalln("RSA private key is of the wrong type")
 	}
 
 	privPemBytes = privPem.Bytes
@@ -39,13 +40,13 @@ func Init() {
 	var parsedKey interface{}
 	if parsedKey, err = x509.ParsePKCS1PrivateKey(privPemBytes); err != nil {
 		if parsedKey, err = x509.ParsePKCS8PrivateKey(privPemBytes); err != nil {
-			panic("Unable to parse RSA private key")
+			log.Fatalln("Unable to parse RSA private key")
 		}
 	}
 
 	var ok bool
 	if privateKey, ok = parsedKey.(*rsa.PrivateKey); !ok {
-		panic("Unable to parse RSA private key")
+		log.Fatalln("Unable to parse RSA private key")
 	}
 
 	config = &Config{
