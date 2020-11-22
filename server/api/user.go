@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 
+	"github.com/tusharsadhwani/instachat/config"
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
 
@@ -52,8 +53,9 @@ func Login(c *fiber.Ctx) error {
 	claims["admin"] = true
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
+	config := config.GetConfig()
 	// Generate encoded token and send it as response.
-	t, err := token.SignedString(privateKey)
+	t, err := token.SignedString(config.PrivateKey)
 	if err != nil {
 		log.Printf("token.SignedString: %v", err)
 		return c.SendStatus(fiber.StatusInternalServerError)

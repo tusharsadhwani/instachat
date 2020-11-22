@@ -1,19 +1,13 @@
 package api
 
 import (
-	"encoding/pem"
-	"io/ioutil"
 	"os"
 
-	"crypto/rsa"
-	"crypto/x509"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/tusharsadhwani/instachat/config"
 
 	jwtware "github.com/gofiber/jwt/v2"
 )
-
-var privateKey *rsa.PrivateKey
 
 // RunApp runs the server
 func RunApp() {
@@ -40,42 +34,14 @@ func RunApp() {
 	app.Post("/user", CreateUser)
 	app.Get("/user/:id/message", GetUserMessages)
 
-	privKeyBytes, e := ioutil.ReadFile("private.key")
-	if e != nil {
-		panic("No private key file found")
-	}
-
-	privPem, _ := pem.Decode(privKeyBytes)
-	var privPemBytes []byte
-	if privPem.Type != "RSA PRIVATE KEY" {
-		panic("RSA private key is of the wrong type")
-	}
-
-	privPemBytes = privPem.Bytes
-
-	var parsedKey interface{}
-	if parsedKey, e = x509.ParsePKCS1PrivateKey(privPemBytes); e != nil {
-		if parsedKey, e = x509.ParsePKCS8PrivateKey(privPemBytes); e != nil { // note this returns type `interface{}`
-			panic("Unable to parse RSA private key")
-		}
-	}
-
-	var ok bool
-	privateKey, ok = parsedKey.(*rsa.PrivateKey)
-	if !ok {
-		panic("Unable to parse RSA private key")
-	}
-
-	// Login route
 	app.Post("/login", Login)
 
-	// JWT Middleware
+	config := config.GetConfig()
 	app.Use(jwtware.New(jwtware.Config{
 		SigningMethod: "RS256",
-		SigningKey:    privateKey.Public(),
+		SigningKey:    config.PrivateKey.Public(),
 	}))
 
-	// Restricted Routes
 	app.Get("/restricted", Restricted)
 
 	app.Listen(":3000")
