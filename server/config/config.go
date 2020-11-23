@@ -24,9 +24,9 @@ func GetConfig() *Config {
 func Init() {
 	var privateKey *rsa.PrivateKey
 
-	privKeyBytes, err := ioutil.ReadFile("private.key")
+	privKeyBytes, err := ioutil.ReadFile("config/keys/private.key")
 	if err != nil {
-		log.Fatalln("No private key file found")
+		log.Fatalln("No private key file found. Generate it by running genkeys")
 	}
 
 	privPem, _ := pem.Decode(privKeyBytes)
