@@ -7,6 +7,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"os"
 )
 
 func generateRsaKeyPair() *rsa.PrivateKey {
@@ -28,6 +30,13 @@ func stringifyPrivateKey(privkey *rsa.PrivateKey) string {
 func main() {
 	priv := generateRsaKeyPair()
 	privString := stringifyPrivateKey(priv)
-	ioutil.WriteFile("config/keys/private.key", []byte(privString), 0644)
+	err := os.MkdirAll("config/keys", os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile("config/keys/private.key", []byte(privString), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("Sucess! key saved in config/keys/private.key")
 }
