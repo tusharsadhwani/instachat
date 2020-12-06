@@ -9,7 +9,8 @@ require (
 	github.com/gofiber/jwt/v2 v2.1.0
 	github.com/jinzhu/copier v0.0.0-20201025035756-632e723a6687
 	github.com/klauspost/compress v1.11.3 // indirect
-	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
+	google.golang.org/api v0.36.0
 	gorm.io/driver/postgres v1.0.5
 	gorm.io/gorm v1.20.6
 )
