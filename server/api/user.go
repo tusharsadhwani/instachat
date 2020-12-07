@@ -149,3 +149,15 @@ func GetUserMessages(c *fiber.Ctx) error {
 
 	return c.JSON(messages)
 }
+
+// GetUserChats gets all chats
+func GetUserChats(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	log.Println(user.Claims)
+	db := database.GetDB()
+
+	var chats []Chat
+	db.Model(&models.DBChat{}).Find(&chats)
+
+	return c.JSON(chats)
+}

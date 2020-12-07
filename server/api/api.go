@@ -31,7 +31,6 @@ func RunApp() {
 
 	app.Get("/user", GetUsers)
 	app.Get("/user/:id", GetUserByID)
-	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/login", LoginGoogle)
 
@@ -42,6 +41,9 @@ func RunApp() {
 	}))
 
 	app.Get("/restricted", Restricted)
+
+	app.Get("/user/:id/message", GetUserMessages)
+	app.Get("/user/:id/chat", GetUserChats)
 
 	app.Listen(":3000")
 }

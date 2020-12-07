@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:instachat/services/chats_service.dart';
@@ -9,7 +7,7 @@ import './models/auth_user.dart';
 import './pages/chats_page.dart';
 import './pages/login_page.dart';
 import './pages/new_chat_page.dart';
-import './pages/splash_screen.dart';
+// import './pages/splash_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -54,10 +52,6 @@ class MyApp extends StatelessWidget {
           //TODO: Send the id token to backend and receive JWT, then log user in
           //TODO: Add a waiting state to authUser where you show a splash screen
           if (authUser.account != null) {
-            authUser.account.authentication.then((value) {
-              print(value.accessToken);
-              log(value.idToken);
-            });
             return ChangeNotifierProvider(
               create: (_) => ChatsService(authUser),
               child: LoggedInApp(themeData: themeData),

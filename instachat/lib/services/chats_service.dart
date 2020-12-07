@@ -16,7 +16,13 @@ class ChatsService extends ChangeNotifier {
   }
 
   Future<void> updateChats() async {
-    final response = await dio.get("http://10.0.2.2:3000/chat");
+    final userId = authUser.user.id;
+    print('userId: $userId');
+    final response = await dio.get(
+      "http://192.168.29.76:3000/user/$userId/chat",
+      options: Options(headers: {"Authorization": "Bearer ${authUser.jwt}"}),
+    );
+    print('response: ${response.data}');
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();
     notifyListeners();
   }
