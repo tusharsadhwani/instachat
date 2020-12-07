@@ -31,10 +31,9 @@ func RunApp() {
 
 	app.Get("/user", GetUsers)
 	app.Get("/user/:id", GetUserByID)
-	app.Post("/user", CreateUser)
 	app.Get("/user/:id/message", GetUserMessages)
 
-	app.Post("/login", Login)
+	app.Post("/login", LoginGoogle)
 
 	config := config.GetConfig()
 	app.Use(jwtware.New(jwtware.Config{

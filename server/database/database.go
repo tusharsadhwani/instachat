@@ -17,14 +17,13 @@ func GetDB() *gorm.DB {
 // Init initializes the database
 func Init() {
 	dsn := "user=postgres password=password database=instachat port=5432 sslmode=disable TimeZone=Asia/Kolkata"
-	_db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var err error
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	_db.AutoMigrate(&m.DBChat{})
-	_db.AutoMigrate(&m.DBMessage{})
-	_db.AutoMigrate(&m.DBUser{})
-
-	db = _db
+	db.AutoMigrate(&m.DBChat{})
+	db.AutoMigrate(&m.DBMessage{})
+	db.AutoMigrate(&m.DBUser{})
 }
