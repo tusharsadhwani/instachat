@@ -14,8 +14,6 @@ class _LoginPageState extends State<LoginPage> {
   void _handleSignIn() async {
     final authUser = Provider.of<AuthUser>(context, listen: false);
     await authUser.signIn();
-    if (authUser.account != null)
-      Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
   }
 
   @override

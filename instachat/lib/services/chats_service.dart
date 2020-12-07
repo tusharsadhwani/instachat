@@ -16,7 +16,7 @@ class ChatsService extends ChangeNotifier {
   }
 
   Future<void> updateChats() async {
-    final response = await dio.get("http://192.168.29.76:3000/chat");
+    final response = await dio.get("http://10.0.2.2:3000/chat");
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();
     notifyListeners();
   }

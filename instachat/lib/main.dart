@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:instachat/services/chats_service.dart';
@@ -49,41 +51,66 @@ class MyApp extends StatelessWidget {
       create: (_) => AuthUser(),
       builder: (context, _) => Consumer<AuthUser>(
         builder: (_, authUser, __) {
+          //TODO: Send the id token to backend and receive JWT, then log user in
+          //TODO: Add a waiting state to authUser where you show a splash screen
           if (authUser.account != null) {
+            authUser.account.authentication.then((value) {
+              print(value.accessToken);
+              log(value.idToken);
+            });
             return ChangeNotifierProvider(
               create: (_) => ChatsService(authUser),
-              child: MaterialApp(
-                key: ValueKey('Logged In'),
-                title: 'InstaChat',
-                theme: themeData,
-                home: ChatsPage(),
-                onGenerateRoute: (route) {
-                  switch (route.name) {
-                    case NewChatPage.routeName:
-                      return MaterialPageRoute<bool>(
-                        builder: (_) => NewChatPage(),
-                      );
-                    default:
-                      return MaterialPageRoute(
-                        builder: (_) => ChatsPage(),
-                      );
-                  }
-                },
-              ),
+              child: LoggedInApp(themeData: themeData),
             );
           }
-          return MaterialApp(
-            key: ValueKey('Logged Out'),
-            title: 'InstaChat',
-            theme: themeData,
-            routes: {
-              '/': (_) => SplashScreen(),
-              LoginPage.routeName: (_) => LoginPage(),
-            },
-            initialRoute: '/',
-          );
+          return LoggedOutApp(themeData: themeData);
         },
       ),
+    );
+  }
+}
+
+class LoggedInApp extends StatelessWidget {
+  const LoggedInApp({
+    Key key,
+    @required this.themeData,
+  }) : super(key: key);
+
+  final ThemeData themeData;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'InstaChat',
+      theme: themeData,
+      home: ChatsPage(),
+      onGenerateRoute: (route) {
+        switch (route.name) {
+          case NewChatPage.routeName:
+            return MaterialPageRoute<bool>(
+              builder: (_) => NewChatPage(),
+            );
+          default:
+            return MaterialPageRoute(
+              builder: (_) => ChatsPage(),
+            );
+        }
+      },
+    );
+  }
+}
+
+class LoggedOutApp extends StatelessWidget {
+  final ThemeData themeData;
+
+  const LoggedOutApp({Key key, this.themeData}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'InstaChat',
+      theme: themeData,
+      home: LoginPage(),
     );
   }
 }
