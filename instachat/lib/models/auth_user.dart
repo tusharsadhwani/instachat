@@ -10,6 +10,8 @@ class UserData {
         name = data['name'];
 }
 
+enum AuthState { LOGGED_OUT, WAITING, LOGGED_IN }
+
 class AuthUser extends ChangeNotifier {
   final GoogleSignIn _googleSignIn;
   final Dio _dio;
@@ -25,11 +27,22 @@ class AuthUser extends ChangeNotifier {
   UserData _user;
   UserData get user => _user;
 
+  AuthState _state = AuthState.LOGGED_OUT;
+  AuthState get state => _state;
+
   Future<void> getJWT(String idToken) async {
-    final response =
-        await _dio.post("http://192.168.29.76:3000/login", data: idToken);
-    _jwt = response.data['token'];
-    _user = UserData.fromMap(response.data['user']);
+    try {
+      final response =
+          await _dio.post("http://192.168.29.76:3000/login", data: idToken);
+      _jwt = response.data['token'];
+      _user = UserData.fromMap(response.data['user']);
+      _state = AuthState.LOGGED_IN;
+    } catch (e) {
+      _jwt = "";
+      _user = null;
+      _state = AuthState.LOGGED_OUT;
+    }
+    notifyListeners();
   }
 
   Future<void> trySignInSilently() async {
@@ -37,20 +50,25 @@ class AuthUser extends ChangeNotifier {
       _account = await _googleSignIn.signInSilently();
       final auth = await _account.authentication;
       await getJWT(auth.idToken);
-      notifyListeners();
     } catch (e) {}
   }
 
   Future<void> signIn() async {
+    _state = AuthState.WAITING;
+    notifyListeners();
+
     _account = await _googleSignIn.signIn();
     final auth = await _account.authentication;
     await getJWT(auth.idToken);
-    notifyListeners();
   }
 
   Future<void> signOut() async {
+    _state = AuthState.WAITING;
+    notifyListeners();
+
     await _googleSignIn.signOut();
     _account = null;
+    _state = AuthState.LOGGED_OUT;
     notifyListeners();
   }
 }

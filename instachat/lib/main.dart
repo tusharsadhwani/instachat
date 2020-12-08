@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:instachat/pages/splash_screen.dart';
 import 'package:instachat/services/chats_service.dart';
 import 'package:provider/provider.dart';
 
@@ -49,15 +50,21 @@ class MyApp extends StatelessWidget {
       create: (_) => AuthUser(),
       builder: (context, _) => Consumer<AuthUser>(
         builder: (_, authUser, __) {
-          //TODO: Send the id token to backend and receive JWT, then log user in
-          //TODO: Add a waiting state to authUser where you show a splash screen
-          if (authUser.account != null) {
-            return ChangeNotifierProvider(
-              create: (_) => ChatsService(authUser),
-              child: LoggedInApp(themeData: themeData),
-            );
+          switch (authUser.state) {
+            case AuthState.LOGGED_IN:
+              return ChangeNotifierProvider(
+                create: (_) => ChatsService(authUser),
+                child: LoggedInApp(themeData: themeData),
+              );
+            case AuthState.LOGGED_OUT:
+              return LoggedOutApp(themeData: themeData);
+            case AuthState.WAITING:
+            default:
+              return MaterialApp(
+                theme: themeData,
+                home: SplashScreen(),
+              );
           }
-          return LoggedOutApp(themeData: themeData);
         },
       ),
     );
@@ -94,16 +101,29 @@ class LoggedInApp extends StatelessWidget {
   }
 }
 
-class LoggedOutApp extends StatelessWidget {
+class LoggedOutApp extends StatefulWidget {
   final ThemeData themeData;
 
   const LoggedOutApp({Key key, this.themeData}) : super(key: key);
 
   @override
+  _LoggedOutAppState createState() => _LoggedOutAppState();
+}
+
+class _LoggedOutAppState extends State<LoggedOutApp> {
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+
+    final authUser = Provider.of<AuthUser>(context, listen: false);
+    await authUser.trySignInSilently();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'InstaChat',
-      theme: themeData,
+      theme: widget.themeData,
       home: LoginPage(),
     );
   }
