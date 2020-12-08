@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jinzhu/copier"
 
 	"github.com/tusharsadhwani/instachat/config"
 	"github.com/tusharsadhwani/instachat/database"
@@ -130,21 +131,15 @@ func LoginGoogle(c *fiber.Ctx) error {
 
 // GetUserMessages gets all messages from a user
 func GetUserMessages(c *fiber.Ctx) error {
-	db := database.GetDB()
+	userToken := c.Locals("user").(*jwt.Token)
 
-	idStr := c.Params("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return c.Status(400).SendString("User ID must be an integer")
-	}
+	dbuser := util.GetUserFromToken(userToken)
 
-	var dbuser models.DBUser
-	res := db.Where(&models.DBUser{Userid: id}).First(&dbuser)
-	if res.Error != nil {
-		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
-	}
+	var user User
+	copier.Copy(&user, &dbuser)
 
 	var messages []Message
+	db := database.GetDB()
 	db.Model(&dbuser).Association("Messages").Find(&messages)
 
 	return c.JSON(messages)
@@ -152,12 +147,13 @@ func GetUserMessages(c *fiber.Ctx) error {
 
 // GetUserChats gets all chats
 func GetUserChats(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	log.Println(user.Claims)
-	db := database.GetDB()
+	userToken := c.Locals("user").(*jwt.Token)
 
+	dbuser := util.GetUserFromToken(userToken)
+
+	db := database.GetDB()
 	var chats []Chat
-	db.Model(&models.DBChat{}).Find(&chats)
+	db.Model(&dbuser).Association("Chats").Find(&chats)
 
 	return c.JSON(chats)
 }

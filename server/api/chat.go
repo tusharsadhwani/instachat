@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
+	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
+	"github.com/tusharsadhwani/instachat/util"
 )
 
 // Chat is what the API will use to represent DBChat
@@ -47,6 +49,9 @@ func GetChatByID(c *fiber.Ctx) error {
 
 // CreateChat creates a new chat
 func CreateChat(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	dbuser := util.GetUserFromToken(userToken)
+
 	db := database.GetDB()
 
 	type ChatParams struct {
@@ -76,6 +81,10 @@ func CreateChat(c *fiber.Ctx) error {
 		if chatQuery.Error == nil {
 			break
 		}
+	}
+	err := db.Model(&dbchat).Association("Users").Append(&dbuser)
+	if err != nil {
+		return c.Status(503).SendString(err.Error())
 	}
 
 	var chat Chat

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
+	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
+	"github.com/tusharsadhwani/instachat/util"
 )
 
 // Message is what the API will use to represent DBMessage
@@ -42,6 +44,9 @@ func GetChatMessages(c *fiber.Ctx) error {
 
 // SendMessage sends a message in the given chat
 func SendMessage(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	dbuser := util.GetUserFromToken(userToken)
+
 	db := database.GetDB()
 
 	idStr := c.Params("id")
@@ -79,6 +84,7 @@ func SendMessage(c *fiber.Ctx) error {
 	var dbmessage models.DBMessage
 	copier.Copy(&dbmessage, &params)
 	dbmessage.Chatid = &dbchat.Chatid
+	dbmessage.Userid = &dbuser.Userid
 	result := db.Create(&dbmessage)
 	if result.Error != nil {
 		return c.Status(500).SendString(result.Error.Error())

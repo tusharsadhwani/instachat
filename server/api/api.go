@@ -23,11 +23,8 @@ func RunApp() {
 
 	app.Get("/chat", GetChats)
 	app.Get("/chat/:id", GetChatByID)
-	app.Post("/chat", CreateChat)
-	app.Delete("/chat/:id", DeleteChat)
 
 	app.Get("/chat/:id/message", GetChatMessages)
-	app.Post("/chat/:id/message", SendMessage)
 
 	app.Get("/user", GetUsers)
 	app.Get("/user/:id", GetUserByID)
@@ -42,8 +39,13 @@ func RunApp() {
 
 	app.Get("/restricted", Restricted)
 
-	app.Get("/user/:id/message", GetUserMessages)
 	app.Get("/user/:id/chat", GetUserChats)
+	app.Get("/user/:id/message", GetUserMessages)
+
+	app.Post("/chat", CreateChat)
+	// app.Delete("/chat/:id", DeleteChat)
+
+	app.Post("/chat/:id/message", SendMessage)
 
 	app.Listen(":3000")
 }
