@@ -17,7 +17,6 @@ class _ChatsPageState extends State<ChatsPage> {
 
   @override
   void didChangeDependencies() {
-    print('deps');
     super.didChangeDependencies();
     chatsService = Provider.of<ChatsService>(context);
   }

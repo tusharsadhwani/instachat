@@ -1,8 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../helpers.dart';
 import '../models/auth_user.dart';
 import '../widgets/insta_app_bar.dart';
 
@@ -109,28 +107,28 @@ class _CreateRoomState extends State<CreateRoom> {
     if (!createRoomForm.currentState.validate()) return;
     createRoomForm.currentState.save();
 
-    final chats = await Firestore.instance
-        .collection('chat')
-        .where('id', isEqualTo: roomId)
-        .limit(1)
-        .getDocuments();
+    // final chats = await Firestore.instance
+    //     .collection('chat')
+    //     .where('id', isEqualTo: roomId)
+    //     .limit(1)
+    //     .getDocuments();
 
-    if (chats.documents.length > 0)
-      return showAlert(context, 'Room with this ID already exists');
+    // if (chats.documents.length > 0)
+    //   return showAlert(context, 'Room with this ID already exists');
 
-    await Firestore.instance.collection('chat').add({
-      'id': roomId,
-      'name': roomName,
-      'imageUrl': 'https://picsum.photos/id/327/120',
-    });
+    // await Firestore.instance.collection('chat').add({
+    //   'id': roomId,
+    //   'name': roomName,
+    //   'imageUrl': 'https://picsum.photos/id/327/120',
+    // });
 
-    final authUser = Provider.of<AuthUser>(context, listen: false);
+    // final authUser = Provider.of<AuthUser>(context, listen: false);
 
-    await Firestore.instance
-        .collection('user')
-        .document(authUser.account.id)
-        .collection('chat')
-        .add({'id': roomId});
+    // await Firestore.instance
+    //     .collection('user')
+    //     .document(authUser.account.id)
+    //     .collection('chat')
+    //     .add({'id': roomId});
 
     Navigator.of(context).pop(true);
   }
@@ -209,20 +207,20 @@ class _JoinRoomState extends State<JoinRoom> {
     if (!joinRoomForm.currentState.validate()) return;
     joinRoomForm.currentState.save();
 
-    final chats = await Firestore.instance
-        .collection('chat')
-        .where('id', isEqualTo: roomId)
-        .limit(1)
-        .getDocuments();
-    if (chats.documents.length == 0)
-      return showAlert(context, 'Room not found');
+    // final chats = await Firestore.instance
+    //     .collection('chat')
+    //     .where('id', isEqualTo: roomId)
+    //     .limit(1)
+    //     .getDocuments();
+    // if (chats.documents.length == 0)
+    //   return showAlert(context, 'Room not found');
 
-    final authUser = Provider.of<AuthUser>(context, listen: false);
-    await Firestore.instance
-        .collection('user')
-        .document(authUser.account.id)
-        .collection('chat')
-        .add({'id': roomId});
+    // final authUser = Provider.of<AuthUser>(context, listen: false);
+    // await Firestore.instance
+    //     .collection('user')
+    //     .document(authUser.account.id)
+    //     .collection('chat')
+    //     .add({'id': roomId});
 
     Navigator.of(context).pop(true);
   }

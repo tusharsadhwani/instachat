@@ -84,7 +84,7 @@ class LoggedInApp extends StatelessWidget {
     return MaterialApp(
       title: 'InstaChat',
       theme: themeData,
-      home: ChatsPage(),
+      initialRoute: '/',
       onGenerateRoute: (route) {
         switch (route.name) {
           case NewChatPage.routeName:

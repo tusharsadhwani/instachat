@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -31,9 +33,10 @@ class AuthUser extends ChangeNotifier {
   AuthState get state => _state;
 
   Future<void> getJWT(String idToken) async {
+    log(idToken);
     try {
       final response =
-          await _dio.post("http://192.168.29.76:3000/login", data: idToken);
+          await _dio.post("http://10.0.2.2:3000/login", data: idToken);
       _jwt = response.data['token'];
       _user = UserData.fromMap(response.data['user']);
       _state = AuthState.LOGGED_IN;
