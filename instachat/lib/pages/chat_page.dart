@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:instachat/services/chat_service.dart';
 import 'package:provider/provider.dart';
@@ -29,13 +31,17 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   List<Message> messageCache = [];
 
+  WebSocket ws;
+
   void updateMessages() {
     setState(() {
       messageCache = chatService.messages;
     });
   }
 
-  void addMessage(String newMessage) {}
+  void addMessage(String newMessage) {
+    ws.add(newMessage);
+  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -53,6 +59,28 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _controller = ScrollController();
     _messageBox = MessageBox(addMessage);
+
+    initWebsocket();
+  }
+
+  void initWebsocket() async {
+    try {
+      ws = await WebSocket.connect('ws://10.0.2.2:3000/ws/123');
+      if (ws?.readyState == WebSocket.open) {
+        ws.add('client connected');
+        ws.listen(
+          (data) {
+            print('recv: $data');
+          },
+          onDone: () => print('[+]Done :)'),
+          onError: (err) => print('[!]Error -- ${err.toString()}'),
+          cancelOnError: true,
+        );
+      } else
+        print('[!]Connection Denied');
+    } catch (e) {
+      print('err: $e');
+    }
   }
 
   @override
