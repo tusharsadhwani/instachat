@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
@@ -43,12 +44,33 @@ func RunApp() {
 		return fiber.ErrUpgradeRequired
 	})
 
-	app.Get("/ws/:id", websocket.New(func(c *websocket.Conn) {
+	type RoomMember struct {
+		id   int
+		conn *websocket.Conn
+	}
+	type Room map[int]RoomMember
+	rooms := make(map[int]Room)
+	app.Get("/ws/:id/chat/:chatid", websocket.New(func(c *websocket.Conn) {
 		// // c.Locals is added to the *websocket.Conn
 		// log.Println(c.Locals("allowed"))  // true
 		// log.Println(c.Params("id"))       // 123
 		// log.Println(c.Query("v"))         // 1.0
 		// log.Println(c.Cookies("session")) // ""
+
+		userid, e := strconv.Atoi(c.Params("id"))
+		if e != nil {
+			log.Fatalln(e)
+		}
+		chatid, e := strconv.Atoi(c.Params("chatid"))
+		if e != nil {
+			log.Fatalln(e)
+		}
+
+		if rooms[chatid] == nil {
+			rooms[chatid] = make(Room)
+		}
+		rooms[chatid][userid] = RoomMember{id: userid, conn: c}
+		log.Println(rooms[chatid])
 
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 		var (
@@ -59,13 +81,16 @@ func RunApp() {
 		for {
 			if mt, msg, err = c.ReadMessage(); err != nil {
 				log.Println("read:", err)
+				delete(rooms[chatid], userid)
 				break
 			}
-			log.Printf("recv: %s", msg)
 
-			if err = c.WriteMessage(mt, msg); err != nil {
-				log.Println("write:", err)
-				break
+			for _, member := range rooms[chatid] {
+				conn := member.conn
+				if err = conn.WriteMessage(mt, msg); err != nil {
+					log.Println("write:", err)
+					break
+				}
 			}
 		}
 
