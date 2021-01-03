@@ -49,12 +49,12 @@ func RunApp() {
 		return fiber.ErrUpgradeRequired
 	})
 
-	type RoomMember struct {
+	type ChatMember struct {
 		id   int
 		conn *websocket.Conn
 	}
-	type Room map[int]RoomMember
-	rooms := make(map[int]Room)
+	type Chatroom map[int]ChatMember
+	chats := make(map[int]Chatroom)
 	app.Get("/ws/:id/chat/:chatid", websocket.New(func(c *websocket.Conn) {
 		userid, err := strconv.Atoi(c.Params("id"))
 		if err != nil {
@@ -65,10 +65,10 @@ func RunApp() {
 			log.Fatalln(err)
 		}
 
-		if rooms[chatid] == nil {
-			rooms[chatid] = make(Room)
+		if chats[chatid] == nil {
+			chats[chatid] = make(Chatroom)
 		}
-		rooms[chatid][userid] = RoomMember{id: userid, conn: c}
+		chats[chatid][userid] = ChatMember{id: userid, conn: c}
 
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 		var (
@@ -78,7 +78,7 @@ func RunApp() {
 		for {
 			if mt, msg, err = c.ReadMessage(); err != nil {
 				log.Println("read:", err)
-				delete(rooms[chatid], userid)
+				delete(chats[chatid], userid)
 				break
 			}
 
@@ -96,7 +96,7 @@ func RunApp() {
 			}
 			SaveMessage(chatid, userid, msgParams)
 
-			for _, member := range rooms[chatid] {
+			for _, member := range chats[chatid] {
 				if err = member.conn.WriteMessage(mt, msg); err != nil {
 					log.Println("write:", err)
 					break

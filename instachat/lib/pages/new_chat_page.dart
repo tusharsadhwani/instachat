@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:instachat/services/chats_service.dart';
 import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
@@ -71,8 +72,8 @@ class _NewChatPageState extends State<NewChatPage>
             child: TabBarView(
               controller: tabController,
               children: [
-                CreateRoom(createFocusNode),
-                JoinRoom(joinFocusNode),
+                CreateChat(createFocusNode),
+                JoinChat(joinFocusNode),
               ],
             ),
           ),
@@ -82,19 +83,19 @@ class _NewChatPageState extends State<NewChatPage>
   }
 }
 
-class CreateRoom extends StatefulWidget {
+class CreateChat extends StatefulWidget {
   final FocusNode focusNode;
 
-  CreateRoom(this.focusNode);
+  CreateChat(this.focusNode);
 
   @override
-  _CreateRoomState createState() => _CreateRoomState();
+  _CreateChatState createState() => _CreateChatState();
 }
 
-class _CreateRoomState extends State<CreateRoom> {
-  final createRoomForm = GlobalKey<FormState>();
-  String roomId;
-  String roomName;
+class _CreateChatState extends State<CreateChat> {
+  final createChatForm = GlobalKey<FormState>();
+  String address;
+  String chatName;
   FocusNode nameNode;
 
   @override
@@ -103,32 +104,12 @@ class _CreateRoomState extends State<CreateRoom> {
     nameNode = FocusNode();
   }
 
-  void createRoom(context) async {
-    if (!createRoomForm.currentState.validate()) return;
-    createRoomForm.currentState.save();
+  void createChat(context) async {
+    if (!createChatForm.currentState.validate()) return;
+    createChatForm.currentState.save();
 
-    // final chats = await Firestore.instance
-    //     .collection('chat')
-    //     .where('id', isEqualTo: roomId)
-    //     .limit(1)
-    //     .getDocuments();
-
-    // if (chats.documents.length > 0)
-    //   return showAlert(context, 'Room with this ID already exists');
-
-    // await Firestore.instance.collection('chat').add({
-    //   'id': roomId,
-    //   'name': roomName,
-    //   'imageUrl': 'https://picsum.photos/id/327/120',
-    // });
-
-    // final auth = Provider.of<auth>(context, listen: false);
-
-    // await Firestore.instance
-    //     .collection('user')
-    //     .document(auth.account.id)
-    //     .collection('chat')
-    //     .add({'id': roomId});
+    Provider.of<ChatsService>(context, listen: false)
+        .createChat(address, chatName);
 
     Navigator.of(context).pop(true);
   }
@@ -138,7 +119,7 @@ class _CreateRoomState extends State<CreateRoom> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
-        key: createRoomForm,
+        key: createChatForm,
         child: ListView(
           primary: false,
           shrinkWrap: true,
@@ -148,18 +129,27 @@ class _CreateRoomState extends State<CreateRoom> {
               focusNode: widget.focusNode,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: "Room id",
+                labelText: "Chat address",
               ),
               validator: (value) {
                 value = value.trim();
 
-                final spaces = new RegExp(r'\s');
-                if (spaces.hasMatch(value)) return "Room id cannot have spaces";
-                if (value.length == 0) return "Enter room id";
+                final spaces = RegExp(r'\s');
+                if (value.length == 0) return "Enter Chat address";
+
+                if (spaces.hasMatch(value))
+                  return "Chat address cannot have spaces";
+
+                if (!RegExp(r'^\w+$').hasMatch(value))
+                  return "Chat address must only contain letters, numbers and _";
+
+                if (!value.startsWith(RegExp(r'[A-Za-z]')))
+                  return "Chat address must start with a letter";
+
                 return null;
               },
               onSaved: (value) {
-                roomId = value.trim().toLowerCase();
+                address = value.trim().toLowerCase();
               },
               onFieldSubmitted: (_) => nameNode.requestFocus(),
             ),
@@ -167,21 +157,21 @@ class _CreateRoomState extends State<CreateRoom> {
             TextFormField(
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: "Room Name",
+                labelText: "Chat Name",
               ),
               focusNode: nameNode,
               validator: (value) {
-                if (value.trim().length == 0) return "Enter room name";
+                if (value.trim().length == 0) return "Enter chat name";
                 return null;
               },
               onSaved: (value) {
-                roomName = value.trim();
+                chatName = value.trim();
               },
             ),
             SizedBox(height: 10),
             RaisedButton(
-              onPressed: () => createRoom(context),
-              child: Text('Create Room'),
+              onPressed: () => createChat(context),
+              child: Text('Create Chat'),
             ),
           ],
         ),
@@ -190,37 +180,22 @@ class _CreateRoomState extends State<CreateRoom> {
   }
 }
 
-class JoinRoom extends StatefulWidget {
+class JoinChat extends StatefulWidget {
   final FocusNode focusNode;
 
-  JoinRoom(this.focusNode);
+  JoinChat(this.focusNode);
 
   @override
-  _JoinRoomState createState() => _JoinRoomState();
+  _JoinChatState createState() => _JoinChatState();
 }
 
-class _JoinRoomState extends State<JoinRoom> {
-  var joinRoomForm = GlobalKey<FormState>();
-  String roomId;
+class _JoinChatState extends State<JoinChat> {
+  var joinChatForm = GlobalKey<FormState>();
+  String address;
 
-  void joinRoom(context) async {
-    if (!joinRoomForm.currentState.validate()) return;
-    joinRoomForm.currentState.save();
-
-    // final chats = await Firestore.instance
-    //     .collection('chat')
-    //     .where('id', isEqualTo: roomId)
-    //     .limit(1)
-    //     .getDocuments();
-    // if (chats.documents.length == 0)
-    //   return showAlert(context, 'Room not found');
-
-    // final auth = Provider.of<auth>(context, listen: false);
-    // await Firestore.instance
-    //     .collection('user')
-    //     .document(auth.account.id)
-    //     .collection('chat')
-    //     .add({'id': roomId});
+  void joinChat(context) async {
+    if (!joinChatForm.currentState.validate()) return;
+    joinChatForm.currentState.save();
 
     Navigator.of(context).pop(true);
   }
@@ -230,7 +205,7 @@ class _JoinRoomState extends State<JoinRoom> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
-        key: joinRoomForm,
+        key: joinChatForm,
         child: ListView(
           primary: false,
           shrinkWrap: true,
@@ -239,24 +214,25 @@ class _JoinRoomState extends State<JoinRoom> {
               focusNode: widget.focusNode,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: "Room Id",
+                labelText: "Chat address",
               ),
               validator: (value) {
                 value = value.trim();
 
                 final spaces = new RegExp(r'\s');
-                if (spaces.hasMatch(value)) return "Room id cannot have spaces";
-                if (value.length == 0) return "Enter room id";
+                if (spaces.hasMatch(value))
+                  return "Chat address cannot have spaces";
+                if (value.length == 0) return "Enter chat address";
                 return null;
               },
               onSaved: (value) {
-                roomId = value.trim().toLowerCase();
+                address = value.trim().toLowerCase();
               },
             ),
             SizedBox(height: 10),
             RaisedButton(
-              onPressed: () => joinRoom(context),
-              child: Text('Join Room'),
+              onPressed: () => joinChat(context),
+              child: Text('Join Chat'),
             ),
           ],
         ),

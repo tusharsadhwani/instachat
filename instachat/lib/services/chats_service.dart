@@ -24,4 +24,16 @@ class ChatsService extends ChangeNotifier {
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();
     notifyListeners();
   }
+
+  Future<void> createChat(String id, String name) async {
+    await dio.post(
+      "http://${auth.domain}/chat",
+      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      data: {
+        'id': id,
+        'name': name,
+      },
+    );
+    updateChats();
+  }
 }

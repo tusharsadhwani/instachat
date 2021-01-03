@@ -21,7 +21,6 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Auth auth;
   MessageService chatService;
-  String chatId;
 
   MessageBox _messageBox;
   ScrollController _controller;

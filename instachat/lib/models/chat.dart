@@ -8,7 +8,3 @@ class Chat {
         name = chat['name'],
         imageUrl = chat['imageUrl'] ?? "https://picsum.photos/80/80";
 }
-
-class Room extends Chat {
-  Room.fromMap(Map<String, dynamic> room) : super.fromMap(room);
-}
