@@ -31,16 +31,19 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   List<Message> messageCache = [];
 
-  WebSocket ws;
-
   void updateMessages() {
     setState(() {
       messageCache = chatService.messages;
     });
   }
 
-  void addMessage(String newMessage) {
-    ws.add(newMessage);
+  void addMessage(String text) {
+    final message = Message(
+      senderId: chatService.auth.user.id,
+      senderName: chatService.auth.user.name,
+      content: text,
+    );
+    chatService.ws.add(message.toJson());
   }
 
   void _scrollToBottom() {

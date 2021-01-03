@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -22,8 +23,9 @@ class MessageService extends ChangeNotifier {
     this.updateMessages();
   }
 
+  @override
   void dispose() {
-    if (_ws != null) _ws.close();
+    _ws?.close();
     super.dispose();
   }
 
@@ -44,10 +46,10 @@ class MessageService extends ChangeNotifier {
 
     try {
       if (ws?.readyState == WebSocket.open) {
-        ws.add('client connected');
         ws.listen(
           (data) {
-            _messages.add(Message.fromMap(data));
+            final message = jsonDecode(data);
+            _messages.add(Message.fromMap(message));
             notifyListeners();
           },
           onDone: () => print('[+]Done :)'),
