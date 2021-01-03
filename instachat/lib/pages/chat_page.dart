@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:instachat/services/chat_service.dart';
 import 'package:provider/provider.dart';
 
-import '../models/auth_user.dart';
 import '../models/chat.dart';
 import '../models/message.dart';
+import '../services/auth_service.dart';
+import '../services/chat_service.dart';
 import '../widgets/insta_app_bar.dart';
 import '../widgets/message.dart';
 import '../widgets/message_box.dart';

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../models/auth_user.dart';
+import '../services/auth_service.dart';
 import '../models/chat.dart';
 
 class ChatsService extends ChangeNotifier {
@@ -18,7 +18,7 @@ class ChatsService extends ChangeNotifier {
   Future<void> updateChats() async {
     final userId = auth.user.id;
     final response = await dio.get(
-      "${auth.url}/user/$userId/chat",
+      "http://${auth.domain}/user/$userId/chat",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();

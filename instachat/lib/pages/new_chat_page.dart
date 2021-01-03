@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/auth_user.dart';
+import '../services/auth_service.dart';
 import '../widgets/insta_app_bar.dart';
 
 class NewChatPage extends StatefulWidget {

@@ -22,7 +22,7 @@ class Auth extends ChangeNotifier {
       : _googleSignIn = GoogleSignIn(),
         _dio = Dio();
 
-  final url = "http://192.168.29.76:3000";
+  final domain = "192.168.29.76:3000";
 
   GoogleSignInAccount _account;
   GoogleSignInAccount get account => _account;
@@ -38,7 +38,7 @@ class Auth extends ChangeNotifier {
   Future<void> getJWT(String idToken) async {
     log(idToken);
     try {
-      final response = await _dio.post("$url/login", data: idToken);
+      final response = await _dio.post("http://$domain/login", data: idToken);
       _jwt = response.data['token'];
       _user = UserData.fromMap(response.data['user']);
       _state = AuthState.LOGGED_IN;

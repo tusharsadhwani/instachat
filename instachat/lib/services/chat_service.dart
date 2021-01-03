@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:instachat/models/auth_user.dart';
-import 'package:instachat/models/message.dart';
+
+import './auth_service.dart';
+import '../models/message.dart';
 
 class MessageService extends ChangeNotifier {
   final Dio dio;
@@ -21,9 +22,14 @@ class MessageService extends ChangeNotifier {
     this.updateMessages();
   }
 
+  void dispose() {
+    if (_ws != null) _ws.close();
+    super.dispose();
+  }
+
   Future<void> updateMessages() async {
     final response = await dio.get(
-      "${auth.url}/chat/$chatId/message",
+      "http://${auth.domain}/chat/$chatId/message",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     _messages = response.data.map<Message>((m) => Message.fromMap(m)).toList();
@@ -32,7 +38,7 @@ class MessageService extends ChangeNotifier {
 
   Future<void> connectWebsocket() async {
     _ws = await WebSocket.connect(
-      'ws://192.168.29.76:3000/ws/${auth.user.id}/chat/$chatId',
+      'ws://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
       headers: {"Authorization": "Bearer ${auth.jwt}"},
     );
 
