@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
-	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
-	"github.com/tusharsadhwani/instachat/util"
 )
 
 // Message is what the API will use to represent DBMessage
@@ -43,43 +41,6 @@ func GetChatMessages(c *fiber.Ctx) error {
 	return c.JSON(messages)
 }
 
-// SendMessage sends a message in the given chat
-func SendMessage(c *fiber.Ctx) error {
-	userToken := c.Locals("user").(*jwt.Token)
-	dbuser := util.GetUserFromToken(userToken)
-
-	chatidStr := c.Params("id")
-	chatid, err := strconv.Atoi(chatidStr)
-	if err != nil {
-		return c.Status(400).SendString("Chat ID must be an integer")
-	}
-
-	validateParams := func(params *MessageParams) bool {
-		if len(params.UUID) != 36 {
-			return false
-		}
-		if params.Text == "" {
-			return false
-		}
-
-		return true
-	}
-	var params MessageParams
-	if err := c.BodyParser(&params); err != nil {
-		return c.Status(503).SendString(err.Error())
-	}
-	if !validateParams(&params) {
-		return c.Status(400).SendString("Invalid Message Body")
-	}
-
-	message, err := SaveMessage(chatid, params, &dbuser)
-	if err != nil {
-		c.Status(503).SendString(err.Error())
-	}
-
-	return c.JSON(&message)
-}
-
 // MessageParams are the message params to be received from the client
 type MessageParams struct {
 	UUID string `json:"uuid"`
@@ -87,11 +48,16 @@ type MessageParams struct {
 }
 
 // SaveMessage ...
-func SaveMessage(chatid int, params MessageParams, dbuser *models.DBUser) (Message, error) {
+func SaveMessage(chatid int, userid int, params MessageParams) (Message, error) {
 	db := database.GetDB()
 
 	var dbchat models.DBChat
 	res := db.Where(&models.DBChat{Chatid: chatid}).First(&dbchat)
+	if res.Error != nil {
+		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
+	}
+	var dbuser models.DBUser
+	res = db.Where(&models.DBUser{Userid: userid}).First(&dbuser)
 	if res.Error != nil {
 		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
 	}

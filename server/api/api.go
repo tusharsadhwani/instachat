@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"strconv"
@@ -81,6 +82,20 @@ func RunApp() {
 				break
 			}
 
+			type InputParams struct {
+				UUID   string `json:"uuid"`
+				Userid int    `json:"userid"`
+				Text   string `json:"text"`
+			}
+			var inputParams InputParams
+			json.Unmarshal(msg, &inputParams)
+
+			msgParams := MessageParams{
+				UUID: inputParams.UUID,
+				Text: inputParams.Text,
+			}
+			SaveMessage(chatid, userid, msgParams)
+
 			for _, member := range rooms[chatid] {
 				if err = member.conn.WriteMessage(mt, msg); err != nil {
 					log.Println("write:", err)
@@ -97,8 +112,6 @@ func RunApp() {
 	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/chat", CreateChat)
-
-	app.Post("/chat/:id/message", SendMessage)
 
 	app.Listen(":3000")
 }
