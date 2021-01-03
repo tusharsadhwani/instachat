@@ -13,7 +13,7 @@ class NewChatPage extends StatefulWidget {
 
 class _NewChatPageState extends State<NewChatPage>
     with SingleTickerProviderStateMixin {
-  AuthUser authUser;
+  Auth auth;
   TabController tabController;
   FocusNode createFocusNode, joinFocusNode;
 
@@ -39,11 +39,11 @@ class _NewChatPageState extends State<NewChatPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    authUser = Provider.of<AuthUser>(context, listen: false);
+    auth = Provider.of<Auth>(context, listen: false);
   }
 
   void _signOut(BuildContext context) {
-    authUser.signOut();
+    auth.signOut();
   }
 
   @override
@@ -122,11 +122,11 @@ class _CreateRoomState extends State<CreateRoom> {
     //   'imageUrl': 'https://picsum.photos/id/327/120',
     // });
 
-    // final authUser = Provider.of<AuthUser>(context, listen: false);
+    // final auth = Provider.of<auth>(context, listen: false);
 
     // await Firestore.instance
     //     .collection('user')
-    //     .document(authUser.account.id)
+    //     .document(auth.account.id)
     //     .collection('chat')
     //     .add({'id': roomId});
 
@@ -215,10 +215,10 @@ class _JoinRoomState extends State<JoinRoom> {
     // if (chats.documents.length == 0)
     //   return showAlert(context, 'Room not found');
 
-    // final authUser = Provider.of<AuthUser>(context, listen: false);
+    // final auth = Provider.of<auth>(context, listen: false);
     // await Firestore.instance
     //     .collection('user')
-    //     .document(authUser.account.id)
+    //     .document(auth.account.id)
     //     .collection('chat')
     //     .add({'id': roomId});
 

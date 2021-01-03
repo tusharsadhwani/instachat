@@ -47,13 +47,13 @@ class MyApp extends StatelessWidget {
     );
 
     return ChangeNotifierProvider(
-      create: (_) => AuthUser(),
-      builder: (context, _) => Consumer<AuthUser>(
-        builder: (_, authUser, __) {
-          switch (authUser.state) {
+      create: (_) => Auth(),
+      builder: (context, _) => Consumer<Auth>(
+        builder: (_, auth, __) {
+          switch (auth.state) {
             case AuthState.LOGGED_IN:
               return ChangeNotifierProvider(
-                create: (_) => ChatsService(authUser),
+                create: (_) => ChatsService(auth),
                 child: LoggedInApp(themeData: themeData),
               );
             case AuthState.LOGGED_OUT:
@@ -115,8 +115,8 @@ class _LoggedOutAppState extends State<LoggedOutApp> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    final authUser = Provider.of<AuthUser>(context, listen: false);
-    await authUser.trySignInSilently();
+    final auth = Provider.of<Auth>(context, listen: false);
+    await auth.trySignInSilently();
   }
 
   @override

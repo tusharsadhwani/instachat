@@ -21,7 +21,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
-  AuthUser authUser;
+  Auth auth;
   MessageService chatService;
   String chatId;
 
@@ -59,36 +59,15 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _controller = ScrollController();
     _messageBox = MessageBox(addMessage);
-
-    initWebsocket();
-  }
-
-  void initWebsocket() async {
-    try {
-      ws = await WebSocket.connect('ws://10.0.2.2:3000/ws/123');
-      if (ws?.readyState == WebSocket.open) {
-        ws.add('client connected');
-        ws.listen(
-          (data) {
-            print('recv: $data');
-          },
-          onDone: () => print('[+]Done :)'),
-          onError: (err) => print('[!]Error -- ${err.toString()}'),
-          cancelOnError: true,
-        );
-      } else
-        print('[!]Connection Denied');
-    } catch (e) {
-      print('err: $e');
-    }
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    authUser = Provider.of<AuthUser>(context, listen: false);
+    auth = Provider.of<Auth>(context, listen: false);
 
-    chatService = MessageService(authUser, widget.chat.id);
+    chatService = MessageService(auth, widget.chat.id);
+    chatService.connectWebsocket();
     chatService.addListener(updateMessages);
   }
 
@@ -129,7 +108,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               itemBuilder: (_, i) {
                 final message = messageCache[i];
 
-                return message.senderId == authUser.user.id
+                return message.senderId == auth.user.id
                     ? MessageRight(message: message)
                     : MessageLeft(
                         message: message,

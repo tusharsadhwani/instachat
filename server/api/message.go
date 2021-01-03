@@ -47,32 +47,18 @@ func SendMessage(c *fiber.Ctx) error {
 	userToken := c.Locals("user").(*jwt.Token)
 	dbuser := util.GetUserFromToken(userToken)
 
-	db := database.GetDB()
-
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.Status(400).SendString("Chat ID must be an integer")
 	}
 
-	var dbchat models.DBChat
-	res := db.Where(&models.DBChat{Chatid: id}).First(&dbchat)
-	if res.Error != nil {
-		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
-	}
-
-	type MessageParams struct {
-		Text string `json:"text"`
-	}
-
 	validateParams := func(params *MessageParams) bool {
 		if params.Text == "" {
 			return false
 		}
-
 		return true
 	}
-
 	var params MessageParams
 	if err := c.BodyParser(&params); err != nil {
 		return c.Status(503).SendString(err.Error())
@@ -81,17 +67,39 @@ func SendMessage(c *fiber.Ctx) error {
 		return c.Status(400).SendString("Invalid Message Body")
 	}
 
+	message, err := SaveMessage(id, params, &dbuser)
+	if err != nil {
+		c.Status(503).SendString(err.Error())
+	}
+
+	return c.JSON(&message)
+}
+
+// MessageParams ...
+type MessageParams struct {
+	Text string `json:"text"`
+}
+
+// SaveMessage ...
+func SaveMessage(chatid int, params MessageParams, dbuser *models.DBUser) (Message, error) {
+	db := database.GetDB()
+
+	var dbchat models.DBChat
+	res := db.Where(&models.DBChat{Chatid: chatid}).First(&dbchat)
+	if res.Error != nil {
+		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
+	}
+
 	var dbmessage models.DBMessage
 	copier.Copy(&dbmessage, &params)
 	dbmessage.Chatid = &dbchat.Chatid
 	dbmessage.Userid = &dbuser.Userid
 	result := db.Create(&dbmessage)
 	if result.Error != nil {
-		return c.Status(500).SendString(result.Error.Error())
+		return Message{}, result.Error
 	}
 
 	var message Message
 	db.Where(&models.DBMessage{ID: dbmessage.ID}).First(&message)
-
-	return c.JSON(message)
+	return message, nil
 }

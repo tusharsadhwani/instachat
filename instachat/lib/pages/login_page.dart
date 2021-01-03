@@ -12,8 +12,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   void _handleSignIn() async {
-    final authUser = Provider.of<AuthUser>(context, listen: false);
-    await authUser.signIn();
+    final auth = Provider.of<Auth>(context, listen: false);
+    await auth.signIn();
   }
 
   @override

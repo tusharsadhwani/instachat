@@ -6,20 +6,20 @@ import '../models/chat.dart';
 
 class ChatsService extends ChangeNotifier {
   final Dio dio;
-  final AuthUser authUser;
+  final Auth auth;
   List<Chat> _chats = [];
 
   List<Chat> get chats => _chats;
 
-  ChatsService(this.authUser) : dio = new Dio() {
+  ChatsService(this.auth) : dio = new Dio() {
     this.updateChats();
   }
 
   Future<void> updateChats() async {
-    final userId = authUser.user.id;
+    final userId = auth.user.id;
     final response = await dio.get(
-      "http://10.0.2.2:3000/user/$userId/chat",
-      options: Options(headers: {"Authorization": "Bearer ${authUser.jwt}"}),
+      "${auth.url}/user/$userId/chat",
+      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();
     notifyListeners();

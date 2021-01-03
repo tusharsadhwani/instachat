@@ -1,42 +1,41 @@
 {
   "project_info": {
-    "project_number": "630044970416",
-    "firebase_url": "https://login-test-655ec.firebaseio.com",
-    "project_id": "login-test-655ec",
-    "storage_bucket": "login-test-655ec.appspot.com"
+    "project_number": "181268626679",
+    "project_id": "flutter-instachat",
+    "storage_bucket": "flutter-instachat.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:630044970416:android:ee0be9d0363a56a0725a75",
+        "mobilesdk_app_id": "1:181268626679:android:6e6e0dd350f28a48e167f2",
         "android_client_info": {
           "package_name": "com.tusharsadhwani.instachat"
         }
       },
       "oauth_client": [
         {
-          "client_id": "630044970416-57blmvorc7uqfiain8j55bu8kals76jh.apps.googleusercontent.com",
+          "client_id": "181268626679-fnf45crscih3hucc8osl8373jrplg97b.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.tusharsadhwani.instachat",
-            "certificate_hash": "7e352db01665ae4cf61348fe9654e01409e941e3"
+            "certificate_hash": "48de5ab8d541d76610da5ea435888004f64661c7"
           }
         },
         {
-          "client_id": "630044970416-onhpqa1bk4c21ogbr2cjglcn0t0n8n5b.apps.googleusercontent.com",
+          "client_id": "181268626679-scimje5ajeq47igno7k9t837mrv8l75f.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyA7jZuyhcfBz9on891ukPJbtB5sdjIQ6m4"
+          "current_key": "AIzaSyCoD1B94aKGYKzCBe1tpCFOO3JwOgrkKYM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "630044970416-onhpqa1bk4c21ogbr2cjglcn0t0n8n5b.apps.googleusercontent.com",
+              "client_id": "181268626679-scimje5ajeq47igno7k9t837mrv8l75f.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -34,7 +34,14 @@ func RunApp() {
 
 	app.Post("/login", LoginGoogle)
 
+	config := config.GetConfig()
+	app.Use(jwtware.New(jwtware.Config{
+		SigningMethod: "RS256",
+		SigningKey:    config.PrivateKey.Public(),
+	}))
+
 	app.Use("/ws", func(c *fiber.Ctx) error {
+		log.Println("Websockets!!!!!!!!!!!!!!")
 		// IsWebSocketUpgrade returns true if the client
 		// requested upgrade to the WebSocket protocol.
 		if websocket.IsWebSocketUpgrade(c) {
@@ -57,13 +64,13 @@ func RunApp() {
 		// log.Println(c.Query("v"))         // 1.0
 		// log.Println(c.Cookies("session")) // ""
 
-		userid, e := strconv.Atoi(c.Params("id"))
-		if e != nil {
-			log.Fatalln(e)
+		userid, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			log.Fatalln(err)
 		}
-		chatid, e := strconv.Atoi(c.Params("chatid"))
-		if e != nil {
-			log.Fatalln(e)
+		chatid, err := strconv.Atoi(c.Params("chatid"))
+		if err != nil {
+			log.Fatalln(err)
 		}
 
 		if rooms[chatid] == nil {
@@ -76,7 +83,6 @@ func RunApp() {
 		var (
 			mt  int
 			msg []byte
-			err error
 		)
 		for {
 			if mt, msg, err = c.ReadMessage(); err != nil {
@@ -86,20 +92,13 @@ func RunApp() {
 			}
 
 			for _, member := range rooms[chatid] {
-				conn := member.conn
-				if err = conn.WriteMessage(mt, msg); err != nil {
+				if err = member.conn.WriteMessage(mt, msg); err != nil {
 					log.Println("write:", err)
 					break
 				}
 			}
 		}
 
-	}))
-
-	config := config.GetConfig()
-	app.Use(jwtware.New(jwtware.Config{
-		SigningMethod: "RS256",
-		SigningKey:    config.PrivateKey.Public(),
 	}))
 
 	app.Get("/restricted", Restricted)

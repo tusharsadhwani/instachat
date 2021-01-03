@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class UserData {
-  final String name;
   final int id;
+  final String name;
+
   UserData.fromMap(Map<String, dynamic> data)
       : id = data['id'],
         name = data['name'];
@@ -14,12 +15,14 @@ class UserData {
 
 enum AuthState { LOGGED_OUT, WAITING, LOGGED_IN }
 
-class AuthUser extends ChangeNotifier {
+class Auth extends ChangeNotifier {
   final GoogleSignIn _googleSignIn;
   final Dio _dio;
-  AuthUser()
+  Auth()
       : _googleSignIn = GoogleSignIn(),
         _dio = Dio();
+
+  final url = "http://192.168.29.76:3000";
 
   GoogleSignInAccount _account;
   GoogleSignInAccount get account => _account;
@@ -35,8 +38,7 @@ class AuthUser extends ChangeNotifier {
   Future<void> getJWT(String idToken) async {
     log(idToken);
     try {
-      final response =
-          await _dio.post("http://10.0.2.2:3000/login", data: idToken);
+      final response = await _dio.post("$url/login", data: idToken);
       _jwt = response.data['token'];
       _user = UserData.fromMap(response.data['user']);
       _state = AuthState.LOGGED_IN;
