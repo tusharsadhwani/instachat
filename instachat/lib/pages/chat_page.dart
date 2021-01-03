@@ -75,6 +75,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     _controller.dispose();
+    chatService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

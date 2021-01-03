@@ -15,6 +15,7 @@ import (
 // Message is what the API will use to represent DBMessage
 type Message struct {
 	ID     int    `json:"id"`
+	UUID   string `json:"uuid"`
 	Chatid *int   `json:"chatid"`
 	Userid *int   `json:"userid"`
 	Text   string `json:"text"`
@@ -47,16 +48,20 @@ func SendMessage(c *fiber.Ctx) error {
 	userToken := c.Locals("user").(*jwt.Token)
 	dbuser := util.GetUserFromToken(userToken)
 
-	idStr := c.Params("id")
-	id, err := strconv.Atoi(idStr)
+	chatidStr := c.Params("id")
+	chatid, err := strconv.Atoi(chatidStr)
 	if err != nil {
 		return c.Status(400).SendString("Chat ID must be an integer")
 	}
 
 	validateParams := func(params *MessageParams) bool {
+		if len(params.UUID) != 36 {
+			return false
+		}
 		if params.Text == "" {
 			return false
 		}
+
 		return true
 	}
 	var params MessageParams
@@ -67,7 +72,7 @@ func SendMessage(c *fiber.Ctx) error {
 		return c.Status(400).SendString("Invalid Message Body")
 	}
 
-	message, err := SaveMessage(id, params, &dbuser)
+	message, err := SaveMessage(chatid, params, &dbuser)
 	if err != nil {
 		c.Status(503).SendString(err.Error())
 	}
@@ -75,8 +80,9 @@ func SendMessage(c *fiber.Ctx) error {
 	return c.JSON(&message)
 }
 
-// MessageParams ...
+// MessageParams are the message params to be received from the client
 type MessageParams struct {
+	UUID string `json:"uuid"`
 	Text string `json:"text"`
 }
 

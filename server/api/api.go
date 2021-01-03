@@ -41,9 +41,6 @@ func RunApp() {
 	}))
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
-		log.Println("Websockets!!!!!!!!!!!!!!")
-		// IsWebSocketUpgrade returns true if the client
-		// requested upgrade to the WebSocket protocol.
 		if websocket.IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
 			return c.Next()
@@ -58,12 +55,6 @@ func RunApp() {
 	type Room map[int]RoomMember
 	rooms := make(map[int]Room)
 	app.Get("/ws/:id/chat/:chatid", websocket.New(func(c *websocket.Conn) {
-		// // c.Locals is added to the *websocket.Conn
-		// log.Println(c.Locals("allowed"))  // true
-		// log.Println(c.Params("id"))       // 123
-		// log.Println(c.Query("v"))         // 1.0
-		// log.Println(c.Cookies("session")) // ""
-
 		userid, err := strconv.Atoi(c.Params("id"))
 		if err != nil {
 			log.Fatalln(err)
@@ -77,7 +68,6 @@ func RunApp() {
 			rooms[chatid] = make(Room)
 		}
 		rooms[chatid][userid] = RoomMember{id: userid, conn: c}
-		log.Println(rooms[chatid])
 
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 		var (
@@ -107,7 +97,6 @@ func RunApp() {
 	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/chat", CreateChat)
-	// app.Delete("/chat/:id", DeleteChat)
 
 	app.Post("/chat/:id/message", SendMessage)
 
