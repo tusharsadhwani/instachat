@@ -197,6 +197,8 @@ class _JoinChatState extends State<JoinChat> {
     if (!joinChatForm.currentState.validate()) return;
     joinChatForm.currentState.save();
 
+    Provider.of<ChatsService>(context, listen: false).joinChat(address);
+
     Navigator.of(context).pop(true);
   }
 

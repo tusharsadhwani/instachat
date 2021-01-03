@@ -112,6 +112,7 @@ func RunApp() {
 	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/chat", CreateChat)
+	app.Post("/chat/:address", JoinChat)
 
 	app.Listen(":3000")
 }

@@ -25,14 +25,22 @@ class ChatsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> createChat(String id, String name) async {
+  Future<void> createChat(String address, String name) async {
     await dio.post(
       "http://${auth.domain}/chat",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
       data: {
-        'id': id,
+        'address': address,
         'name': name,
       },
+    );
+    updateChats();
+  }
+
+  Future<void> joinChat(String address) async {
+    await dio.post(
+      "http://${auth.domain}/chat/$address",
+      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     updateChats();
   }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 
 	jwt "github.com/form3tech-oss/jwt-go"
@@ -14,8 +15,9 @@ import (
 
 // Chat is what the API will use to represent DBChat
 type Chat struct {
-	Chatid int    `json:"id"`
-	Name   string `json:"name"`
+	Chatid  int    `json:"id"`
+	Name    string `json:"name"`
+	Address string `json:"address"`
 }
 
 // GetChats gets all chats
@@ -55,11 +57,16 @@ func CreateChat(c *fiber.Ctx) error {
 	db := database.GetDB()
 
 	type ChatParams struct {
-		Name string `json:"name"`
+		Name    string `json:"name"`
+		Address string `json:"address"`
 	}
 
 	validateParams := func(params *ChatParams) bool {
 		if params.Name == "" {
+			return false
+		}
+
+		if match, _ := regexp.MatchString(`^[A-Za-z]\w*$`, params.Address); !match {
 			return false
 		}
 
@@ -71,7 +78,15 @@ func CreateChat(c *fiber.Ctx) error {
 		return c.Status(503).SendString(err.Error())
 	}
 	if !validateParams(&params) {
-		return c.Status(400).SendString("Invalid Chat Name")
+		return c.Status(400).SendString("Invalid Chat Info")
+	}
+
+	var existingChat models.DBChat
+	res := db.Where(&models.DBChat{Address: &params.Address}).First(&existingChat)
+	if res.Error == nil {
+		return c.Status(400).SendString(
+			fmt.Sprintf("Chat with address %v already exists", *existingChat.Address),
+		)
 	}
 
 	var dbchat models.DBChat
@@ -90,6 +105,33 @@ func CreateChat(c *fiber.Ctx) error {
 	var chat Chat
 	db.Where(&models.DBChat{Chatid: dbchat.Chatid}).First(&chat)
 
+	return c.JSON(chat)
+}
+
+// JoinChat creates a new chat
+func JoinChat(c *fiber.Ctx) error {
+	db := database.GetDB()
+
+	address := c.Params("address")
+
+	var dbchat models.DBChat
+	res := db.Where(&models.DBChat{Address: &address}).First(&dbchat)
+	if res.Error != nil {
+		return c.Status(400).SendString(
+			fmt.Sprintf("No chat found with address %v", address),
+		)
+	}
+
+	userToken := c.Locals("user").(*jwt.Token)
+	dbuser := util.GetUserFromToken(userToken)
+
+	err := db.Model(&dbchat).Association("Users").Append(&dbuser)
+	if err != nil {
+		return c.Status(503).SendString(err.Error())
+	}
+
+	var chat Chat
+	copier.Copy(&chat, &dbchat)
 	return c.JSON(chat)
 }
 
