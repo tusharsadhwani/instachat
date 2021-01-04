@@ -52,18 +52,22 @@ func WebsocketUpdates(c *websocket.Conn) {
 		}
 
 		type InputParams struct {
-			UUID   string `json:"uuid"`
-			Userid int    `json:"userid"`
-			Text   string `json:"text"`
+			Type      string        `json:"type"`
+			Message   MessageParams `json:"message"`
+			MessageID string        `json:"messageId"`
 		}
 		var inputParams InputParams
 		json.Unmarshal(msg, &inputParams)
 
-		msgParams := MessageParams{
-			UUID: inputParams.UUID,
-			Text: inputParams.Text,
+		switch inputParams.Type {
+		case "MESSAGE":
+			msgParams := MessageParams{
+				UUID: inputParams.Message.UUID,
+				Text: inputParams.Message.Text,
+			}
+			SaveMessage(chatid, userid, msgParams)
+			break
 		}
-		SaveMessage(chatid, userid, msgParams)
 
 		for _, member := range chats[chatid] {
 			if err = member.conn.WriteMessage(mt, msg); err != nil {

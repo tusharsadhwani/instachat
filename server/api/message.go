@@ -43,8 +43,9 @@ func GetChatMessages(c *fiber.Ctx) error {
 
 // MessageParams are the message params to be received from the client
 type MessageParams struct {
-	UUID string `json:"uuid"`
-	Text string `json:"text"`
+	UUID   string `json:"uuid"`
+	Userid int    `json:"userid"`
+	Text   string `json:"text"`
 }
 
 // SaveMessage ...

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../services/auth_service.dart';
+import './auth_service.dart';
 import '../models/chat.dart';
 
 class ChatsService extends ChangeNotifier {

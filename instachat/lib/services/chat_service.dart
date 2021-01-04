@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -6,8 +5,9 @@ import 'package:flutter/material.dart';
 
 import './auth_service.dart';
 import '../models/message.dart';
+import '../models/update.dart';
 
-class MessageService extends ChangeNotifier {
+class ChatService extends ChangeNotifier {
   final Dio dio;
   final Auth auth;
   final int chatId;
@@ -19,7 +19,7 @@ class MessageService extends ChangeNotifier {
   WebSocket _ws;
   WebSocket get ws => _ws;
 
-  MessageService(this.auth, this.chatId) : dio = new Dio() {
+  ChatService(this.auth, this.chatId) : dio = new Dio() {
     this.updateMessages();
   }
 
@@ -48,8 +48,14 @@ class MessageService extends ChangeNotifier {
       if (ws?.readyState == WebSocket.open) {
         ws.listen(
           (data) {
-            final message = jsonDecode(data);
-            _messages.add(Message.fromMap(message));
+            final update = Update.fromJson(data);
+            switch (update.type) {
+              case UpdateType.MESSAGE:
+                _messages.add(update.message);
+                break;
+              case UpdateType.LIKE:
+                break;
+            }
             notifyListeners();
           },
           onDone: () => print('[+]Done :)'),
@@ -61,5 +67,10 @@ class MessageService extends ChangeNotifier {
     } catch (err) {
       print('err: $err');
     }
+  }
+
+  Future<void> sendMessage(Message message) async {
+    final update = Update(message: message);
+    _ws.add(update.toJson());
   }
 }

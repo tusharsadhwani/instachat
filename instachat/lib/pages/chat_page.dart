@@ -20,7 +20,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Auth auth;
-  MessageService chatService;
+  ChatService chatService;
 
   MessageBox _messageBox;
   ScrollController _controller;
@@ -40,7 +40,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       senderName: chatService.auth.user.name,
       content: text,
     );
-    chatService.ws.add(message.toJson());
+    chatService.sendMessage(message);
   }
 
   void _scrollToBottom() {
@@ -66,7 +66,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     super.didChangeDependencies();
     auth = Provider.of<Auth>(context, listen: false);
 
-    chatService = MessageService(auth, widget.chat.id);
+    chatService = ChatService(auth, widget.chat.id);
     chatService.connectWebsocket();
     chatService.addListener(updateMessages);
   }

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:uuid/uuid.dart';
 
 final uuid = Uuid();
@@ -18,11 +16,11 @@ class Message {
         content = message['text'],
         id = message['uuid'];
 
-  String toJson() {
-    return jsonEncode({
+  Map<String, dynamic> toMap() {
+    return {
       'uuid': id,
       'userid': senderId,
       'text': content,
-    });
+    };
   }
 }
