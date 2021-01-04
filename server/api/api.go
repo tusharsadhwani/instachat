@@ -16,7 +16,7 @@ func RunApp() {
 		Prefork: os.Getenv("GO_ENV") == "production",
 	})
 
-	InitStore()
+	InitWebsocket()
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World 👋!")
