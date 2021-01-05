@@ -57,7 +57,10 @@ class Auth extends ChangeNotifier {
       _account = await _googleSignIn.signInSilently();
       final auth = await _account.authentication;
       await getJWT(auth.idToken);
-    } catch (e) {}
+    } catch (e) {
+      _state = AuthState.LOGGED_OUT;
+      notifyListeners();
+    }
   }
 
   Future<void> signIn() async {
