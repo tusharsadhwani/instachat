@@ -30,8 +30,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void updateMessages() {
     setState(() {
+      bool isInitialLoad = messageCache.isEmpty;
       messageCache = chatService.messages;
-      if (messageCache.last.senderId == auth.user.id) _scrollToBottom();
+      if (messageCache.last.senderId == auth.user.id)
+        _scrollToBottom();
+      else if (isInitialLoad) _scrollToBottom();
     });
   }
 
@@ -100,12 +103,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               padding: const EdgeInsets.all(12),
               itemBuilder: (_, i) {
                 final message = messageCache[i];
+                final isFirstMessageFromSender =
+                    i == 0 || messageCache[i - 1].senderId != message.senderId;
 
                 return message.senderId == auth.user.id
                     ? MessageRight(message: message)
                     : MessageLeft(
                         message: message,
-                        isFirstMessageFromSender: false,
+                        isFirstMessageFromSender: isFirstMessageFromSender,
                       );
               },
               itemCount: messageCache.length,
