@@ -14,7 +14,7 @@ class Message {
     this.senderId,
     this.senderName,
     this.content,
-    this.liked,
+    this.liked = false,
   }) : this.id = uuid.v4();
 
   Message.fromMap(Map<String, dynamic> message)

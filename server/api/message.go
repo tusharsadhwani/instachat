@@ -97,13 +97,13 @@ func SaveMessage(chatid int, userid int, params *MessageParams) (Message, error)
 }
 
 // LikeMessage likes a message
-func LikeMessage(chatid int, userid int, messageID string) error {
+func LikeMessage(chatid int, likerid int, messageID string) error {
 	db := database.GetDB()
 
 	var dbuser models.DBUser
-	res := db.Where(&models.DBUser{Userid: userid}).First(&dbuser)
+	res := db.Where(&models.DBUser{Userid: likerid}).First(&dbuser)
 	if res.Error != nil {
-		return fmt.Errorf("No User found with id: %v", userid)
+		return fmt.Errorf("No User found with id: %v", likerid)
 	}
 	var dbchat models.DBChat
 	res = db.Where(&models.DBChat{Chatid: chatid}).First(&dbchat)
@@ -113,9 +113,7 @@ func LikeMessage(chatid int, userid int, messageID string) error {
 	var dbmessage models.DBMessage
 	res = db.Where(
 		&models.DBMessage{
-			UUID:   &messageID,
-			Chatid: &chatid,
-			Userid: &userid,
+			UUID: &messageID,
 		}).First(&dbmessage)
 
 	if res.Error != nil {
@@ -124,7 +122,7 @@ func LikeMessage(chatid int, userid int, messageID string) error {
 
 	var dblike models.DBLike
 	dblike.Messageid = messageID
-	dblike.Userid = userid
+	dblike.Userid = likerid
 	db.Create(&dblike)
 
 	return nil
