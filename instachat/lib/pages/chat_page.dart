@@ -31,16 +31,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void updateMessages() {
     setState(() {
       messageCache = chatService.messages;
+      if (messageCache.last.senderId == auth.user.id) _scrollToBottom();
     });
-  }
-
-  void addMessage(String text) {
-    final message = Message(
-      senderId: chatService.auth.user.id,
-      senderName: chatService.auth.user.name,
-      content: text,
-    );
-    chatService.sendMessage(message);
   }
 
   void _scrollToBottom() {
@@ -58,7 +50,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller = ScrollController();
-    _messageBox = MessageBox(addMessage);
   }
 
   @override
@@ -69,6 +60,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     chatService = ChatService(auth, widget.chat.id);
     chatService.connectWebsocket();
     chatService.addListener(updateMessages);
+    _messageBox = MessageBox(chatService);
   }
 
   @override

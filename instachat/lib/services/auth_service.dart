@@ -22,7 +22,7 @@ class Auth extends ChangeNotifier {
       : _googleSignIn = GoogleSignIn(),
         _dio = Dio();
 
-  final domain = "192.168.29.76:3000";
+  final domain = "127.0.0.1:3000";
 
   GoogleSignInAccount _account;
   GoogleSignInAccount get account => _account;

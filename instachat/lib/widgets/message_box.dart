@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-class MessageBox extends StatefulWidget {
-  final void Function(String) addMessage;
+import '../models/message.dart';
+import '../services/chat_service.dart';
 
-  MessageBox(this.addMessage);
+class MessageBox extends StatefulWidget {
+  final ChatService chatService;
+
+  MessageBox(this.chatService);
 
   @override
   _MessageBoxState createState() => _MessageBoxState();
@@ -12,12 +15,17 @@ class MessageBox extends StatefulWidget {
 class _MessageBoxState extends State<MessageBox> {
   var _messageController = TextEditingController();
 
-  void _sendMessage() {
+  void sendMessage() {
     final messageText = _messageController.text.trim();
-    if (messageText != '') {
-      widget.addMessage(messageText);
-      _messageController.clear();
-    }
+    if (messageText == '') return;
+
+    final message = Message(
+      senderId: widget.chatService.auth.user.id,
+      senderName: widget.chatService.auth.user.name,
+      content: messageText,
+    );
+    widget.chatService.sendMessage(message);
+    _messageController.clear();
   }
 
   @override
@@ -58,7 +66,7 @@ class _MessageBoxState extends State<MessageBox> {
                 ),
               ),
               GestureDetector(
-                onTap: _sendMessage,
+                onTap: sendMessage,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
