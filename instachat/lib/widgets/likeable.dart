@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 
 class Likeable extends StatefulWidget {
   final Widget child;
+  final bool initiallyLiked;
 
-  const Likeable({Key key, this.child}) : super(key: key);
+  final void Function(bool newValue) onLikeChanged;
+
+  Likeable({
+    Key key,
+    this.child,
+    this.initiallyLiked = false,
+    this.onLikeChanged,
+  }) : super(key: key);
 
   @override
   _LikeableState createState() => _LikeableState();
@@ -11,10 +19,14 @@ class Likeable extends StatefulWidget {
 
 class _LikeableState extends State<Likeable>
     with SingleTickerProviderStateMixin {
+  static const _animationDuration = 140;
+
   AnimationController _animationController;
   Animation _animation;
 
   bool liked = false;
+
+  void Function(bool newValue) _onLikeChanged;
 
   void toggleLike() {
     setState(() {
@@ -29,15 +41,20 @@ class _LikeableState extends State<Likeable>
   @override
   void initState() {
     super.initState();
+    _onLikeChanged = widget.onLikeChanged ?? (_) {};
+
     _animationController = AnimationController(
       vsync: this,
       value: 0,
-      duration: Duration(milliseconds: 140),
+      duration: Duration(milliseconds: _animationDuration),
     );
     _animation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOutQuad,
     );
+
+    if (widget.initiallyLiked)
+      WidgetsBinding.instance.addPostFrameCallback((_) => toggleLike());
   }
 
   @override
@@ -56,7 +73,7 @@ class _LikeableState extends State<Likeable>
           clipBehavior: Clip.none,
           children: [
             GestureDetector(
-              onDoubleTap: toggleLike,
+              onDoubleTap: () => _onLikeChanged(liked),
               child: widget.child,
             ),
             Positioned(
@@ -78,26 +95,28 @@ class AnimatedHeart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Transform.scale(
-      scale: scale,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          Icon(
-            Icons.favorite,
-            color: Theme.of(context).scaffoldBackgroundColor,
-            size: 28,
-          ),
-          Positioned(
-            bottom: 2,
-            left: 2.7,
-            child: Text(
-              '❤️',
-              style: TextStyle(fontSize: 18),
+    return IgnorePointer(
+      child: Transform.scale(
+        scale: scale,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              Icons.favorite,
+              color: Theme.of(context).scaffoldBackgroundColor,
+              size: 28,
             ),
-          ),
-        ],
+            Positioned(
+              bottom: 2,
+              left: 2.7,
+              child: Text(
+                '❤️',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

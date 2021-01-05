@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/chat.dart';
-import '../models/message.dart';
 import '../services/auth_service.dart';
 import '../services/chat_service.dart';
 import '../widgets/insta_app_bar.dart';
@@ -25,21 +24,24 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   MessageBox _messageBox;
   ScrollController _controller;
   double _bottomInset;
-
-  List<Message> messageCache = [];
+  int _msgCount = 0;
 
   bool get isAtBottom =>
       _controller.position.maxScrollExtent - _controller.offset < 20;
 
   void updateMessages() {
     setState(() {
-      bool isInitialLoad = messageCache.isEmpty;
-
-      messageCache = chatService.messages;
+      final msgs = chatService.messages;
+      bool isInitialLoad = msgs.isEmpty;
 
       if (isInitialLoad ||
-          messageCache.last.senderId == auth.user.id || // You sent a message
-          isAtBottom) _scrollToBottom();
+          // You sent a message
+          (msgs.length > _msgCount && msgs.last.senderId == auth.user.id) ||
+          isAtBottom) {
+        _scrollToBottom();
+      }
+
+      _msgCount = msgs.length;
     });
   }
 
@@ -107,18 +109,27 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               controller: _controller,
               padding: const EdgeInsets.all(12),
               itemBuilder: (_, i) {
-                final message = messageCache[i];
+                final messages = chatService.messages;
+                final message = messages[i];
                 final isFirstMessageFromSender =
-                    i == 0 || messageCache[i - 1].senderId != message.senderId;
+                    i == 0 || messages[i - 1].senderId != message.senderId;
 
                 return message.senderId == auth.user.id
-                    ? MessageRight(message: message)
+                    ? MessageRight(
+                        message,
+                        key: ValueKey(message.liked),
+                        liked: message.liked,
+                        onLikeChanged: (_) => chatService.like(message.id),
+                      )
                     : MessageLeft(
-                        message: message,
+                        message,
+                        key: ValueKey(message.liked),
+                        liked: message.liked,
+                        onLikeChanged: (_) => chatService.like(message.id),
                         isFirstMessageFromSender: isFirstMessageFromSender,
                       );
               },
-              itemCount: messageCache.length,
+              itemCount: chatService.messages.length,
             ),
           ),
           _messageBox,

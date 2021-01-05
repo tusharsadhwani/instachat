@@ -4,18 +4,24 @@ import './likeable.dart';
 import '../models/message.dart';
 
 class MessageBase extends StatelessWidget {
-  const MessageBase({
+  const MessageBase(
+    this.message, {
+    @required this.liked,
+    this.onLikeChanged,
     Key key,
-    @required this.message,
     this.backgroundColor = Colors.transparent,
   }) : super(key: key);
 
   final Message message;
+  final bool liked;
+  final void Function(bool newValue) onLikeChanged;
   final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Likeable(
+      initiallyLiked: liked,
+      onLikeChanged: onLikeChanged,
       key: ValueKey(message.id),
       child: Container(
         decoration: BoxDecoration(
@@ -36,10 +42,15 @@ class MessageBase extends StatelessWidget {
 
 class MessageLeft extends StatelessWidget {
   final Message message;
+  final bool liked;
+  final void Function(bool newValue) onLikeChanged;
   final bool isFirstMessageFromSender;
-  const MessageLeft({
+
+  const MessageLeft(
+    this.message, {
+    @required this.liked,
     Key key,
-    @required this.message,
+    this.onLikeChanged,
     this.isFirstMessageFromSender = false,
   }) : super(key: key);
 
@@ -73,7 +84,11 @@ class MessageLeft extends StatelessWidget {
                         ),
                       ),
                     ),
-                  MessageBase(message: message),
+                  MessageBase(
+                    message,
+                    liked: liked,
+                    onLikeChanged: onLikeChanged,
+                  ),
                 ],
               ),
             ),
@@ -87,8 +102,15 @@ class MessageLeft extends StatelessWidget {
 
 class MessageRight extends StatelessWidget {
   final Message message;
+  final bool liked;
+  final void Function(bool newValue) onLikeChanged;
 
-  const MessageRight({Key key, this.message}) : super(key: key);
+  const MessageRight(
+    this.message, {
+    @required this.liked,
+    Key key,
+    this.onLikeChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +125,9 @@ class MessageRight extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: MessageBase(
-                  message: message,
+                  message,
+                  liked: liked,
+                  onLikeChanged: onLikeChanged,
                   backgroundColor: Theme.of(context).appBarTheme.color,
                 ),
               ),

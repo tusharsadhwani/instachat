@@ -21,14 +21,14 @@ class Update {
       message = Message.fromMap(update['message']);
     } else {
       type = UpdateType.LIKE;
-      messageId = update['msgid'];
+      messageId = update['messageId'];
     }
   }
 
   String toJson() {
     return jsonEncode({
       'type': type,
-      'message': message.toMap(),
+      'message': message?.toMap() ?? null,
       'messageId': messageId,
     });
   }

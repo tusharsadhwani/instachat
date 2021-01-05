@@ -8,12 +8,20 @@ class Message {
   final String senderName;
   final String content;
 
-  Message({this.senderId, this.senderName, this.content}) : this.id = uuid.v4();
+  bool liked;
+
+  Message({
+    this.senderId,
+    this.senderName,
+    this.content,
+    this.liked,
+  }) : this.id = uuid.v4();
 
   Message.fromMap(Map<String, dynamic> message)
       : senderId = message['userid'],
         senderName = 'Test',
         content = message['text'],
+        liked = message['liked'] ?? false,
         id = message['uuid'];
 
   Map<String, dynamic> toMap() {
@@ -21,6 +29,7 @@ class Message {
       'uuid': id,
       'userid': senderId,
       'text': content,
+      'liked': liked,
     };
   }
 }

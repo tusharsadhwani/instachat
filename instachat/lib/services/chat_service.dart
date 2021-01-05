@@ -54,6 +54,9 @@ class ChatService extends ChangeNotifier {
                 _messages.add(update.message);
                 break;
               case UpdateType.LIKE:
+                final message =
+                    _messages.firstWhere((msg) => msg.id == update.messageId);
+                message.liked = true;
                 break;
             }
             notifyListeners();
@@ -71,6 +74,11 @@ class ChatService extends ChangeNotifier {
 
   Future<void> sendMessage(Message message) async {
     final update = Update(message: message);
+    _ws.add(update.toJson());
+  }
+
+  void like(String messageId) {
+    final update = Update(messageId: messageId);
     _ws.add(update.toJson());
   }
 }
