@@ -28,13 +28,18 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   List<Message> messageCache = [];
 
+  bool get isAtBottom =>
+      _controller.position.maxScrollExtent - _controller.offset < 20;
+
   void updateMessages() {
     setState(() {
       bool isInitialLoad = messageCache.isEmpty;
+
       messageCache = chatService.messages;
-      if (messageCache.last.senderId == auth.user.id)
-        _scrollToBottom();
-      else if (isInitialLoad) _scrollToBottom();
+
+      if (isInitialLoad ||
+          messageCache.last.senderId == auth.user.id || // You sent a message
+          isAtBottom) _scrollToBottom();
     });
   }
 
@@ -78,9 +83,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void didChangeMetrics() {
     final newBottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
     if (newBottomInset != _bottomInset) {
-      if (_controller.position.maxScrollExtent - _controller.offset < 10) {
+      _bottomInset = newBottomInset;
+      if (isAtBottom) {
         _scrollToBottom();
-        _bottomInset = newBottomInset;
       }
     }
   }
