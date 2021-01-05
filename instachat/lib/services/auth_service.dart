@@ -13,16 +13,18 @@ class UserData {
         name = data['name'];
 }
 
-enum AuthState { LOGGED_OUT, WAITING, LOGGED_IN }
+enum AuthState { WAITING, LOGGED_OUT, LOGGED_IN }
 
 class Auth extends ChangeNotifier {
   final GoogleSignIn _googleSignIn;
   final Dio _dio;
   Auth()
       : _googleSignIn = GoogleSignIn(),
-        _dio = Dio();
+        _dio = Dio() {
+    trySignInSilently();
+  }
 
-  final domain = "127.0.0.1:3000";
+  final domain = "localhost:3000";
 
   GoogleSignInAccount _account;
   GoogleSignInAccount get account => _account;
@@ -32,7 +34,7 @@ class Auth extends ChangeNotifier {
   UserData _user;
   UserData get user => _user;
 
-  AuthState _state = AuthState.LOGGED_OUT;
+  AuthState _state = AuthState.WAITING;
   AuthState get state => _state;
 
   Future<void> getJWT(String idToken) async {

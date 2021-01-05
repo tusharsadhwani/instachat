@@ -111,14 +111,6 @@ class LoggedOutApp extends StatefulWidget {
 
 class _LoggedOutAppState extends State<LoggedOutApp> {
   @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-
-    final auth = Provider.of<Auth>(context, listen: false);
-    await auth.trySignInSilently();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'InstaChat',
