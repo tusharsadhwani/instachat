@@ -4,7 +4,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	m "github.com/tusharsadhwani/instachat/models"
+	"github.com/tusharsadhwani/instachat/models"
 )
 
 var db *gorm.DB
@@ -23,7 +23,8 @@ func Init() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&m.DBChat{})
-	db.AutoMigrate(&m.DBMessage{})
-	db.AutoMigrate(&m.DBUser{})
+	db.AutoMigrate(&models.DBChat{})
+	db.AutoMigrate(&models.DBMessage{})
+	db.AutoMigrate(&models.DBUser{})
+	db.AutoMigrate(&models.DBLike{})
 }

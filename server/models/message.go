@@ -6,10 +6,11 @@ import "gorm.io/gorm"
 type DBMessage struct {
 	gorm.Model
 	ID     int
-	UUID   *string `gorm:"not null;unique"`
-	Chatid *int    `gorm:"not null"`
-	Userid *int    `gorm:"not null"`
-	Text   *string `gorm:"not null"`
+	UUID   *string  `gorm:"not null;unique"`
+	Chatid *int     `gorm:"not null"`
+	Userid *int     `gorm:"not null"`
+	Text   *string  `gorm:"not null"`
+	Likes  []DBLike `gorm:"foreignKey:Messageid;references:UUID"`
 }
 
 // TableName for DBChat

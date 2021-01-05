@@ -21,7 +21,7 @@ class Message {
       : senderId = message['userid'],
         senderName = 'Test',
         content = message['text'],
-        liked = message['liked'] ?? false,
+        liked = message['liked'],
         id = message['uuid'];
 
   Map<String, dynamic> toMap() {

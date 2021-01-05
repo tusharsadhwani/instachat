@@ -10,6 +10,7 @@ type DBUser struct {
 	GoogleID *string     `gorm:"not null;unique"`
 	Messages []DBMessage `gorm:"foreignKey:Userid;references:Userid"`
 	Chats    []DBChat    `gorm:"many2many:user_chats"`
+	Likes    []DBLike    `gorm:"foreignKey:Userid;references:Userid"`
 }
 
 // TableName for DBUser

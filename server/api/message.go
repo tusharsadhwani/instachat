@@ -17,6 +17,15 @@ type Message struct {
 	Chatid *int   `json:"chatid"`
 	Userid *int   `json:"userid"`
 	Text   string `json:"text"`
+	// Likes  []Like `json:"likes"`
+	Liked bool `json:"liked"`
+}
+
+// Like is what the API will use to represent DBLike
+type Like struct {
+	ID        int    `json:"id"`
+	Messageid string `json:"messageId"`
+	Userid    int    `json:"userId"`
 }
 
 // GetChatMessages gets all messages in a chat
@@ -35,9 +44,19 @@ func GetChatMessages(c *fiber.Ctx) error {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
 	}
 
-	var messages []Message
-	db.Model(&dbchat).Association("Messages").Find(&messages)
+	var dbmessages []models.DBMessage
+	messages := make([]Message, 0, len(dbmessages))
+	db.Model(&dbchat).Association("Messages").Find(&dbmessages)
+	for _, dbmessage := range dbmessages {
+		var likes []Like
+		db.Model(dbmessage).Association("Likes").Find(&likes)
 
+		var message Message
+		copier.Copy(&message, &dbmessage)
+		message.Liked = len(likes) > 0
+
+		messages = append(messages, message)
+	}
 	return c.JSON(messages)
 }
 
@@ -48,8 +67,8 @@ type MessageParams struct {
 	Text   string `json:"text"`
 }
 
-// SaveMessage ...
-func SaveMessage(chatid int, userid int, params MessageParams) (Message, error) {
+// SaveMessage saves given message to the database
+func SaveMessage(chatid int, userid int, params *MessageParams) (Message, error) {
 	db := database.GetDB()
 
 	var dbchat models.DBChat
@@ -60,7 +79,7 @@ func SaveMessage(chatid int, userid int, params MessageParams) (Message, error) 
 	var dbuser models.DBUser
 	res = db.Where(&models.DBUser{Userid: userid}).First(&dbuser)
 	if res.Error != nil {
-		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
+		return Message{}, fmt.Errorf("No User found with id: %v", userid)
 	}
 
 	var dbmessage models.DBMessage
@@ -75,4 +94,38 @@ func SaveMessage(chatid int, userid int, params MessageParams) (Message, error) 
 	var message Message
 	db.Where(&models.DBMessage{ID: dbmessage.ID}).First(&message)
 	return message, nil
+}
+
+// LikeMessage likes a message
+func LikeMessage(chatid int, userid int, messageID string) error {
+	db := database.GetDB()
+
+	var dbuser models.DBUser
+	res := db.Where(&models.DBUser{Userid: userid}).First(&dbuser)
+	if res.Error != nil {
+		return fmt.Errorf("No User found with id: %v", userid)
+	}
+	var dbchat models.DBChat
+	res = db.Where(&models.DBChat{Chatid: chatid}).First(&dbchat)
+	if res.Error != nil {
+		return fmt.Errorf("No Chat found with id: %v", chatid)
+	}
+	var dbmessage models.DBMessage
+	res = db.Where(
+		&models.DBMessage{
+			UUID:   &messageID,
+			Chatid: &chatid,
+			Userid: &userid,
+		}).First(&dbmessage)
+
+	if res.Error != nil {
+		return fmt.Errorf("No Message found with uuid: %v", messageID)
+	}
+
+	var dblike models.DBLike
+	dblike.Messageid = messageID
+	dblike.Userid = userid
+	db.Create(&dblike)
+
+	return nil
 }
