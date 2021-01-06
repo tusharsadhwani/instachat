@@ -68,6 +68,12 @@ class Auth extends ChangeNotifier {
     notifyListeners();
 
     _account = await _googleSignIn.signIn();
+    if (account == null) {
+      _state = AuthState.LOGGED_OUT;
+      notifyListeners();
+      return;
+    }
+
     final auth = await _account.authentication;
     await getJWT(auth.idToken);
   }
