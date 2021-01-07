@@ -146,7 +146,7 @@ func DeleteChat(c *fiber.Ctx) error {
 	}
 
 	var dbchat models.DBChat
-	db.Model(&models.DBChat{}).Where(&models.DBChat{Chatid: id}).First(&dbchat)
+	db.Model(&models.DBChat{}).Where(&models.DBChat{Chatid: id}).Find(&dbchat)
 	if dbchat.ID == 0 {
 		return c.Status(404).SendString(
 			fmt.Sprintf("No Chat found with id: %v", id),
