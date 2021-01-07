@@ -6,7 +6,7 @@ class Likeable extends StatefulWidget {
 
   final void Function(bool newValue) onLikeChanged;
 
-  Likeable({
+  const Likeable({
     Key key,
     this.child,
     this.initiallyLiked = false,
@@ -53,8 +53,7 @@ class _LikeableState extends State<Likeable>
       curve: Curves.easeOutQuad,
     );
 
-    if (widget.initiallyLiked)
-      WidgetsBinding.instance.addPostFrameCallback((_) => toggleLike());
+    if (widget.initiallyLiked) toggleLike();
   }
 
   @override
@@ -108,8 +107,6 @@ class AnimatedHeart extends StatelessWidget {
               size: 28,
             ),
             Positioned(
-              bottom: 2,
-              left: 2.7,
               child: Text(
                 '❤️',
                 style: TextStyle(fontSize: 18),
