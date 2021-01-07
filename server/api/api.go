@@ -1,8 +1,6 @@
 package api
 
 import (
-	"os"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 	"github.com/tusharsadhwani/instachat/config"
@@ -12,9 +10,7 @@ import (
 
 // RunApp runs the server
 func RunApp() {
-	app := fiber.New(fiber.Config{
-		Prefork: os.Getenv("GO_ENV") == "production",
-	})
+	app := fiber.New()
 
 	InitWebsocket()
 

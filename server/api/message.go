@@ -39,8 +39,8 @@ func GetChatMessages(c *fiber.Ctx) error {
 	}
 
 	var dbchat models.DBChat
-	res := db.Where(&models.DBChat{Chatid: id}).First(&dbchat)
-	if res.Error != nil {
+	db.Where(&models.DBChat{Chatid: id}).First(&dbchat)
+	if dbchat.ID == 0 {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
 	}
 
@@ -72,13 +72,13 @@ func SaveMessage(chatid int, userid int, params *MessageParams) (Message, error)
 	db := database.GetDB()
 
 	var dbchat models.DBChat
-	res := db.Where(&models.DBChat{Chatid: chatid}).First(&dbchat)
-	if res.Error != nil {
+	db.Where(&models.DBChat{Chatid: chatid}).Find(&dbchat)
+	if dbchat.ID == 0 {
 		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
 	}
 	var dbuser models.DBUser
-	res = db.Where(&models.DBUser{Userid: userid}).First(&dbuser)
-	if res.Error != nil {
+	db.Where(&models.DBUser{Userid: userid}).Find(&dbuser)
+	if dbuser.ID == 0 {
 		return Message{}, fmt.Errorf("No User found with id: %v", userid)
 	}
 
@@ -92,7 +92,7 @@ func SaveMessage(chatid int, userid int, params *MessageParams) (Message, error)
 	}
 
 	var message Message
-	db.Where(&models.DBMessage{ID: dbmessage.ID}).First(&message)
+	db.Where(&models.DBMessage{UUID: dbmessage.UUID}).First(&message)
 	return message, nil
 }
 
@@ -101,22 +101,19 @@ func LikeMessage(chatid int, likerid int, messageID string) error {
 	db := database.GetDB()
 
 	var dbuser models.DBUser
-	res := db.Where(&models.DBUser{Userid: likerid}).First(&dbuser)
-	if res.Error != nil {
+	db.Where(&models.DBUser{Userid: likerid}).Find(&dbuser)
+	if dbuser.ID == 0 {
 		return fmt.Errorf("No User found with id: %v", likerid)
 	}
 	var dbchat models.DBChat
-	res = db.Where(&models.DBChat{Chatid: chatid}).First(&dbchat)
-	if res.Error != nil {
+	db.Where(&models.DBChat{Chatid: chatid}).Find(&dbchat)
+	if dbuser.ID == 0 {
 		return fmt.Errorf("No Chat found with id: %v", chatid)
 	}
 	var dbmessage models.DBMessage
-	res = db.Where(
-		&models.DBMessage{
-			UUID: &messageID,
-		}).First(&dbmessage)
+	db.Where(&models.DBMessage{UUID: &messageID}).Find(&dbmessage)
 
-	if res.Error != nil {
+	if dbmessage.ID == 0 {
 		return fmt.Errorf("No Message found with uuid: %v", messageID)
 	}
 

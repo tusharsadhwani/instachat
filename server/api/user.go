@@ -54,8 +54,8 @@ func GetUserByID(c *fiber.Ctx) error {
 	}
 
 	var user User
-	res := db.Where(&models.DBUser{Userid: id}).First(&user)
-	if res.Error != nil {
+	db.Where(&models.DBUser{Userid: id}).Find(&user)
+	if user.Userid == 0 {
 		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
 	}
 
@@ -86,8 +86,8 @@ func LoginGoogle(c *fiber.Ctx) error {
 	}
 
 	var user User
-	query := db.Where(&models.DBUser{GoogleID: &bodyParams.sub}).First(&user)
-	if query.Error != nil {
+	db.Where(&models.DBUser{GoogleID: &bodyParams.sub}).Find(&user)
+	if user.Userid == 0 {
 		// User doesn't already exist in DB
 		dbuser := models.DBUser{
 			Name:     &bodyParams.name,

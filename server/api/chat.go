@@ -41,8 +41,8 @@ func GetChatByID(c *fiber.Ctx) error {
 	}
 
 	var chat Chat
-	res := db.Where(&models.DBChat{Chatid: id}).First(&chat)
-	if res.Error != nil {
+	db.Where(&models.DBChat{Chatid: id}).Find(&chat)
+	if chat.Chatid == 0 {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
 	}
 
@@ -82,8 +82,8 @@ func CreateChat(c *fiber.Ctx) error {
 	}
 
 	var existingChat models.DBChat
-	res := db.Where(&models.DBChat{Address: &params.Address}).First(&existingChat)
-	if res.Error == nil {
+	db.Where(&models.DBChat{Address: &params.Address}).Find(&existingChat)
+	if existingChat.ID != 0 {
 		return c.Status(400).SendString(
 			fmt.Sprintf("Chat with address %v already exists", *existingChat.Address),
 		)
@@ -115,8 +115,8 @@ func JoinChat(c *fiber.Ctx) error {
 	address := c.Params("address")
 
 	var dbchat models.DBChat
-	res := db.Where(&models.DBChat{Address: &address}).First(&dbchat)
-	if res.Error != nil {
+	db.Where(&models.DBChat{Address: &address}).Find(&dbchat)
+	if dbchat.ID == 0 {
 		return c.Status(400).SendString(
 			fmt.Sprintf("No chat found with address %v", address),
 		)
@@ -146,8 +146,8 @@ func DeleteChat(c *fiber.Ctx) error {
 	}
 
 	var dbchat models.DBChat
-	res := db.Model(&models.DBChat{}).Where(&models.DBChat{Chatid: id}).First(&dbchat)
-	if res.Error != nil {
+	db.Model(&models.DBChat{}).Where(&models.DBChat{Chatid: id}).First(&dbchat)
+	if dbchat.ID == 0 {
 		return c.Status(404).SendString(
 			fmt.Sprintf("No Chat found with id: %v", id),
 		)
