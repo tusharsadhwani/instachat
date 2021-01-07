@@ -96,7 +96,6 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 			fmt.Sprintf("Invalid cursor value: %v", cursorStr),
 		)
 	}
-	println(cursor)
 
 	var dbmessages []models.DBMessage
 	query := db.Where("chatid = ?", chatid)
