@@ -1,7 +1,39 @@
+import 'package:emojis/emoji.dart';
 import 'package:flutter/material.dart';
 
 import './likeable.dart';
 import '../models/message.dart';
+
+class MessageBubble extends StatelessWidget {
+  final String message;
+  final Color backgroundColor;
+
+  const MessageBubble(
+    this.message, {
+    Key key,
+    this.backgroundColor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (emojiRegex.allMatches(message).length == message.runes.length)
+      return Text(message, style: TextStyle(fontSize: 28));
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).appBarTheme.color,
+        ),
+        color: backgroundColor ?? Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Text(message),
+      ),
+    );
+  }
+}
 
 class MessageBase extends StatelessWidget {
   const MessageBase(
@@ -9,32 +41,23 @@ class MessageBase extends StatelessWidget {
     @required this.liked,
     this.onLikeChanged,
     Key key,
-    this.backgroundColor = Colors.transparent,
+    this.backgroundColor,
   }) : super(key: key);
 
-  final Message message;
   final bool liked;
   final void Function(bool newValue) onLikeChanged;
+  final Message message;
   final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Likeable(
+      key: ValueKey(message.id),
       initiallyLiked: liked,
       onLikeChanged: onLikeChanged,
-      key: ValueKey(message.id),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).appBarTheme.color,
-          ),
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Text(message.content),
-        ),
+      child: MessageBubble(
+        message.content,
+        backgroundColor: backgroundColor,
       ),
     );
   }

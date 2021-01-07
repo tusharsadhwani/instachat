@@ -24,6 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   dio: ^3.0.10
+  emojis: ^0.9.3
   google_sign_in: ^4.5.1
   provider: ^4.3.2
   suspense: ^1.1.0+1
