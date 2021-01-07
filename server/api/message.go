@@ -28,25 +28,10 @@ type Like struct {
 	Userid    int    `json:"userId"`
 }
 
-// GetChatMessages gets all messages in a chat
-func GetChatMessages(c *fiber.Ctx) error {
+func fetchMessagesWithLikes(dbmessages []models.DBMessage) []Message {
 	db := database.GetDB()
 
-	idStr := c.Params("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return c.Status(400).SendString("Chat ID must be an integer")
-	}
-
-	var dbchat models.DBChat
-	db.Where(&models.DBChat{Chatid: id}).First(&dbchat)
-	if dbchat.ID == 0 {
-		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
-	}
-
-	var dbmessages []models.DBMessage
 	messages := make([]Message, 0, len(dbmessages))
-	db.Model(&dbchat).Association("Messages").Find(&dbmessages)
 	for _, dbmessage := range dbmessages {
 		var likes []Like
 		db.Model(dbmessage).Association("Likes").Find(&likes)
@@ -57,7 +42,88 @@ func GetChatMessages(c *fiber.Ctx) error {
 
 		messages = append(messages, message)
 	}
+	return messages
+}
+
+// GetChatMessages gets all messages in a chat
+func GetChatMessages(c *fiber.Ctx) error {
+	db := database.GetDB()
+
+	idStr := c.Params("id")
+	chatid, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(400).SendString("Chat ID must be an integer")
+	}
+
+	var dbchat models.DBChat
+	db.Where(&models.DBChat{Chatid: chatid}).Find(&dbchat)
+	if dbchat.ID == 0 {
+		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
+	}
+
+	var dbmessages []models.DBMessage
+	db.Model(&dbchat).Association("Messages").Find(&dbmessages)
+
+	messages := fetchMessagesWithLikes(dbmessages)
 	return c.JSON(messages)
+}
+
+// GetPaginatedChatMessages gets a page of messages in a chat
+func GetPaginatedChatMessages(c *fiber.Ctx) error {
+	db := database.GetDB()
+
+	idStr := c.Params("id")
+	chatid, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(400).SendString("Chat ID must be an integer")
+	}
+
+	var dbchat models.DBChat
+	db.Where(&models.DBChat{Chatid: chatid}).Find(&dbchat)
+	if dbchat.ID == 0 {
+		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
+	}
+
+	cursorStr := c.Params("cursor")
+	var cursor int
+	if cursorStr == "" {
+		cursor = 0
+	} else {
+		cursor, err = strconv.Atoi(cursorStr)
+	}
+	if err != nil {
+		return c.Status(400).SendString(
+			fmt.Sprintf("Invalid cursor value: %v", cursorStr),
+		)
+	}
+	println(cursor)
+
+	var dbmessages []models.DBMessage
+	query := db.Where("chatid = ?", chatid)
+	if cursor != 0 {
+		query = query.Where("id <= ?", cursor)
+	}
+	query.Order("id desc").Limit(15).Find(&dbmessages)
+
+	messages := fetchMessagesWithLikes(dbmessages)
+	if len(messages) == 0 {
+		return c.JSON(fiber.Map{
+			"messages": []Message{},
+			"next":     -1,
+		})
+	}
+
+	lastMessage := messages[len(messages)-1]
+	nextCursor := lastMessage.ID - 1
+
+	if nextCursor == 0 {
+		nextCursor = -1
+	}
+
+	return c.JSON(fiber.Map{
+		"messages": messages,
+		"next":     nextCursor,
+	})
 }
 
 // MessageParams are the message params to be received from the client
