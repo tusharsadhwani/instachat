@@ -32,26 +32,26 @@ class ChatService extends ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> updateMessages() async {
-    final response = await dio.get(
-      "http://${auth.domain}/chat/$chatId/message",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
-    );
-    final messageData = response.data['messages'];
-    _messages = messageData.map<Message>((m) => Message.fromMap(m)).toList();
-    notifyListeners();
-  }
-
-  Future<void> loadOlderMessages() async {
+  Future fetchMessages() async {
     final response = await dio.get(
       "http://${auth.domain}/chat/$chatId/message/$nextCursor",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     nextCursor = response.data['next'];
-    print('nextCursor: $nextCursor');
     if (nextCursor == -1) allMessagesLoaded = true;
 
     final messageData = response.data['messages'];
+    return messageData;
+  }
+
+  Future<void> updateMessages() async {
+    final messageData = await fetchMessages();
+    _messages = messageData.map<Message>((m) => Message.fromMap(m)).toList();
+    notifyListeners();
+  }
+
+  Future<void> loadOlderMessages() async {
+    final messageData = await fetchMessages();
     final newMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _messages = [...newMessages, ..._messages];
