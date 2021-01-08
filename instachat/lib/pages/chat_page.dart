@@ -24,7 +24,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   MessageBox _messageBox;
   ScrollController _controller;
   double _bottomInset;
-  int _msgCount = 0;
+
+  bool loadingMoreMessages = false;
+
+  bool get isAtTop => _controller.offset < 100;
 
   bool get isAtBottom =>
       _controller.position.maxScrollExtent - _controller.offset < 20;
@@ -34,15 +37,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       final msgs = chatService.messages;
       bool isInitialLoad = msgs.isEmpty;
 
-      if (isInitialLoad ||
-          // You sent a message
-          (msgs.length > _msgCount && msgs.last.senderId == auth.user.id) ||
-          isAtBottom) {
+      if (isInitialLoad || chatService.userSentNewMessage || isAtBottom) {
         _scrollToBottom();
       }
-
-      _msgCount = msgs.length;
     });
+  }
+
+  Future<void> loadMoreMessages() async {
+    loadingMoreMessages = true;
+    await chatService.loadOlderMessages();
+    loadingMoreMessages = false;
   }
 
   void _scrollToBottom() {
@@ -60,6 +64,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller = ScrollController();
+    _controller.addListener(() {
+      if (isAtTop && !loadingMoreMessages && !chatService.allMessagesLoaded) {
+        print('Loading more chats...');
+        loadMoreMessages();
+      }
+    });
   }
 
   @override
@@ -105,31 +115,46 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              controller: _controller,
-              padding: const EdgeInsets.all(12),
-              itemBuilder: (_, i) {
-                final messages = chatService.messages;
-                final message = messages[i];
-                final isFirstMessageFromSender =
-                    i == 0 || messages[i - 1].senderId != message.senderId;
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: _controller,
+                    padding: const EdgeInsets.all(12),
+                    itemBuilder: (_, i) {
+                      if (i == 0) if (chatService.allMessagesLoaded)
+                        return Center(child: Text("All messages loaded"));
+                      else
+                        return Center(child: CircularProgressIndicator());
 
-                return message.senderId == auth.user.id
-                    ? MessageRight(
-                        message,
-                        key: ValueKey(message.liked),
-                        liked: message.liked,
-                        onLikeChanged: (_) => chatService.like(message.id),
-                      )
-                    : MessageLeft(
-                        message,
-                        key: ValueKey(message.liked),
-                        liked: message.liked,
-                        onLikeChanged: (_) => chatService.like(message.id),
-                        isFirstMessageFromSender: isFirstMessageFromSender,
-                      );
-              },
-              itemCount: chatService.messages.length,
+                      i -= 1;
+                      final messages = chatService.messages;
+                      final message = messages[i];
+                      final isFirstMessageFromSender = i == 0 ||
+                          messages[i - 1].senderId != message.senderId;
+
+                      return message.senderId == auth.user.id
+                          ? MessageRight(
+                              message,
+                              key: ValueKey(message.liked),
+                              liked: message.liked,
+                              onLikeChanged: (_) =>
+                                  chatService.like(message.id),
+                            )
+                          : MessageLeft(
+                              message,
+                              key: ValueKey(message.liked),
+                              liked: message.liked,
+                              onLikeChanged: (_) =>
+                                  chatService.like(message.id),
+                              isFirstMessageFromSender:
+                                  isFirstMessageFromSender,
+                            );
+                    },
+                    itemCount: chatService.messages.length + 1,
+                  ),
+                ),
+              ],
             ),
           ),
           _messageBox,

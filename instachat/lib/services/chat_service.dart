@@ -13,11 +13,14 @@ class ChatService extends ChangeNotifier {
   final int chatId;
 
   List<Message> _messages = [];
+  int nextCursor = 0;
+  bool allMessagesLoaded = false;
 
   List<Message> get messages => _messages;
 
   WebSocket _ws;
   WebSocket get ws => _ws;
+  bool userSentNewMessage = false;
 
   ChatService(this.auth, this.chatId) : dio = new Dio() {
     this.updateMessages();
@@ -39,6 +42,22 @@ class ChatService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadOlderMessages() async {
+    final response = await dio.get(
+      "http://${auth.domain}/chat/$chatId/message/$nextCursor",
+      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+    );
+    nextCursor = response.data['next'];
+    print('nextCursor: $nextCursor');
+    if (nextCursor == -1) allMessagesLoaded = true;
+
+    final messageData = response.data['messages'];
+    final newMessages =
+        messageData.map<Message>((m) => Message.fromMap(m)).toList();
+    _messages = [...newMessages, ..._messages];
+    notifyListeners();
+  }
+
   Future<void> connectWebsocket() async {
     _ws = await WebSocket.connect(
       'ws://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
@@ -52,6 +71,7 @@ class ChatService extends ChangeNotifier {
             final update = Update.fromJson(data);
             switch (update.type) {
               case UpdateType.MESSAGE:
+                userSentNewMessage = update.message.senderId == auth.user.id;
                 _messages.add(update.message);
                 break;
               case UpdateType.LIKE:
