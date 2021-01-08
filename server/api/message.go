@@ -76,6 +76,8 @@ func GetChatMessages(c *fiber.Ctx) error {
 
 // GetPaginatedChatMessages gets a page of messages in a chat
 func GetPaginatedChatMessages(c *fiber.Ctx) error {
+	pageSize := 30
+
 	db := database.GetDB()
 
 	idStr := c.Params("id")
@@ -108,7 +110,7 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 	if cursor != 0 {
 		query = query.Where("id <= ?", cursor)
 	}
-	query.Order("id desc").Limit(15).Find(&dbmessages)
+	query.Order("id desc").Limit(pageSize).Find(&dbmessages)
 
 	messages := fetchMessagesWithLikes(dbmessages)
 	reverse(messages)
@@ -120,9 +122,7 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 		})
 	}
 
-	lastMessage := messages[len(messages)-1]
-	nextCursor := lastMessage.ID - 1
-
+	nextCursor := messages[0].ID - 1
 	if nextCursor == 0 {
 		nextCursor = -1
 	}
