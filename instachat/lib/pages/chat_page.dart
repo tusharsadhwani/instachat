@@ -115,46 +115,37 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       body: Column(
         children: [
           Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    controller: _controller,
-                    padding: const EdgeInsets.all(12),
-                    itemBuilder: (_, i) {
-                      if (i == 0) if (chatService.allMessagesLoaded)
-                        return Center(child: Text("All messages loaded"));
-                      else
-                        return Center(child: CircularProgressIndicator());
+            child: ListView.builder(
+              controller: _controller,
+              padding: const EdgeInsets.all(12),
+              itemBuilder: (_, i) {
+                if (i == 0) if (chatService.allMessagesLoaded)
+                  return Center(child: Text("All messages loaded"));
+                else
+                  return Center(child: CircularProgressIndicator());
 
-                      i -= 1;
-                      final messages = chatService.messages;
-                      final message = messages[i];
-                      final isFirstMessageFromSender = i == 0 ||
-                          messages[i - 1].senderId != message.senderId;
+                i -= 1;
+                final messages = chatService.messages;
+                final message = messages[i];
+                final isFirstMessageFromSender =
+                    i == 0 || messages[i - 1].senderId != message.senderId;
 
-                      return message.senderId == auth.user.id
-                          ? MessageRight(
-                              message,
-                              key: ValueKey(message.liked),
-                              liked: message.liked,
-                              onLikeChanged: (_) =>
-                                  chatService.like(message.id),
-                            )
-                          : MessageLeft(
-                              message,
-                              key: ValueKey(message.liked),
-                              liked: message.liked,
-                              onLikeChanged: (_) =>
-                                  chatService.like(message.id),
-                              isFirstMessageFromSender:
-                                  isFirstMessageFromSender,
-                            );
-                    },
-                    itemCount: chatService.messages.length + 1,
-                  ),
-                ),
-              ],
+                return message.senderId == auth.user.id
+                    ? MessageRight(
+                        message,
+                        key: ValueKey(message.liked),
+                        liked: message.liked,
+                        onLikeChanged: (_) => chatService.like(message.id),
+                      )
+                    : MessageLeft(
+                        message,
+                        key: ValueKey(message.liked),
+                        liked: message.liked,
+                        onLikeChanged: (_) => chatService.like(message.id),
+                        isFirstMessageFromSender: isFirstMessageFromSender,
+                      );
+              },
+              itemCount: chatService.messages.length + 1,
             ),
           ),
           _messageBox,
