@@ -34,7 +34,8 @@ class ChatService extends ChangeNotifier {
       "http://${auth.domain}/chat/$chatId/message",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
-    _messages = response.data.map<Message>((m) => Message.fromMap(m)).toList();
+    final messageData = response.data['messages'];
+    _messages = messageData.map<Message>((m) => Message.fromMap(m)).toList();
     notifyListeners();
   }
 

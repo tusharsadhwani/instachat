@@ -45,6 +45,12 @@ func fetchMessagesWithLikes(dbmessages []models.DBMessage) []Message {
 	return messages
 }
 
+func reverse(m []Message) {
+	for i, j := 0, len(m)-1; i < j; i, j = i+1, j-1 {
+		m[i], m[j] = m[j], m[i]
+	}
+}
+
 // GetChatMessages gets all messages in a chat
 func GetChatMessages(c *fiber.Ctx) error {
 	db := database.GetDB()
@@ -105,6 +111,8 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 	query.Order("id desc").Limit(15).Find(&dbmessages)
 
 	messages := fetchMessagesWithLikes(dbmessages)
+	reverse(messages)
+
 	if len(messages) == 0 {
 		return c.JSON(fiber.Map{
 			"messages": []Message{},
