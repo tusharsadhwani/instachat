@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:instachat/models/message.dart';
 import 'package:provider/provider.dart';
 
 import '../models/chat.dart';
@@ -27,19 +28,15 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   bool loadingMoreMessages = false;
 
-  bool get isAtTop => _controller.offset < 100;
+  bool get isAtTop =>
+      _controller.offset - _controller.position.minScrollExtent < 100;
 
   bool get isAtBottom =>
       _controller.position.maxScrollExtent - _controller.offset < 20;
 
   void updateMessages() {
     setState(() {
-      final msgs = chatService.messages;
-      bool isInitialLoad = msgs.isEmpty;
-
-      if (isInitialLoad || chatService.userSentNewMessage || isAtBottom) {
-        _scrollToBottom();
-      }
+      if (chatService.userSentNewMessage || isAtBottom) _scrollToBottom();
     });
   }
 
@@ -50,13 +47,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.animateTo(
-        _controller.position.maxScrollExtent,
-        duration: Duration(milliseconds: 200),
-        curve: Curves.easeOutQuad,
-      );
-    });
+    print('scrolling to bottom');
+    _controller.animateTo(
+      _controller.position.maxScrollExtent,
+      duration: Duration(milliseconds: 200),
+      curve: Curves.easeOutQuad,
+    );
   }
 
   @override
@@ -104,6 +100,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    const Key centerKey = ValueKey('new-messages');
+
     return Scaffold(
       appBar: InstaAppBar(
         title: widget.chat.name,
@@ -115,42 +113,68 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
+            child: CustomScrollView(
               controller: _controller,
-              padding: const EdgeInsets.all(12),
-              itemBuilder: (_, i) {
-                if (i == 0) if (chatService.allMessagesLoaded)
-                  return Center(child: Text("All messages loaded"));
-                else
-                  return Center(child: CircularProgressIndicator());
+              cacheExtent: double.maxFinite,
+              center: centerKey,
+              slivers: <Widget>[
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (_, i) {
+                      if (i == chatService.oldMessages.length) {
+                        if (chatService.allMessagesLoaded)
+                          return Center(child: Text("All messages loaded"));
+                        else
+                          return Center(child: CircularProgressIndicator());
+                      }
 
-                i -= 1;
-                final messages = chatService.messages;
-                final message = messages[i];
-                final isFirstMessageFromSender =
-                    i == 0 || messages[i - 1].senderId != message.senderId;
+                      final messages = chatService.oldMessages;
+                      final isFirstMessage = i == messages.length - 1 ||
+                          messages[i].senderId != messages[i + 1].senderId;
 
-                return message.senderId == auth.user.id
-                    ? MessageRight(
-                        message,
-                        key: ValueKey(message.liked),
-                        liked: message.liked,
-                        onLikeChanged: (_) => chatService.like(message.id),
-                      )
-                    : MessageLeft(
-                        message,
-                        key: ValueKey(message.liked),
-                        liked: message.liked,
-                        onLikeChanged: (_) => chatService.like(message.id),
-                        isFirstMessageFromSender: isFirstMessageFromSender,
-                      );
-              },
-              itemCount: chatService.messages.length + 1,
+                      return renderMessage(messages, i, isFirstMessage);
+                    },
+                    childCount: chatService.oldMessages.length + 1,
+                  ),
+                ),
+                SliverList(
+                  key: centerKey,
+                  delegate: SliverChildBuilderDelegate(
+                    (_, i) {
+                      final messages = chatService.messages;
+                      final isFirstMessage = i == 0 ||
+                          messages[i].senderId != messages[i - 1].senderId;
+
+                      return renderMessage(messages, i, isFirstMessage);
+                    },
+                    childCount: chatService.messages.length,
+                  ),
+                ),
+              ],
             ),
           ),
           _messageBox,
         ],
       ),
     );
+  }
+
+  Widget renderMessage(List<Message> messages, int index, bool isFirstMessage) {
+    final message = messages[index];
+
+    return message.senderId == auth.user.id
+        ? MessageRight(
+            message,
+            key: ValueKey(message.liked),
+            liked: message.liked,
+            onLikeChanged: (_) => chatService.like(message.id),
+          )
+        : MessageLeft(
+            message,
+            key: ValueKey(message.liked),
+            liked: message.liked,
+            onLikeChanged: (_) => chatService.like(message.id),
+            isFirstMessageFromSender: isFirstMessage,
+          );
   }
 }

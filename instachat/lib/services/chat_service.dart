@@ -13,10 +13,12 @@ class ChatService extends ChangeNotifier {
   final int chatId;
 
   List<Message> _messages = [];
+  List<Message> get messages => _messages;
+  List<Message> _oldMessages = [];
+  List<Message> get oldMessages => _oldMessages;
+
   int nextCursor = 0;
   bool allMessagesLoaded = false;
-
-  List<Message> get messages => _messages;
 
   WebSocket _ws;
   WebSocket get ws => _ws;
@@ -46,15 +48,15 @@ class ChatService extends ChangeNotifier {
 
   Future<void> updateMessages() async {
     final messageData = await fetchMessages();
-    _messages = messageData.map<Message>((m) => Message.fromMap(m)).toList();
+    _oldMessages = messageData.map<Message>((m) => Message.fromMap(m)).toList();
     notifyListeners();
   }
 
   Future<void> loadOlderMessages() async {
     final messageData = await fetchMessages();
-    final newMessages =
+    final moreMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
-    _messages = [...newMessages, ..._messages];
+    _oldMessages.addAll(moreMessages);
     notifyListeners();
   }
 
@@ -75,8 +77,12 @@ class ChatService extends ChangeNotifier {
                 _messages.add(update.message);
                 break;
               case UpdateType.LIKE:
-                final message =
-                    _messages.firstWhere((msg) => msg.id == update.messageId);
+                final message = _messages.firstWhere(
+                  (msg) => msg.id == update.messageId,
+                  orElse: () => _oldMessages.firstWhere(
+                    (msg) => msg.id == update.messageId,
+                  ),
+                );
                 message.liked = true;
                 break;
             }
