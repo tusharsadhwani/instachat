@@ -25,7 +25,7 @@ class ChatService extends ChangeNotifier {
   bool userSentNewMessage = false;
 
   ChatService(this.auth, this.chatId) : dio = new Dio() {
-    this.updateMessages();
+    this.loadCachedMessages();
   }
 
   @override
@@ -34,7 +34,15 @@ class ChatService extends ChangeNotifier {
     super.dispose();
   }
 
-  Future fetchMessages() async {
+  Future<void> loadCachedMessages() async {
+    _messages = List<Message>.generate(
+      20,
+      (i) =>
+          Message(senderId: 0, senderName: 'ok', content: 'Cached message $i'),
+    );
+  }
+
+  Future<dynamic> fetchMessages() async {
     final response = await dio.get(
       "http://${auth.domain}/chat/$chatId/message/$nextCursor",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
@@ -44,12 +52,6 @@ class ChatService extends ChangeNotifier {
 
     final messageData = response.data['messages'];
     return messageData;
-  }
-
-  Future<void> updateMessages() async {
-    final messageData = await fetchMessages();
-    _oldMessages = messageData.map<Message>((m) => Message.fromMap(m)).toList();
-    notifyListeners();
   }
 
   Future<void> loadOlderMessages() async {

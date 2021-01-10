@@ -66,6 +66,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         loadMoreMessages();
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.jumpTo(_controller.position.maxScrollExtent);
+    });
   }
 
   @override
