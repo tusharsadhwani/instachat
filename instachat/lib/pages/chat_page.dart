@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:instachat/models/message.dart';
 import 'package:provider/provider.dart';
 
 import '../models/chat.dart';
+import '../models/message.dart';
 import '../services/auth_service.dart';
 import '../services/chat_service.dart';
 import '../widgets/insta_app_bar.dart';
