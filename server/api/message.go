@@ -102,6 +102,65 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 	var dbmessages []models.DBMessage
 	query := db.Where("chatid = ?", chatid)
 	if cursor != 0 {
+		query = query.Where("id >= ?", cursor)
+	}
+	query.Limit(pageSize).Find(&dbmessages)
+
+	messages := fetchMessagesWithLikes(dbmessages)
+
+	if len(messages) == 0 {
+		return c.JSON(fiber.Map{
+			"messages": []Message{},
+			"next":     -1,
+		})
+	}
+
+	lastMessage := messages[len(messages)-1]
+	nextCursor := lastMessage.ID + 1
+	if nextCursor == 0 {
+		nextCursor = -1
+	}
+
+	return c.JSON(fiber.Map{
+		"messages": messages,
+		"next":     nextCursor,
+	})
+}
+
+// GetOlderChatMessages gets a page of older messages in a chat
+func GetOlderChatMessages(c *fiber.Ctx) error {
+	pageSize := 30
+
+	db := database.GetDB()
+
+	idStr := c.Params("id")
+	chatid, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(400).SendString("Chat ID must be an integer")
+	}
+
+	var dbchat models.DBChat
+	db.Where(&models.DBChat{Chatid: chatid}).Find(&dbchat)
+	if dbchat.ID == 0 {
+		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
+	}
+
+	cursorStr := c.Params("cursor")
+	var cursor int
+	if cursorStr == "" {
+		cursor = 0
+	} else {
+		cursor, err = strconv.Atoi(cursorStr)
+	}
+	if err != nil {
+		return c.Status(400).SendString(
+			fmt.Sprintf("Invalid cursor value: %v", cursorStr),
+		)
+	}
+
+	var dbmessages []models.DBMessage
+	query := db.Where("chatid = ?", chatid)
+	if cursor != 0 {
 		query = query.Where("id <= ?", cursor)
 	}
 	query.Order("id desc").Limit(pageSize).Find(&dbmessages)

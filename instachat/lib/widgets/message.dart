@@ -7,23 +7,17 @@ import '../models/message.dart';
 class MessageBubble extends StatelessWidget {
   final String message;
   final Color backgroundColor;
-  final bool rightAlign;
 
   const MessageBubble(
     this.message, {
     Key key,
     this.backgroundColor,
-    this.rightAlign,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (emojiRegex.allMatches(message).length == message.characters.length)
-      return Text(
-        message,
-        style: TextStyle(fontSize: 28),
-        textAlign: rightAlign ? TextAlign.end : null,
-      );
+      return Text(message, style: TextStyle(fontSize: 28));
 
     return Container(
       decoration: BoxDecoration(
@@ -48,14 +42,12 @@ class MessageBase extends StatelessWidget {
     this.onLikeChanged,
     Key key,
     this.backgroundColor,
-    this.rightAlign = false,
   }) : super(key: key);
 
   final bool liked;
   final void Function(bool newValue) onLikeChanged;
   final Message message;
   final Color backgroundColor;
-  final bool rightAlign;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +58,6 @@ class MessageBase extends StatelessWidget {
       child: MessageBubble(
         message.content,
         backgroundColor: backgroundColor,
-        rightAlign: rightAlign,
       ),
     );
   }
@@ -161,7 +152,6 @@ class MessageRight extends StatelessWidget {
                   liked: liked,
                   onLikeChanged: onLikeChanged,
                   backgroundColor: Theme.of(context).appBarTheme.color,
-                  rightAlign: true,
                 ),
               ),
             ),

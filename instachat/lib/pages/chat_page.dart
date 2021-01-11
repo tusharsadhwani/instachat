@@ -32,43 +32,61 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       _controller.offset - _controller.position.minScrollExtent < 100;
 
   bool get isAtBottom =>
-      _controller.position.maxScrollExtent - _controller.offset < 20;
+      _controller.position.maxScrollExtent - _controller.offset < 100;
 
-  void updateMessages() {
+  void _updateMessages() {
     setState(() {
-      if (chatService.userSentNewMessage || isAtBottom) _scrollToBottom();
+      if (chatService.latestMessagesLoaded)
+        _scrollToBottom();
+      else if (chatService.userSentNewMessage) _jumpToLatestMessages();
     });
   }
 
-  Future<void> loadMoreMessages() async {
-    loadingMoreMessages = true;
-    await chatService.loadOlderMessages();
-    loadingMoreMessages = false;
+  void _scrollListener() {
+    if (isAtTop &&
+        !chatService.loadingOlderMessages &&
+        !chatService.allOlderMessagesLoaded) {
+      print('Loading more older chats...');
+      chatService.loadOlderMessages();
+    }
+    if (isAtBottom &&
+        !chatService.loadingNewerMessages &&
+        !chatService.allNewerMessagesLoaded) {
+      print('Loading more newer chats...');
+      chatService.loadNewerMessages();
+    }
   }
 
   void _scrollToBottom() {
     print('scrolling to bottom');
-    _controller.animateTo(
-      _controller.position.maxScrollExtent,
-      duration: Duration(milliseconds: 200),
-      curve: Curves.easeOutQuad,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.animateTo(
+        _controller.position.maxScrollExtent,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeOutQuad,
+      );
+    });
+  }
+
+  void _jumpToLatestMessages() async {
+    await chatService.jumpToLatestMessages();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.jumpTo(_controller.position.maxScrollExtent);
+    });
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
     _controller = ScrollController();
-    _controller.addListener(() {
-      if (isAtTop && !loadingMoreMessages && !chatService.allMessagesLoaded) {
-        print('Loading more chats...');
-        loadMoreMessages();
-      }
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.jumpTo(_controller.position.maxScrollExtent);
     });
+
+    _controller.addListener(_scrollListener);
   }
 
   @override
@@ -77,9 +95,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     auth = Provider.of<Auth>(context, listen: false);
 
     chatService = ChatService(auth, widget.chat.id);
-    chatService.connectWebsocket();
-    chatService.addListener(updateMessages);
     _messageBox = MessageBox(chatService);
+
+    await chatService.connectWebsocket();
+    chatService.addListener(_updateMessages);
   }
 
   @override
@@ -95,9 +114,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     final newBottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
     if (newBottomInset != _bottomInset) {
       _bottomInset = newBottomInset;
-      if (isAtBottom) {
-        _scrollToBottom();
-      }
+      if (isAtBottom) _scrollToBottom();
     }
   }
 
@@ -125,7 +142,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   delegate: SliverChildBuilderDelegate(
                     (_, i) {
                       if (i == chatService.oldMessages.length) {
-                        if (chatService.allMessagesLoaded)
+                        if (chatService.allOlderMessagesLoaded)
                           return Center(child: Text("All messages loaded"));
                         else
                           return Center(child: CircularProgressIndicator());
@@ -144,13 +161,20 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   key: centerKey,
                   delegate: SliverChildBuilderDelegate(
                     (_, i) {
+                      if (i == chatService.messages.length) {
+                        if (chatService.allNewerMessagesLoaded)
+                          return Center(child: Text("All messages loaded"));
+                        else
+                          return Center(child: CircularProgressIndicator());
+                      }
+
                       final messages = chatService.messages;
                       final isFirstMessage = i == 0 ||
                           messages[i].senderId != messages[i - 1].senderId;
 
                       return renderMessage(messages, i, isFirstMessage);
                     },
-                    childCount: chatService.messages.length,
+                    childCount: chatService.messages.length + 1,
                   ),
                 ),
               ],

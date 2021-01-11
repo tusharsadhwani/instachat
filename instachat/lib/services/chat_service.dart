@@ -12,21 +12,28 @@ class ChatService extends ChangeNotifier {
   final Auth auth;
   final int chatId;
 
+  ChatService(this.auth, this.chatId) : dio = new Dio() {
+    this.loadCachedMessages();
+  }
+
   List<Message> _messages = [];
   List<Message> get messages => _messages;
   List<Message> _oldMessages = [];
   List<Message> get oldMessages => _oldMessages;
 
+  bool loadingOlderMessages = false;
+  bool allOlderMessagesLoaded = false;
+  int prevCursor = 0;
+
+  bool loadingNewerMessages = false;
+  bool allNewerMessagesLoaded = false;
   int nextCursor = 0;
-  bool allMessagesLoaded = false;
 
   WebSocket _ws;
   WebSocket get ws => _ws;
-  bool userSentNewMessage = false;
 
-  ChatService(this.auth, this.chatId) : dio = new Dio() {
-    this.loadCachedMessages();
-  }
+  bool latestMessagesLoaded = false; // TODO: implement this
+  bool userSentNewMessage = false;
 
   @override
   void dispose() {
@@ -42,23 +49,41 @@ class ChatService extends ChangeNotifier {
     );
   }
 
-  Future<dynamic> fetchMessages() async {
+  Future<void> loadOlderMessages() async {
+    loadingOlderMessages = true;
+
+    final response = await dio.get(
+      "http://${auth.domain}/chat/$chatId/message/old/$prevCursor",
+      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+    );
+    prevCursor = response.data['next'];
+    if (prevCursor == -1) allOlderMessagesLoaded = true;
+
+    final messageData = response.data['messages'];
+    final moreMessages =
+        messageData.map<Message>((m) => Message.fromMap(m)).toList();
+    _oldMessages.addAll(moreMessages);
+
+    loadingOlderMessages = false;
+    notifyListeners();
+  }
+
+  Future<void> loadNewerMessages() async {
+    loadingNewerMessages = true;
+
     final response = await dio.get(
       "http://${auth.domain}/chat/$chatId/message/$nextCursor",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     nextCursor = response.data['next'];
-    if (nextCursor == -1) allMessagesLoaded = true;
+    if (nextCursor == -1) allNewerMessagesLoaded = true;
 
     final messageData = response.data['messages'];
-    return messageData;
-  }
-
-  Future<void> loadOlderMessages() async {
-    final messageData = await fetchMessages();
     final moreMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
-    _oldMessages.addAll(moreMessages);
+    _messages.addAll(moreMessages);
+
+    loadingNewerMessages = false;
     notifyListeners();
   }
 
@@ -76,7 +101,7 @@ class ChatService extends ChangeNotifier {
             switch (update.type) {
               case UpdateType.MESSAGE:
                 userSentNewMessage = update.message.senderId == auth.user.id;
-                _messages.add(update.message);
+                if (latestMessagesLoaded) _messages.add(update.message);
                 break;
               case UpdateType.LIKE:
                 final message = _messages.firstWhere(
@@ -85,9 +110,10 @@ class ChatService extends ChangeNotifier {
                     (msg) => msg.id == update.messageId,
                   ),
                 );
-                message.liked = true;
+                if (message != null) message.liked = true;
                 break;
             }
+
             notifyListeners();
           },
           onDone: () => print('[+]Done :)'),
@@ -109,5 +135,16 @@ class ChatService extends ChangeNotifier {
   void like(String messageId) {
     final update = Update(messageId: messageId);
     _ws.add(update.toJson());
+  }
+
+  Future<void> jumpToLatestMessages() async {
+    latestMessagesLoaded = true;
+
+    _oldMessages = [];
+    prevCursor = 0;
+    _messages = [];
+    nextCursor = 0;
+    await loadNewerMessages();
+    notifyListeners();
   }
 }
