@@ -32,7 +32,7 @@ class ChatService extends ChangeNotifier {
   WebSocket _ws;
   WebSocket get ws => _ws;
 
-  bool latestMessagesLoaded = false; // TODO: implement this
+  bool latestMessagesLoaded = false;
   bool userSentNewMessage = false;
 
   @override
@@ -42,6 +42,8 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> loadCachedMessages() async {
+    // TODO: implement actual caching and cache loading
+    // TODO: modify prevCursor and nextCursor based on cached values
     _messages = List<Message>.generate(
       20,
       (i) =>
