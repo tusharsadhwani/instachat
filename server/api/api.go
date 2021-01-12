@@ -22,7 +22,7 @@ func RunApp() {
 	app.Get("/chat/:id", GetChatByID)
 
 	app.Get("/chat/:id/message/:cursor?", GetPaginatedChatMessages)
-	app.Get("/chat/:id/message/old/:cursor?", GetOlderChatMessages)
+	app.Get("/chat/:id/oldmessage/:cursor?", GetOlderChatMessages)
 	app.Get("/chat/:id/message/all", GetChatMessages)
 
 	app.Get("/user", GetUsers)

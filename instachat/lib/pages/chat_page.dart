@@ -36,7 +36,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void _updateMessages() {
     setState(() {
-      if (chatService.latestMessagesLoaded)
+      if (isAtBottom)
         _scrollToBottom();
       else if (chatService.userSentNewMessage) _jumpToLatestMessages();
     });
@@ -69,6 +69,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   void _jumpToLatestMessages() async {
+    print('WAT');
     await chatService.jumpToLatestMessages();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -84,6 +85,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     _controller = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.jumpTo(_controller.position.maxScrollExtent);
+      // Manually call scroll listener once
+      _scrollListener();
     });
 
     _controller.addListener(_scrollListener);

@@ -1,9 +1,13 @@
+import 'dart:convert';
+
+import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 final uuid = Uuid();
 
 class Message {
   final String id;
+  final int index;
   final int senderId;
   final String senderName;
   final String content;
@@ -11,9 +15,10 @@ class Message {
   bool liked;
 
   Message({
-    this.senderId,
-    this.senderName,
-    this.content,
+    @required this.senderId,
+    @required this.senderName,
+    @required this.content,
+    this.index = -1,
     this.liked = false,
   }) : this.id = uuid.v4();
 
@@ -22,7 +27,8 @@ class Message {
         senderName = 'Test',
         content = message['text'],
         liked = message['liked'],
-        id = message['uuid'];
+        id = message['uuid'],
+        index = message['id'];
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,5 +37,9 @@ class Message {
       'text': content,
       'liked': liked,
     };
+  }
+
+  String toJson() {
+    return jsonEncode(toMap());
   }
 }

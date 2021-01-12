@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import './auth_service.dart';
 import '../models/message.dart';
 import '../models/update.dart';
+import '../services/message_cache.dart';
 
 class ChatService extends ChangeNotifier {
   final Dio dio;
@@ -22,18 +23,19 @@ class ChatService extends ChangeNotifier {
   List<Message> get oldMessages => _oldMessages;
 
   bool loadingOlderMessages = false;
-  bool allOlderMessagesLoaded = false;
   int prevCursor = 0;
+  bool get allOlderMessagesLoaded => prevCursor == -1;
 
   bool loadingNewerMessages = false;
-  bool allNewerMessagesLoaded = false;
   int nextCursor = 0;
+  bool get allNewerMessagesLoaded => nextCursor == -1;
 
   WebSocket _ws;
   WebSocket get ws => _ws;
 
-  bool latestMessagesLoaded = false;
   bool userSentNewMessage = false;
+
+  MessageCache cache;
 
   @override
   void dispose() {
@@ -42,29 +44,27 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> loadCachedMessages() async {
-    // TODO: implement actual caching and cache loading
+    // TODO: implement cache loading
     // TODO: modify prevCursor and nextCursor based on cached values
-    _messages = List<Message>.generate(
-      20,
-      (i) =>
-          Message(senderId: 0, senderName: 'ok', content: 'Cached message $i'),
-    );
+    prevCursor = -1;
+    cache = MessageCache();
+    if (cache.isEmpty) jumpToLatestMessages();
   }
 
   Future<void> loadOlderMessages() async {
     loadingOlderMessages = true;
 
     final response = await dio.get(
-      "http://${auth.domain}/chat/$chatId/message/old/$prevCursor",
+      "http://${auth.domain}/chat/$chatId/oldmessage/$prevCursor",
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     prevCursor = response.data['next'];
-    if (prevCursor == -1) allOlderMessagesLoaded = true;
 
     final messageData = response.data['messages'];
-    final moreMessages =
+    List<Message> moreMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _oldMessages.addAll(moreMessages);
+    // TODO: add them to message cache
 
     loadingOlderMessages = false;
     notifyListeners();
@@ -78,12 +78,12 @@ class ChatService extends ChangeNotifier {
       options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
     );
     nextCursor = response.data['next'];
-    if (nextCursor == -1) allNewerMessagesLoaded = true;
 
     final messageData = response.data['messages'];
-    final moreMessages =
+    List<Message> moreMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _messages.addAll(moreMessages);
+    // TODO: add them to message cache
 
     loadingNewerMessages = false;
     notifyListeners();
@@ -103,7 +103,7 @@ class ChatService extends ChangeNotifier {
             switch (update.type) {
               case UpdateType.MESSAGE:
                 userSentNewMessage = update.message.senderId == auth.user.id;
-                if (latestMessagesLoaded) _messages.add(update.message);
+                if (allNewerMessagesLoaded) _messages.add(update.message);
                 break;
               case UpdateType.LIKE:
                 final message = _messages.firstWhere(
@@ -140,13 +140,26 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> jumpToLatestMessages() async {
-    latestMessagesLoaded = true;
-
     _oldMessages = [];
-    prevCursor = 0;
-    _messages = [];
-    nextCursor = 0;
-    await loadNewerMessages();
+    nextCursor = -1;
+
+    // TODO: empty message cache (for now)
+    final response = await dio.get(
+      "http://${auth.domain}/chat/$chatId/oldmessage",
+      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+    );
+    final _next = response.data['next'];
+
+    final messageData = response.data['messages'];
+    List<Message> latestMessages =
+        messageData.map<Message>((m) => Message.fromMap(m)).toList();
+
+    _messages = latestMessages.reversed.toList();
+    if (_next == -1) {
+      prevCursor = -1;
+    } else {
+      prevCursor = _messages[0].index - 1;
+    }
     notifyListeners();
   }
 }
