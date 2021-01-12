@@ -188,9 +188,11 @@ func GetOlderChatMessages(c *fiber.Ctx) error {
 
 // MessageParams are the message params to be received from the client
 type MessageParams struct {
+	ID     int    `json:"id"`
 	UUID   string `json:"uuid"`
 	Userid int    `json:"userid"`
 	Text   string `json:"text"`
+	Liked  bool   `json:"liked"`
 }
 
 // SaveMessage saves given message to the database

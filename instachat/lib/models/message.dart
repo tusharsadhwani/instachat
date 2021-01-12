@@ -18,7 +18,7 @@ class Message {
     @required this.senderId,
     @required this.senderName,
     @required this.content,
-    this.index = -1,
+    this.index = 0,
     this.liked = false,
   }) : this.id = uuid.v4();
 
@@ -32,6 +32,7 @@ class Message {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': index,
       'uuid': id,
       'userid': senderId,
       'text': content,

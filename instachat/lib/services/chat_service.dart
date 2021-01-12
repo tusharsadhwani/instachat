@@ -64,7 +64,10 @@ class ChatService extends ChangeNotifier {
     List<Message> moreMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _oldMessages.addAll(moreMessages);
-    // TODO: add them to message cache
+
+    moreMessages.forEach((m) => cache.pushFirst(m));
+    print(
+        'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
 
     loadingOlderMessages = false;
     notifyListeners();
@@ -83,7 +86,10 @@ class ChatService extends ChangeNotifier {
     List<Message> moreMessages =
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _messages.addAll(moreMessages);
-    // TODO: add them to message cache
+
+    moreMessages.forEach((m) => cache.pushLast(m));
+    print(
+        'added message ${moreMessages.first.index} to ${moreMessages.last.index} to the cache');
 
     loadingNewerMessages = false;
     notifyListeners();
@@ -103,7 +109,11 @@ class ChatService extends ChangeNotifier {
             switch (update.type) {
               case UpdateType.MESSAGE:
                 userSentNewMessage = update.message.senderId == auth.user.id;
-                if (allNewerMessagesLoaded) _messages.add(update.message);
+                if (allNewerMessagesLoaded) {
+                  _messages.add(update.message);
+                  cache.pushLast(update.message);
+                  print('added ${update.message.index} to cache');
+                }
                 break;
               case UpdateType.LIKE:
                 final message = _messages.firstWhere(
@@ -112,7 +122,16 @@ class ChatService extends ChangeNotifier {
                     (msg) => msg.id == update.messageId,
                   ),
                 );
-                if (message != null) message.liked = true;
+                if (message != null) {
+                  message.liked = true;
+                  final cachedMsg = cache.messages.firstWhere(
+                    (msg) => msg.id == update.messageId,
+                  );
+                  if (cachedMsg != null) {
+                    cachedMsg.liked = true;
+                    print('liked message ${cachedMsg.index} in cache');
+                  }
+                }
                 break;
             }
 
@@ -155,6 +174,10 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
 
     _messages = latestMessages.reversed.toList();
+    _messages.forEach((m) => cache.pushLast(m));
+    print(
+        'added message ${_messages.first.index} to ${_messages.last.index} to the cache');
+
     if (_next == -1) {
       prevCursor = -1;
     } else {

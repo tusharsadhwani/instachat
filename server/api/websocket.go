@@ -26,9 +26,9 @@ func InitWebsocket() {
 
 // WebsocketParams defines the shape of the json received over websockets
 type WebsocketParams struct {
-	Type      string        `json:"type"`
-	Message   MessageParams `json:"message"`
-	MessageID string        `json:"messageId"`
+	Type      string         `json:"type"`
+	Message   *MessageParams `json:"message"`
+	MessageID *string        `json:"messageId"`
 }
 
 // WebsocketUpdates receives all websocket updates in a chatroom
@@ -57,23 +57,23 @@ func WebsocketUpdates(c *websocket.Conn) {
 			delete(chats[chatid], userid)
 			break
 		}
+		println(string(msg))
 
 		var params WebsocketParams
 		json.Unmarshal(msg, &params)
-		msgParams := MessageParams{
-			UUID: params.Message.UUID,
-			Text: params.Message.Text,
-		}
 
 		switch params.Type {
 		case "MESSAGE":
-			SaveMessage(chatid, userid, &msgParams)
+			savedMsg, _ := SaveMessage(chatid, userid, params.Message)
+			params.Message.ID = savedMsg.ID
 		case "LIKE":
-			LikeMessage(chatid, userid, params.MessageID)
+			LikeMessage(chatid, userid, *params.MessageID)
 		}
 
+		updatedMsg, _ := json.Marshal(params)
+		println(string(updatedMsg))
 		for _, member := range chats[chatid] {
-			if err = member.conn.WriteMessage(mt, msg); err != nil {
+			if err = member.conn.WriteMessage(mt, updatedMsg); err != nil {
 				log.Println("write:", err)
 				break
 			}
