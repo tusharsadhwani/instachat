@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 import './auth_service.dart';
 import '../models/message.dart';
@@ -13,9 +16,7 @@ class ChatService extends ChangeNotifier {
   final Auth auth;
   final int chatId;
 
-  ChatService(this.auth, this.chatId) : dio = new Dio() {
-    this.loadCachedMessages();
-  }
+  ChatService(this.auth, this.chatId) : dio = new Dio();
 
   List<Message> _messages = [];
   List<Message> get messages => _messages;
@@ -37,18 +38,40 @@ class ChatService extends ChangeNotifier {
 
   MessageCache cache;
 
+  Future<void> initialize() async {
+    await loadCachedMessages();
+  }
+
   @override
   void dispose() {
     _ws?.close();
+    cache.save(filename: '${auth.user.id}_$chatId.json');
     super.dispose();
   }
 
   Future<void> loadCachedMessages() async {
-    // TODO: implement cache loading
-    // TODO: modify prevCursor and nextCursor based on cached values
-    prevCursor = -1;
-    cache = MessageCache();
-    if (cache.isEmpty) jumpToLatestMessages();
+    final docDir = await getApplicationDocumentsDirectory();
+    final cacheFile =
+        File(path.join(docDir.path, '${auth.user.id}_$chatId.json'));
+
+    if (cacheFile.existsSync()) {
+      final cacheJson = cacheFile.readAsStringSync();
+      final cacheData = jsonDecode(cacheJson);
+      cache = MessageCache.fromMap(cacheData);
+      _messages = cache.messages.toList();
+      prevCursor = cache.top == 1 ? -1 : cache.top - 1;
+      nextCursor = cache.bottom + 1;
+      print('loaded messages ${cache.top} to ${cache.bottom} from cache');
+      notifyListeners();
+    } else {
+      cache = MessageCache();
+      prevCursor = -1;
+      jumpToLatestMessages();
+    }
+  }
+
+  Future<void> saveCache() async {
+    await cache.save(filename: '${auth.user.id}_$chatId.json');
   }
 
   Future<void> loadOlderMessages() async {
@@ -65,10 +88,11 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _oldMessages.addAll(moreMessages);
 
-    moreMessages.forEach((m) => cache.pushFirst(m));
-    print(
-        'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
-
+    if (!cache.full) {
+      moreMessages.forEach((m) => cache.pushFirst(m));
+      print(
+          'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingOlderMessages = false;
     });
@@ -90,8 +114,9 @@ class ChatService extends ChangeNotifier {
     _messages.addAll(moreMessages);
 
     moreMessages.forEach((m) => cache.pushLast(m));
-    print(
-        'added message ${moreMessages.first.index} to ${moreMessages.last.index} to the cache');
+    if (moreMessages.isNotEmpty)
+      print(
+          'added message ${moreMessages.first.index} to ${moreMessages.last.index} to the cache');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingNewerMessages = false;

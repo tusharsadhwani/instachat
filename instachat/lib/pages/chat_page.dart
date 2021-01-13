@@ -22,6 +22,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Auth auth;
   ChatService chatService;
 
+  bool ready = false;
+
   MessageBox _messageBox;
   ScrollController _controller;
   double _bottomInset;
@@ -35,8 +37,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       _controller.position.maxScrollExtent - _controller.offset < 100;
 
   void _updateMessages() {
-    print('UPDATE');
     setState(() {
+      //TODO: THIS DOESN'T WORK REEEE. when loading newer messages it causes it to keep scrolling to the bottom
       if (isAtBottom)
         _scrollToBottom();
       else if (chatService.userSentNewMessage) _jumpToLatestMessages();
@@ -78,31 +80,34 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
 
+  void initialize() async {
+    await chatService.initialize();
+
+    _controller = ScrollController();
+    _controller.addListener(_scrollListener);
+
+    await chatService.connectWebsocket();
+    chatService.addListener(_updateMessages);
+
+    setState(() {
+      ready = true;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    _controller = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.jumpTo(_controller.position.maxScrollExtent);
-      // Manually call scroll listener once
-      _scrollListener();
-    });
-
-    _controller.addListener(_scrollListener);
   }
 
   @override
-  void didChangeDependencies() async {
+  void didChangeDependencies() {
     super.didChangeDependencies();
     auth = Provider.of<Auth>(context, listen: false);
 
     chatService = ChatService(auth, widget.chat.id);
     _messageBox = MessageBox(chatService);
-
-    await chatService.connectWebsocket();
-    chatService.addListener(_updateMessages);
+    initialize();
   }
 
   @override
@@ -111,6 +116,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     chatService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      chatService.saveCache();
+    }
   }
 
   @override
@@ -124,6 +136,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (!ready)
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+
     const Key centerKey = ValueKey('new-messages');
 
     return Scaffold(

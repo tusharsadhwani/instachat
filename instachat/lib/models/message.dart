@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
@@ -38,9 +36,5 @@ class Message {
       'text': content,
       'liked': liked,
     };
-  }
-
-  String toJson() {
-    return jsonEncode(toMap());
   }
 }
