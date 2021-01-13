@@ -69,7 +69,9 @@ class ChatService extends ChangeNotifier {
     print(
         'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
 
-    loadingOlderMessages = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadingOlderMessages = false;
+    });
     notifyListeners();
   }
 
@@ -91,7 +93,9 @@ class ChatService extends ChangeNotifier {
     print(
         'added message ${moreMessages.first.index} to ${moreMessages.last.index} to the cache');
 
-    loadingNewerMessages = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadingNewerMessages = false;
+    });
     notifyListeners();
   }
 
