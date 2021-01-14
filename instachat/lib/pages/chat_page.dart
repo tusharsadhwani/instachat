@@ -38,8 +38,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void _updateMessages() {
     setState(() {
-      //TODO: THIS DOESN'T WORK REEEE. when loading newer messages it causes it to keep scrolling to the bottom
-      if (isAtBottom)
+      if (isAtBottom && chatService.allNewerMessagesLoaded)
         _scrollToBottom();
       else if (chatService.userSentNewMessage) _jumpToLatestMessages();
     });
