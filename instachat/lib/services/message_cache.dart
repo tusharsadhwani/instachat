@@ -10,12 +10,13 @@ import '../models/message.dart';
 
 class MessageCache {
   Queue<Message> messages;
+  String filename;
 
-  MessageCache() {
+  MessageCache({@required this.filename}) {
     messages = Queue();
   }
 
-  MessageCache.fromMap(dynamic data) {
+  MessageCache.fromMap(dynamic data, {@required this.filename}) {
     messages = Queue.from(data.map<Message>((m) => Message.fromMap(m)));
   }
 
@@ -42,7 +43,7 @@ class MessageCache {
     if (messages.length > 15) messages.removeFirst();
   }
 
-  Future<void> save({@required String filename}) async {
+  Future<void> save() async {
     print('saving last 15 to cache...');
     final cacheMessages = messages.map((m) => m.toMap()).toList();
     print('cache order:');

@@ -12,11 +12,16 @@ import '../models/update.dart';
 import '../services/message_cache.dart';
 
 class ChatService extends ChangeNotifier {
-  final Dio dio;
-  final Auth auth;
   final int chatId;
+  final Auth auth;
+  final Dio dio;
+  final Options authOptions;
+  final String cacheFilename;
 
-  ChatService(this.auth, this.chatId) : dio = new Dio();
+  ChatService(this.auth, this.chatId)
+      : dio = Dio(),
+        authOptions = Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+        cacheFilename = '${auth.user.id}_$chatId.json';
 
   List<Message> _messages = [];
   List<Message> get messages => _messages;
@@ -45,33 +50,32 @@ class ChatService extends ChangeNotifier {
   @override
   void dispose() {
     _ws?.close();
-    cache.save(filename: '${auth.user.id}_$chatId.json');
+    cache.save();
     super.dispose();
   }
 
   Future<void> loadCachedMessages() async {
     final docDir = await getApplicationDocumentsDirectory();
-    final cacheFile =
-        File(path.join(docDir.path, '${auth.user.id}_$chatId.json'));
+    final cacheFile = File(path.join(docDir.path, cacheFilename));
 
     if (cacheFile.existsSync()) {
       final cacheJson = cacheFile.readAsStringSync();
       final cacheData = jsonDecode(cacheJson);
-      cache = MessageCache.fromMap(cacheData);
+      cache = MessageCache.fromMap(cacheData, filename: cacheFilename);
       _messages = cache.messages.toList();
       prevCursor = cache.top == 1 ? -1 : cache.top - 1;
       nextCursor = cache.bottom + 1;
       print('loaded messages ${cache.top} to ${cache.bottom} from cache');
       notifyListeners();
     } else {
-      cache = MessageCache();
+      cache = MessageCache(filename: cacheFilename);
       prevCursor = -1;
       jumpToLatestMessages();
     }
   }
 
   Future<void> saveCache() async {
-    await cache.save(filename: '${auth.user.id}_$chatId.json');
+    await cache.save();
   }
 
   Future<void> loadOlderMessages() async {
@@ -79,7 +83,7 @@ class ChatService extends ChangeNotifier {
 
     final response = await dio.get(
       "http://${auth.domain}/chat/$chatId/oldmessage/$prevCursor",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      options: authOptions,
     );
     prevCursor = response.data['next'];
 
@@ -104,7 +108,7 @@ class ChatService extends ChangeNotifier {
 
     final response = await dio.get(
       "http://${auth.domain}/chat/$chatId/message/$nextCursor",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      options: authOptions,
     );
     nextCursor = response.data['next'];
 
@@ -131,8 +135,8 @@ class ChatService extends ChangeNotifier {
     );
 
     try {
-      if (ws?.readyState == WebSocket.open) {
-        ws.listen(
+      if (_ws?.readyState == WebSocket.open) {
+        _ws.listen(
           (data) {
             final update = Update.fromJson(data);
             switch (update.type) {
@@ -194,7 +198,7 @@ class ChatService extends ChangeNotifier {
     // TODO: empty message cache (for now)
     final response = await dio.get(
       "http://${auth.domain}/chat/$chatId/oldmessage",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      options: authOptions,
     );
     final _next = response.data['next'];
 
