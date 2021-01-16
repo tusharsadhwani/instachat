@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 	"github.com/tusharsadhwani/instachat/config"
@@ -10,6 +12,8 @@ import (
 
 // RunApp runs the server
 func RunApp() {
+	cfg := config.GetConfig()
+
 	app := fiber.New()
 
 	InitWebsocket()
@@ -30,10 +34,11 @@ func RunApp() {
 
 	app.Post("/login", LoginGoogle)
 
-	config := config.GetConfig()
+	app.Get("/image", GetPresignedURL)
+
 	app.Use(jwtware.New(jwtware.Config{
 		SigningMethod: "RS256",
-		SigningKey:    config.PrivateKey.Public(),
+		SigningKey:    cfg.PrivateKey.Public(),
 	}))
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
@@ -54,5 +59,5 @@ func RunApp() {
 	app.Post("/chat", CreateChat)
 	app.Post("/chat/:address", JoinChat)
 
-	app.Listen(":3000")
+	app.Listen(fmt.Sprintf(":%s", cfg.Port))
 }

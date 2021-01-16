@@ -9,7 +9,9 @@ require (
 	github.com/gofiber/jwt/v2 v2.1.0
 	github.com/gofiber/websocket/v2 v2.0.1
 	github.com/jinzhu/copier v0.0.0-20201025035756-632e723a6687
+	github.com/joho/godotenv v1.3.0
 	github.com/klauspost/compress v1.11.3 // indirect
+	github.com/rhnvrm/simples3 v0.6.1
 	github.com/savsgio/gotils v0.0.0-20200909101946-939aa3fc74fb // indirect
 	github.com/valyala/fasthttp v1.18.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
