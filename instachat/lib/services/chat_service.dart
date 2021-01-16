@@ -65,7 +65,6 @@ class ChatService extends ChangeNotifier {
       _messages = cache.messages.toList();
       prevCursor = cache.prev;
       nextCursor = cache.next;
-      print('loaded messages ${cache.top} to ${cache.bottom} from cache');
       notifyListeners();
     } else {
       cache = MessageCache(filename: cacheFilename);
@@ -92,12 +91,8 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _oldMessages.addAll(moreMessages);
 
-    if (!cache.full) {
-      moreMessages.forEach((m) => cache.pushFirst(m));
-      if (moreMessages.isNotEmpty)
-        print(
-            'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
-    }
+    if (!cache.full) moreMessages.forEach((m) => cache.pushFirst(m));
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingOlderMessages = false;
     });
@@ -119,9 +114,6 @@ class ChatService extends ChangeNotifier {
     _messages.addAll(moreMessages);
 
     moreMessages.forEach((m) => cache.pushLast(m));
-    if (moreMessages.isNotEmpty)
-      print(
-          'added message ${moreMessages.first.index} to ${moreMessages.last.index} to the cache');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingNewerMessages = false;
@@ -146,7 +138,6 @@ class ChatService extends ChangeNotifier {
                 if (allNewerMessagesLoaded) {
                   _messages.add(update.message);
                   cache.pushLast(update.message);
-                  print('added ${update.message.index} to cache');
                 }
                 break;
               case UpdateType.LIKE:
@@ -161,10 +152,7 @@ class ChatService extends ChangeNotifier {
                   final cachedMsg = cache.messages.firstWhere(
                     (msg) => msg.id == update.messageId,
                   );
-                  if (cachedMsg != null) {
-                    cachedMsg.liked = true;
-                    print('liked message ${cachedMsg.index} in cache');
-                  }
+                  if (cachedMsg != null) cachedMsg.liked = true;
                 }
                 break;
             }
@@ -209,9 +197,6 @@ class ChatService extends ChangeNotifier {
 
     _messages = latestMessages.reversed.toList();
     _messages.forEach((m) => cache.pushLast(m));
-    if (_messages.isNotEmpty)
-      print(
-          'added message ${_messages.first.index} to ${_messages.last.index} to the cache');
 
     if (_next == -1) {
       prevCursor = -1;

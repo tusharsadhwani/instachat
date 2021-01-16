@@ -57,7 +57,6 @@ func WebsocketUpdates(c *websocket.Conn) {
 			delete(chats[chatid], userid)
 			break
 		}
-		println(string(msg))
 
 		var params WebsocketParams
 		json.Unmarshal(msg, &params)
@@ -71,7 +70,6 @@ func WebsocketUpdates(c *websocket.Conn) {
 		}
 
 		updatedMsg, _ := json.Marshal(params)
-		println(string(updatedMsg))
 		for _, member := range chats[chatid] {
 			if err = member.conn.WriteMessage(mt, updatedMsg); err != nil {
 				log.Println("write:", err)
