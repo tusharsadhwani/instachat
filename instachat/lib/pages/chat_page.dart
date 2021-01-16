@@ -90,6 +90,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
     setState(() {
       ready = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _controller.jumpTo(_controller.position.maxScrollExtent);
+        // Manually call scroll listener once, to load newer/older messages
+        _scrollListener();
+      });
     });
   }
 

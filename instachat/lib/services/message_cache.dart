@@ -32,6 +32,15 @@ class MessageCache {
     return messages.last.index;
   }
 
+  int get prev {
+    return top == 1 ? -1 : top - 1;
+  }
+
+  int get next {
+    if (messages.isEmpty) return -1;
+    return bottom + 1;
+  }
+
   bool get full => messages.length >= 15;
 
   void pushFirst(Message message) {

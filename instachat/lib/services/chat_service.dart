@@ -63,8 +63,8 @@ class ChatService extends ChangeNotifier {
       final cacheData = jsonDecode(cacheJson);
       cache = MessageCache.fromMap(cacheData, filename: cacheFilename);
       _messages = cache.messages.toList();
-      prevCursor = cache.top == 1 ? -1 : cache.top - 1;
-      nextCursor = cache.bottom + 1;
+      prevCursor = cache.prev;
+      nextCursor = cache.next;
       print('loaded messages ${cache.top} to ${cache.bottom} from cache');
       notifyListeners();
     } else {
@@ -94,8 +94,9 @@ class ChatService extends ChangeNotifier {
 
     if (!cache.full) {
       moreMessages.forEach((m) => cache.pushFirst(m));
-      print(
-          'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
+      if (moreMessages.isNotEmpty)
+        print(
+            'added message ${moreMessages.last.index} to ${moreMessages.first.index} to the top of cache');
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingOlderMessages = false;
@@ -208,8 +209,9 @@ class ChatService extends ChangeNotifier {
 
     _messages = latestMessages.reversed.toList();
     _messages.forEach((m) => cache.pushLast(m));
-    print(
-        'added message ${_messages.first.index} to ${_messages.last.index} to the cache');
+    if (_messages.isNotEmpty)
+      print(
+          'added message ${_messages.first.index} to ${_messages.last.index} to the cache');
 
     if (_next == -1) {
       prevCursor = -1;
