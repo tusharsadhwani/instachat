@@ -1,9 +1,12 @@
 package database
 
 import (
+	"fmt"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/tusharsadhwani/instachat/config"
 	"github.com/tusharsadhwani/instachat/models"
 )
 
@@ -16,15 +19,15 @@ func GetDB() *gorm.DB {
 
 // Init initializes the database
 func Init() {
-	dsn := "user=postgres password=password database=instachat port=5432 sslmode=disable TimeZone=Asia/Kolkata"
+	cfg := config.GetConfig()
+
+	dsn := fmt.Sprintf("user=%s password=%s database=%s port=%s sslmode=disable",
+		cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort)
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&models.DBChat{})
-	db.AutoMigrate(&models.DBMessage{})
-	db.AutoMigrate(&models.DBUser{})
-	db.AutoMigrate(&models.DBLike{})
+	db.AutoMigrate(&models.DBChat{}, &models.DBMessage{}, &models.DBUser{}, &models.DBLike{})
 }

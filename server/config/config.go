@@ -13,6 +13,10 @@ import (
 
 // Config object
 type Config struct {
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	DBPort      string
 	PrivateKey  *rsa.PrivateKey
 	S3Bucket    string
 	S3Region    string
@@ -46,6 +50,10 @@ func Init() {
 		log.Fatalln("Error loading .env file")
 	}
 
+	DBUser := getEnvVar("DB_USER")
+	DBPassword := getEnvVar("DB_PASSWORD")
+	DBName := getEnvVar("DB_NAME")
+	DBPort := getEnvVar("DB_PORT")
 	S3Bucket := getEnvVar("S3_BUCKET")
 	S3Region := getEnvVar("S3_REGION")
 	S3AccessKey := getEnvVar("S3_ACCESS_KEY")
@@ -79,6 +87,10 @@ func Init() {
 	}
 
 	config = &Config{
+		DBUser:      DBUser,
+		DBPassword:  DBPassword,
+		DBName:      DBName,
+		DBPort:      DBPort,
 		PrivateKey:  privateKey,
 		S3Bucket:    S3Bucket,
 		S3Region:    S3Region,
