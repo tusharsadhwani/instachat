@@ -22,19 +22,18 @@ func RunApp() {
 		return c.SendString("Hello, World 👋!")
 	})
 
-	app.Get("/chat", GetChats)
-	app.Get("/chat/:id", GetChatByID)
+	public := app.Group("/public")
 
-	app.Get("/chat/:id/message/:cursor?", GetPaginatedChatMessages)
-	app.Get("/chat/:id/oldmessage/:cursor?", GetOlderChatMessages)
-	app.Get("/chat/:id/message/all", GetChatMessages)
+	public.Get("/chat", GetChats)
+	public.Get("/chat/:id", GetChatByID)
+	public.Get("/chat/:id/message/:cursor?", GetPaginatedChatMessages)
+	public.Get("/chat/:id/oldmessage/:cursor?", GetOlderChatMessages)
+	public.Get("/chat/:id/message/all", GetChatMessages)
 
-	app.Get("/user", GetUsers)
-	app.Get("/user/:id", GetUserByID)
+	public.Get("/user", GetUsers)
+	public.Get("/user/:id", GetUserByID)
 
 	app.Post("/login", LoginGoogle)
-
-	app.Get("/image", GetPresignedURL)
 
 	app.Use(jwtware.New(jwtware.Config{
 		SigningMethod: "RS256",
@@ -51,13 +50,13 @@ func RunApp() {
 
 	app.Get("/ws/:id/chat/:chatid", websocket.New(WebsocketUpdates))
 
-	app.Get("/restricted", Restricted)
-
 	app.Get("/user/:id/chat", GetUserChats)
 	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/chat", CreateChat)
 	app.Post("/chat/:address", JoinChat)
+
+	app.Get("/image/:filename", GetImagePresignedURL)
 
 	app.Listen(fmt.Sprintf(":%s", cfg.Port))
 }

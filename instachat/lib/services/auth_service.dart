@@ -24,7 +24,7 @@ class Auth extends ChangeNotifier {
     trySignInSilently();
   }
 
-  final domain = "localhost:3000";
+  final domain = "localhost:5555";
 
   GoogleSignInAccount _account;
   GoogleSignInAccount get account => _account;

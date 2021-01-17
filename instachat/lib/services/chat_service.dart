@@ -81,7 +81,7 @@ class ChatService extends ChangeNotifier {
     loadingOlderMessages = true;
 
     final response = await dio.get(
-      "http://${auth.domain}/chat/$chatId/oldmessage/$prevCursor",
+      "http://${auth.domain}/public/chat/$chatId/oldmessage/$prevCursor",
       options: authOptions,
     );
     prevCursor = response.data['next'];
@@ -103,7 +103,7 @@ class ChatService extends ChangeNotifier {
     loadingNewerMessages = true;
 
     final response = await dio.get(
-      "http://${auth.domain}/chat/$chatId/message/$nextCursor",
+      "http://${auth.domain}/public/chat/$chatId/message/$nextCursor",
       options: authOptions,
     );
     nextCursor = response.data['next'];
@@ -186,7 +186,7 @@ class ChatService extends ChangeNotifier {
 
     // TODO: empty message cache (for now)
     final response = await dio.get(
-      "http://${auth.domain}/chat/$chatId/oldmessage",
+      "http://${auth.domain}/public/chat/$chatId/oldmessage",
       options: authOptions,
     );
     final _next = response.data['next'];

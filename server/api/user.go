@@ -25,14 +25,6 @@ type User struct {
 	GoogleID string `json:"googleID"`
 }
 
-// Restricted tests if a user is logged in
-func Restricted(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	return c.SendString("Welcome " + name)
-}
-
 // GetUsers gets all chats
 func GetUsers(c *fiber.Ctx) error {
 	db := database.GetDB()
