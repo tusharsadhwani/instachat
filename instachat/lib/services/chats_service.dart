@@ -7,11 +7,14 @@ import '../models/chat.dart';
 class ChatsService extends ChangeNotifier {
   final Dio dio;
   final Auth auth;
+  final Options authOptions;
   List<Chat> _chats = [];
 
   List<Chat> get chats => _chats;
 
-  ChatsService(this.auth) : dio = new Dio() {
+  ChatsService(this.auth)
+      : dio = new Dio(),
+        authOptions = Options(headers: auth.headers) {
     this.updateChats();
   }
 
@@ -19,7 +22,7 @@ class ChatsService extends ChangeNotifier {
     final userId = auth.user.id;
     final response = await dio.get(
       "http://${auth.domain}/user/$userId/chat",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      options: authOptions,
     );
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();
     notifyListeners();
@@ -28,7 +31,7 @@ class ChatsService extends ChangeNotifier {
   Future<void> createChat(String address, String name) async {
     await dio.post(
       "http://${auth.domain}/chat",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      options: authOptions,
       data: {
         'address': address,
         'name': name,
@@ -40,7 +43,7 @@ class ChatsService extends ChangeNotifier {
   Future<void> joinChat(String address) async {
     await dio.post(
       "http://${auth.domain}/chat/$address",
-      options: Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+      options: authOptions,
     );
     updateChats();
   }

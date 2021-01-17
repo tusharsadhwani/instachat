@@ -9,15 +9,19 @@ import 'package:path_provider/path_provider.dart';
 import '../models/message.dart';
 
 class MessageCache {
-  Queue<Message> messages;
+  static const limit = 15;
+
+  Queue<Message> _messages;
+  Queue<Message> get messages => _messages;
+
   String filename;
 
   MessageCache({@required this.filename}) {
-    messages = Queue();
+    _messages = Queue();
   }
 
   MessageCache.fromMap(dynamic data, {@required this.filename}) {
-    messages = Queue.from(data.map<Message>((m) => Message.fromMap(m)));
+    _messages = Queue.from(data.map<Message>((m) => Message.fromMap(m)));
   }
 
   bool get isEmpty => messages.isEmpty;
@@ -44,25 +48,23 @@ class MessageCache {
   bool get full => messages.length >= 15;
 
   void pushFirst(Message message) {
-    if (messages.length < 15) messages.addFirst(message);
+    if (messages.length < limit) messages.addFirst(message);
   }
 
   void pushLast(Message message) {
     messages.addLast(message);
-    if (messages.length > 15) messages.removeFirst();
+    if (messages.length > limit) messages.removeFirst();
+  }
+
+  void clear() {
+    _messages = Queue();
   }
 
   Future<void> save() async {
-    print('saving last 15 to cache...');
-    final cacheMessages = messages.map((m) => m.toMap()).toList();
-    print('cache order:');
-    print(cacheMessages.map((m) => m['id']).join(' '));
-
     final docDir = await getApplicationDocumentsDirectory();
-    print(docDir.path);
-
     final cacheFile = File(path.join(docDir.path, filename));
 
-    cacheFile.writeAsStringSync(jsonEncode(cacheMessages));
+    final cacheMessageData = messages.map((m) => m.toMap()).toList();
+    cacheFile.writeAsStringSync(jsonEncode(cacheMessageData));
   }
 }

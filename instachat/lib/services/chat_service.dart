@@ -20,7 +20,7 @@ class ChatService extends ChangeNotifier {
 
   ChatService(this.auth, this.chatId)
       : dio = Dio(),
-        authOptions = Options(headers: {"Authorization": "Bearer ${auth.jwt}"}),
+        authOptions = Options(headers: auth.headers),
         cacheFilename = '${auth.user.id}_$chatId.json';
 
   List<Message> _messages = [];
@@ -82,7 +82,6 @@ class ChatService extends ChangeNotifier {
 
     final response = await dio.get(
       "http://${auth.domain}/public/chat/$chatId/oldmessage/$prevCursor",
-      options: authOptions,
     );
     prevCursor = response.data['next'];
 
@@ -104,7 +103,6 @@ class ChatService extends ChangeNotifier {
 
     final response = await dio.get(
       "http://${auth.domain}/public/chat/$chatId/message/$nextCursor",
-      options: authOptions,
     );
     nextCursor = response.data['next'];
 
@@ -124,7 +122,7 @@ class ChatService extends ChangeNotifier {
   Future<void> connectWebsocket() async {
     _ws = await WebSocket.connect(
       'ws://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
-      headers: {"Authorization": "Bearer ${auth.jwt}"},
+      headers: auth.headers,
     );
 
     try {
@@ -184,10 +182,8 @@ class ChatService extends ChangeNotifier {
     _oldMessages = [];
     nextCursor = -1;
 
-    // TODO: empty message cache (for now)
     final response = await dio.get(
       "http://${auth.domain}/public/chat/$chatId/oldmessage",
-      options: authOptions,
     );
     final _next = response.data['next'];
 
@@ -196,6 +192,8 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
 
     _messages = latestMessages.reversed.toList();
+
+    cache.clear();
     _messages.forEach((m) => cache.pushLast(m));
 
     if (_next == -1) {

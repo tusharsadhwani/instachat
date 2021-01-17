@@ -48,19 +48,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (isAtTop &&
         !chatService.loadingOlderMessages &&
         !chatService.allOlderMessagesLoaded) {
-      print('Loading more older chats...');
       chatService.loadOlderMessages();
     }
     if (isAtBottom &&
         !chatService.loadingNewerMessages &&
         !chatService.allNewerMessagesLoaded) {
-      print('Loading more newer chats...');
       chatService.loadNewerMessages();
     }
   }
 
   void _scrollToBottom() {
-    print('scrolling to bottom');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.animateTo(
         _controller.position.maxScrollExtent,
