@@ -5,20 +5,13 @@ import './likeable.dart';
 import '../models/message.dart';
 
 class MessageBubble extends StatelessWidget {
-  final String message;
   final Color backgroundColor;
+  final String text;
 
-  const MessageBubble(
-    this.message, {
-    Key key,
-    this.backgroundColor,
-  }) : super(key: key);
+  const MessageBubble(this.text, {@required this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
-    if (emojiRegex.allMatches(message).length == message.characters.length)
-      return Text(message, style: TextStyle(fontSize: 28));
-
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
@@ -29,7 +22,55 @@ class MessageBubble extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Text(message),
+        child: Text(text),
+      ),
+    );
+  }
+}
+
+class TextMessage extends StatelessWidget {
+  final String text;
+  final Color backgroundColor;
+
+  const TextMessage(
+    this.text, {
+    Key key,
+    this.backgroundColor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (emojiRegex.allMatches(text).length == text.characters.length)
+      return Text(text, style: TextStyle(fontSize: 28));
+
+    return MessageBubble(text, backgroundColor: backgroundColor);
+  }
+}
+
+class ImageMessage extends StatelessWidget {
+  final String filePath;
+
+  ImageMessage(this.filePath);
+  final BorderRadius borderRadius = BorderRadius.circular(24);
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: 2 / 3,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).appBarTheme.color,
+          ),
+          borderRadius: borderRadius,
+        ),
+        child: ClipRRect(
+          borderRadius: borderRadius,
+          child: Image.asset(
+            filePath,
+            fit: BoxFit.fitWidth,
+          ),
+        ),
       ),
     );
   }
@@ -55,10 +96,12 @@ class MessageBase extends StatelessWidget {
       key: ValueKey(message.id),
       initiallyLiked: liked,
       onLikeChanged: onLikeChanged,
-      child: MessageBubble(
-        message.content,
-        backgroundColor: backgroundColor,
-      ),
+      child: message.imageUrl != null
+          ? ImageMessage(message.imageUrl)
+          : TextMessage(
+              message.content,
+              backgroundColor: backgroundColor,
+            ),
     );
   }
 }

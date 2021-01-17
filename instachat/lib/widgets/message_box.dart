@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/message.dart';
 import '../services/chat_service.dart';
@@ -13,7 +14,28 @@ class MessageBox extends StatefulWidget {
 }
 
 class _MessageBoxState extends State<MessageBox> {
-  var _messageController = TextEditingController();
+  final picker = ImagePicker();
+
+  TextEditingController _messageController;
+  bool textIsEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageController = TextEditingController();
+    textIsEmpty = true;
+
+    _messageController.addListener(() {
+      final messageText = _messageController.text.trim();
+      setState(() => textIsEmpty = messageText == '');
+    });
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
 
   void sendMessage() {
     final messageText = _messageController.text.trim();
@@ -26,6 +48,18 @@ class _MessageBoxState extends State<MessageBox> {
     );
     widget.chatService.sendMessage(message);
     _messageController.clear();
+  }
+
+  Future<void> sendImage() async {
+    final pickedImage = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedImage != null) {
+        widget.chatService.sendImage(pickedImage.path);
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 
   @override
@@ -65,10 +99,18 @@ class _MessageBoxState extends State<MessageBox> {
                   ),
                 ),
               ),
+              if (textIsEmpty)
+                IconButton(
+                  icon: Icon(Icons.attach_file),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                  color: Colors.grey,
+                  onPressed: sendImage,
+                ),
               GestureDetector(
                 onTap: sendMessage,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.only(left: 8, right: 16),
                   child: Text(
                     'Send',
                     style: Theme.of(context)

@@ -130,6 +130,8 @@ class ChatService extends ChangeNotifier {
         _ws.listen(
           (data) {
             final update = Update.fromJson(data);
+            userSentNewMessage = false;
+
             switch (update.type) {
               case UpdateType.MESSAGE:
                 userSentNewMessage = update.message.senderId == auth.user.id;
@@ -168,7 +170,7 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  Future<void> sendMessage(Message message) async {
+  void sendMessage(Message message) async {
     final update = Update(message: message);
     _ws.add(update.toJson());
   }
@@ -176,6 +178,17 @@ class ChatService extends ChangeNotifier {
   void like(String messageId) {
     final update = Update(messageId: messageId);
     _ws.add(update.toJson());
+  }
+
+  void sendImage(String filePath) {
+    final message = Message(
+      senderId: auth.user.id,
+      senderName: auth.user.name,
+      imageUrl: filePath,
+    );
+    _messages.add(message);
+    userSentNewMessage = true;
+    notifyListeners();
   }
 
   Future<void> jumpToLatestMessages() async {

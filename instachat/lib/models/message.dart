@@ -9,16 +9,23 @@ class Message {
   final int senderId;
   final String senderName;
   final String content;
+  final String imageUrl;
 
   bool liked;
 
   Message({
     @required this.senderId,
     @required this.senderName,
-    @required this.content,
+    this.content,
+    this.imageUrl,
     this.index = 0,
     this.liked = false,
-  }) : this.id = uuid.v4();
+  })  : this.id = uuid.v4(),
+        assert(
+          (content != null && content.trim() != "") ||
+              (imageUrl != null && imageUrl.trim() != ""),
+          "Either content or image url must be provided",
+        );
 
   Message.fromMap(Map<String, dynamic> message)
       : senderId = message['userid'],
@@ -26,7 +33,8 @@ class Message {
         content = message['text'],
         liked = message['liked'],
         id = message['uuid'],
-        index = message['id'];
+        index = message['id'],
+        imageUrl = message['imageUrl'];
 
   Map<String, dynamic> toMap() {
     return {
