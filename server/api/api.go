@@ -33,6 +33,10 @@ func RunApp() {
 	public.Get("/user", GetUsers)
 	public.Get("/user/:id", GetUserByID)
 
+	public.Get("*", func(c *fiber.Ctx) error {
+		return c.Status(404).SendString("404 Not found")
+	})
+
 	app.Post("/login", LoginGoogle)
 
 	app.Use(jwtware.New(jwtware.Config{
