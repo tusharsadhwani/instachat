@@ -33,6 +33,9 @@ func getEnvVar(varname string) string {
 	if !ok {
 		log.Fatalf("%s not found in environment variables\n", varname)
 	}
+	if envvar == "" {
+		log.Printf("Warning: Environment variable %s is empty\n", varname)
+	}
 	return envvar
 }
 
