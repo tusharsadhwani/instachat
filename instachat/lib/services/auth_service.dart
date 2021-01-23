@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'package:google_sign_in/google_sign_in.dart';
@@ -25,7 +26,7 @@ class Auth extends ChangeNotifier {
     trySignInSilently();
   }
 
-  final domain = "localhost:5555";
+  final domain = kReleaseMode ? dotenv.env['DOMAIN'] : 'localhost:5555';
   final s3Url = dotenv.env['S3_URL'];
 
   GoogleSignInAccount _account;
