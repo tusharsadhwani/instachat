@@ -17,7 +17,10 @@ A working replica of Instagram DMs and stories, written in Flutter and Go.
 
   To generate an RSA key pair for the app.
 
-- Edit `.env` to add your database config
+- Edit `./server/.env` to add your database and AWS config
+
+  Look at `./server/.env.example` for more info.
+
 - Run:
 
   ```bash
@@ -48,7 +51,10 @@ A working replica of Instagram DMs and stories, written in Flutter and Go.
 
   To generate an RSA key pair for the app.
 
-- Edit `.env` to add your database config
+- Edit `./server/.env` to add your database and AWS config.
+
+  Look at `./server/.env.example` for more info.
+
 - Run:
 
   ```bash
@@ -58,9 +64,12 @@ A working replica of Instagram DMs and stories, written in Flutter and Go.
 
 ### App
 
-Note: This process will be improved sometime soon
+- Edit `./instachat/.env` to set `DOMAIN` as the domain of your backend, along
+  with your AWS S3 bucket URL.
 
-- Edit `./instachat/lib/services/auth_service.dart` to change `domain` from `localhost:5555` to the URL of your backend domain.
+  Look at `./instachat/.env.example` for more info.
+
+  > NOTE: The S3 bucket should be given public access to read objects for this to work.
 
 - In the `./instachat` sub-folder, run:
 
