@@ -48,9 +48,9 @@ class TextMessage extends StatelessWidget {
 }
 
 class ImageMessage extends StatelessWidget {
-  final String filePath;
+  final String imageUrl;
 
-  ImageMessage(this.filePath);
+  ImageMessage(this.imageUrl);
   final BorderRadius borderRadius = BorderRadius.circular(24);
 
   @override
@@ -66,8 +66,8 @@ class ImageMessage extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: borderRadius,
-          child: Image.asset(
-            filePath,
+          child: Image.network(
+            imageUrl,
             fit: BoxFit.fitWidth,
           ),
         ),

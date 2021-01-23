@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -42,6 +44,8 @@ class ChatService extends ChangeNotifier {
   bool userSentNewMessage = false;
 
   MessageCache cache;
+
+  final picker = ImagePicker();
 
   Future<void> initialize() async {
     await loadCachedMessages();
@@ -180,15 +184,48 @@ class ChatService extends ChangeNotifier {
     _ws.add(update.toJson());
   }
 
-  void sendImage(String filePath) {
-    final message = Message(
-      senderId: auth.user.id,
-      senderName: auth.user.name,
-      imageUrl: filePath,
+  Future<PickedFile> pickImage() async {
+    return picker.getImage(source: ImageSource.gallery, imageQuality: 40);
+  }
+
+  Future<void> sendImage(String filePath) async {
+    String fileName = path.basename(filePath);
+
+    final urlResponse = await dio.get(
+      "http://${auth.domain}/image/$fileName",
+      options: authOptions,
     );
-    _messages.add(message);
-    userSentNewMessage = true;
-    notifyListeners();
+
+    if (urlResponse.statusCode != HttpStatus.ok) {
+      print(urlResponse.data); //TODO: error handling
+      return;
+    }
+    final signedUrl = urlResponse.data.toString();
+    print(signedUrl);
+
+    final uploadResponse = await http.put(
+      signedUrl,
+      headers: {
+        HttpHeaders.contentTypeHeader: 'image/jpeg',
+      },
+      body: File(filePath).readAsBytesSync(),
+    );
+
+    if (uploadResponse.statusCode != HttpStatus.ok) {
+      print(uploadResponse.body); //TODO: error handling
+      return;
+    }
+
+    // final message = Message(
+    //   senderId: auth.user.id,
+    //   senderName: auth.user.name,
+    //   imageUrl: imageUrl,
+    // );
+    // final update = Update(message: message);
+
+    // _messages.add(message);
+    // userSentNewMessage = true;
+    // notifyListeners();
   }
 
   Future<void> jumpToLatestMessages() async {

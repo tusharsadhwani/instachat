@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../models/message.dart';
 import '../services/chat_service.dart';
@@ -14,8 +13,6 @@ class MessageBox extends StatefulWidget {
 }
 
 class _MessageBoxState extends State<MessageBox> {
-  final picker = ImagePicker();
-
   TextEditingController _messageController;
   bool textIsEmpty;
 
@@ -51,7 +48,7 @@ class _MessageBoxState extends State<MessageBox> {
   }
 
   Future<void> sendImage() async {
-    final pickedImage = await picker.getImage(source: ImageSource.gallery);
+    final pickedImage = await widget.chatService.pickImage();
 
     setState(() {
       if (pickedImage != null) {
