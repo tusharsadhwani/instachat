@@ -26,9 +26,9 @@ func InitWebsocket() {
 
 // WebsocketParams defines the shape of the json received over websockets
 type WebsocketParams struct {
-	Type      string         `json:"type"`
-	Message   *MessageParams `json:"message"`
-	MessageID *string        `json:"messageId"`
+	Type      string   `json:"type"`
+	Message   *Message `json:"message"`
+	MessageID *string  `json:"messageId"`
 }
 
 // WebsocketUpdates receives all websocket updates in a chatroom

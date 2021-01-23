@@ -34,5 +34,8 @@ func GetImagePresignedURL(c *fiber.Ctx) error {
 		Timestamp:     timestamp,
 		ExpirySeconds: 1000,
 	})
-	return c.SendString(url)
+	return c.JSON(&fiber.Map{
+		"url":      url,
+		"filename": objectKey,
+	})
 }

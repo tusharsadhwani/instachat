@@ -12,11 +12,12 @@ import (
 
 // Message is what the API will use to represent DBMessage
 type Message struct {
-	ID     int    `json:"id"`
-	UUID   string `json:"uuid"`
-	Chatid *int   `json:"chatid"`
-	Userid *int   `json:"userid"`
-	Text   string `json:"text"`
+	ID       int     `json:"id"`
+	UUID     string  `json:"uuid"`
+	Chatid   *int    `json:"chatid"`
+	Userid   *int    `json:"userid"`
+	Text     *string `json:"text"`
+	ImageURL *string `json:"imageUrl"`
 	// Likes  []Like `json:"likes"`
 	Liked bool `json:"liked"`
 }
@@ -186,17 +187,8 @@ func GetOlderChatMessages(c *fiber.Ctx) error {
 	})
 }
 
-// MessageParams are the message params to be received from the client
-type MessageParams struct {
-	ID     int    `json:"id"`
-	UUID   string `json:"uuid"`
-	Userid int    `json:"userid"`
-	Text   string `json:"text"`
-	Liked  bool   `json:"liked"`
-}
-
 // SaveMessage saves given message to the database
-func SaveMessage(chatid int, userid int, params *MessageParams) (Message, error) {
+func SaveMessage(chatid int, userid int, msg *Message) (Message, error) {
 	db := database.GetDB()
 
 	var dbchat models.DBChat
@@ -211,7 +203,7 @@ func SaveMessage(chatid int, userid int, params *MessageParams) (Message, error)
 	}
 
 	var dbmessage models.DBMessage
-	copier.Copy(&dbmessage, &params)
+	copier.Copy(&dbmessage, &msg)
 	dbmessage.Chatid = &dbchat.Chatid
 	dbmessage.Userid = &dbuser.Userid
 	result := db.Create(&dbmessage)

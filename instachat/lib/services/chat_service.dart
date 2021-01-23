@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -200,8 +200,9 @@ class ChatService extends ChangeNotifier {
       print(urlResponse.data); //TODO: error handling
       return;
     }
-    final signedUrl = urlResponse.data.toString();
-    print(signedUrl);
+    final responseData = urlResponse.data;
+    String signedUrl = responseData['url'];
+    String uploadedFileName = responseData['filename'];
 
     final uploadResponse = await http.put(
       signedUrl,
@@ -216,16 +217,15 @@ class ChatService extends ChangeNotifier {
       return;
     }
 
-    // final message = Message(
-    //   senderId: auth.user.id,
-    //   senderName: auth.user.name,
-    //   imageUrl: imageUrl,
-    // );
-    // final update = Update(message: message);
+    final imageUrl = '${auth.s3Url}/$uploadedFileName';
 
-    // _messages.add(message);
-    // userSentNewMessage = true;
-    // notifyListeners();
+    final message = Message(
+      senderId: auth.user.id,
+      senderName: auth.user.name,
+      imageUrl: imageUrl,
+    );
+    final update = Update(message: message);
+    _ws.add(update.toJson());
   }
 
   Future<void> jumpToLatestMessages() async {

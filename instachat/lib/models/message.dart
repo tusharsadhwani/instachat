@@ -41,8 +41,10 @@ class Message {
       'id': index,
       'uuid': id,
       'userid': senderId,
+      //TODO: add chat id and get rid of uuid
       'text': content,
       'liked': liked,
+      'imageUrl': imageUrl,
     };
   }
 }

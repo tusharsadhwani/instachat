@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'package:provider/provider.dart';
 
 import './pages/chats_page.dart';
@@ -9,7 +10,8 @@ import './pages/splash_screen.dart';
 import './services/auth_service.dart';
 import './services/chats_service.dart';
 
-void main() {
+void main() async {
+  await dotenv.load();
   runApp(MyApp());
 }
 
