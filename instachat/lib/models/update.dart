@@ -17,7 +17,9 @@ class Update {
   Update.fromJson(String data) {
     final updateData = jsonDecode(data);
     type = updateData['type'];
-    message = updateData['message'];
+    message = updateData['message'] == null
+        ? null
+        : Message.fromMap(updateData['message']);
     messageId = updateData['messageId'];
   }
 
