@@ -65,13 +65,15 @@ func WebsocketUpdates(c *websocket.Conn) {
 		case "MESSAGE":
 			savedMsg, _ := SaveMessage(chatid, userid, params.Message)
 			params.Message.ID = savedMsg.ID
+			msg, _ = json.Marshal(params)
 		case "LIKE":
 			LikeMessage(chatid, userid, *params.MessageID)
+		case "UNLIKE":
+			UnlikeMessage(chatid, userid, *params.MessageID)
 		}
 
-		updatedMsg, _ := json.Marshal(params)
 		for _, member := range chats[chatid] {
-			if err = member.conn.WriteMessage(mt, updatedMsg); err != nil {
+			if err = member.conn.WriteMessage(mt, msg); err != nil {
 				log.Println("write:", err)
 				break
 			}

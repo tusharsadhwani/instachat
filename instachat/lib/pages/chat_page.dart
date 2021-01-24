@@ -214,13 +214,17 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             message,
             key: ValueKey(message.liked),
             liked: message.liked,
-            onLikeChanged: (_) => chatService.like(message.id),
+            onLikeChanged: message.liked
+                ? (_) => chatService.unlike(message.id)
+                : (_) => chatService.like(message.id),
           )
         : MessageLeft(
             message,
             key: ValueKey(message.liked),
             liked: message.liked,
-            onLikeChanged: (_) => chatService.like(message.id),
+            onLikeChanged: message.liked
+                ? (_) => chatService.unlike(message.id)
+                : (_) => chatService.like(message.id),
             isFirstMessageFromSender: isFirstMessage,
           );
   }

@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:meta/meta.dart';
 
 import './message.dart';
 
 class UpdateType {
-  static const MESSAGE = 'MESSAGE', LIKE = 'LIKE';
+  static const MESSAGE = 'MESSAGE', LIKE = 'LIKE', UNLIKE = 'UNLIKE';
 }
 
 class Update {
@@ -11,18 +12,13 @@ class Update {
   Message message;
   String messageId;
 
-  Update({this.message, this.messageId})
-      : type = message != null ? UpdateType.MESSAGE : UpdateType.LIKE;
+  Update({@required this.type, this.message, this.messageId});
 
   Update.fromJson(String data) {
-    final update = jsonDecode(data);
-    if (update['message'] != null) {
-      type = UpdateType.MESSAGE;
-      message = Message.fromMap(update['message']);
-    } else {
-      type = UpdateType.LIKE;
-      messageId = update['messageId'];
-    }
+    final updateData = jsonDecode(data);
+    type = updateData['type'];
+    message = updateData['message'];
+    messageId = updateData['messageId'];
   }
 
   String toJson() {

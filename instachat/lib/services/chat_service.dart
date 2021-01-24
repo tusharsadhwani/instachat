@@ -159,6 +159,21 @@ class ChatService extends ChangeNotifier {
                   if (cachedMsg != null) cachedMsg.liked = true;
                 }
                 break;
+              case UpdateType.UNLIKE:
+                final message = _messages.firstWhere(
+                  (msg) => msg.id == update.messageId,
+                  orElse: () => _oldMessages.firstWhere(
+                    (msg) => msg.id == update.messageId,
+                  ),
+                );
+                if (message != null) {
+                  message.liked = false;
+                  final cachedMsg = cache.messages.firstWhere(
+                    (msg) => msg.id == update.messageId,
+                  );
+                  if (cachedMsg != null) cachedMsg.liked = false;
+                }
+                break;
             }
 
             notifyListeners();
@@ -175,12 +190,17 @@ class ChatService extends ChangeNotifier {
   }
 
   void sendMessage(Message message) async {
-    final update = Update(message: message);
+    final update = Update(type: UpdateType.MESSAGE, message: message);
     _ws.add(update.toJson());
   }
 
   void like(String messageId) {
-    final update = Update(messageId: messageId);
+    final update = Update(type: UpdateType.LIKE, messageId: messageId);
+    _ws.add(update.toJson());
+  }
+
+  void unlike(String messageId) {
+    final update = Update(type: UpdateType.UNLIKE, messageId: messageId);
     _ws.add(update.toJson());
   }
 
@@ -224,7 +244,7 @@ class ChatService extends ChangeNotifier {
       senderName: auth.user.name,
       imageUrl: imageUrl,
     );
-    final update = Update(message: message);
+    final update = Update(type: UpdateType.MESSAGE, message: message);
     _ws.add(update.toJson());
   }
 
