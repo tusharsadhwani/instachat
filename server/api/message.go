@@ -22,6 +22,45 @@ type Message struct {
 	Liked bool `json:"liked"`
 }
 
+/*
+Issue:
+	currently you can't get a message response object to be nested with chat object or user object:
+
+		message: {
+			id: 101,
+			chat: {
+				id: 14987292,
+				name: "Test Chat",
+				imageUrl: "...",
+			},
+			user: {
+				id: 123456,
+				name: "John Doe"
+				imageUrl: "...",
+			},
+			text: "Hello"
+		}
+
+	Proposal: instead of doing
+
+		db.Model(&dbmessage{ID: ...}).Find(&message)
+
+	Do:
+
+		db.Model(&DBMessage{ID: ...}).Find(&dbmessage)
+		copier.Copy(&message, &dbmessages)
+
+		db.Model(&DBUser{ID: dbmessage.Userid}).Find(&dbuser)
+		copier.Copy(&user, &dbuser)
+		message.User = user
+
+		db.Model(&DBChat{ID: dbmessage.Chatid}).Find(&dbchat)
+		copier.Copy(&chat, &dbchat)
+		message.Chat = chat
+
+I Don't think this is optimal at all.
+*/
+
 // Like is what the API will use to represent DBLike
 type Like struct {
 	ID        int    `json:"id"`
