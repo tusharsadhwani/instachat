@@ -2,9 +2,7 @@
 
 A working replica of Instagram DMs and stories, written in Flutter and Go.
 
-<img src="https://user-images.githubusercontent.com/43412083/105750515-d9ca0680-5f6a-11eb-8681-0451f21fd935.png" width="300" >
-
-<img src="https://user-images.githubusercontent.com/43412083/105750622-fbc38900-5f6a-11eb-884b-71de91ed4f2b.png" width="300" hspace="20">
+<img src="https://user-images.githubusercontent.com/43412083/105750515-d9ca0680-5f6a-11eb-8681-0451f21fd935.png" width="300" > <img src="https://user-images.githubusercontent.com/43412083/105750622-fbc38900-5f6a-11eb-884b-71de91ed4f2b.png" width="300" hspace="20">
 
 > **Note:** This is currently a work in progress.
 
