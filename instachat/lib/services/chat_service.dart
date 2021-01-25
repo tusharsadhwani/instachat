@@ -129,9 +129,6 @@ class ChatService extends ChangeNotifier {
       headers: auth.headers,
     );
 
-    // _ws.badCertificateCallback =
-    //     (X509Certificate cert, String host, int port) => true;
-
     try {
       if (_ws?.readyState == WebSocket.open) {
         _ws.listen(
