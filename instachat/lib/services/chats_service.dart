@@ -13,7 +13,7 @@ class ChatsService extends ChangeNotifier {
   List<Chat> get chats => _chats;
 
   ChatsService(this.auth)
-      : dio = new Dio(),
+      : dio = Dio(),
         authOptions = Options(headers: auth.headers) {
     this.updateChats();
   }
@@ -21,7 +21,7 @@ class ChatsService extends ChangeNotifier {
   Future<void> updateChats() async {
     final userId = auth.user.id;
     final response = await dio.get(
-      "http://${auth.domain}/user/$userId/chat",
+      "https://${auth.domain}/user/$userId/chat",
       options: authOptions,
     );
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();
@@ -30,7 +30,7 @@ class ChatsService extends ChangeNotifier {
 
   Future<void> createChat(String address, String name) async {
     await dio.post(
-      "http://${auth.domain}/chat",
+      "https://${auth.domain}/chat",
       options: authOptions,
       data: {
         'address': address,
@@ -42,7 +42,7 @@ class ChatsService extends ChangeNotifier {
 
   Future<void> joinChat(String address) async {
     await dio.post(
-      "http://${auth.domain}/chat/$address",
+      "https://${auth.domain}/chat/$address",
       options: authOptions,
     );
     updateChats();

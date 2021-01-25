@@ -45,7 +45,7 @@ class Auth extends ChangeNotifier {
   Future<void> getJWT(String idToken) async {
     log(idToken);
     try {
-      final response = await _dio.post("http://$domain/login", data: idToken);
+      final response = await _dio.post("https://$domain/login", data: idToken);
       _jwt = response.data['token'];
       _user = UserData.fromMap(response.data['user']);
       _state = AuthState.LOGGED_IN;

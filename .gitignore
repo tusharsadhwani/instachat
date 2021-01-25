@@ -1,2 +1,4 @@
-server/.env
 instachat/.env
+server/.env
+server/localhost.pem
+server/localhost-key.pem

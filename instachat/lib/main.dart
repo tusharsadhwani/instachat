@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
@@ -10,8 +12,18 @@ import './pages/splash_screen.dart';
 import './services/auth_service.dart';
 import './services/chats_service.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() async {
   await dotenv.load();
+  HttpOverrides.global = MyHttpOverrides();
   runApp(MyApp());
 }
 

@@ -85,7 +85,7 @@ class ChatService extends ChangeNotifier {
     loadingOlderMessages = true;
 
     final response = await dio.get(
-      "http://${auth.domain}/public/chat/$chatId/oldmessage/$prevCursor",
+      "https://${auth.domain}/public/chat/$chatId/oldmessage/$prevCursor",
     );
     prevCursor = response.data['next'];
 
@@ -106,7 +106,7 @@ class ChatService extends ChangeNotifier {
     loadingNewerMessages = true;
 
     final response = await dio.get(
-      "http://${auth.domain}/public/chat/$chatId/message/$nextCursor",
+      "https://${auth.domain}/public/chat/$chatId/message/$nextCursor",
     );
     nextCursor = response.data['next'];
 
@@ -125,9 +125,12 @@ class ChatService extends ChangeNotifier {
 
   Future<void> connectWebsocket() async {
     _ws = await WebSocket.connect(
-      'ws://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
+      'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
       headers: auth.headers,
     );
+
+    // _ws.badCertificateCallback =
+    //     (X509Certificate cert, String host, int port) => true;
 
     try {
       if (_ws?.readyState == WebSocket.open) {
@@ -212,7 +215,7 @@ class ChatService extends ChangeNotifier {
     String fileName = path.basename(filePath);
 
     final urlResponse = await dio.get(
-      "http://${auth.domain}/image/$fileName",
+      "https://${auth.domain}/image/$fileName",
       options: authOptions,
     );
 
@@ -253,7 +256,7 @@ class ChatService extends ChangeNotifier {
     nextCursor = -1;
 
     final response = await dio.get(
-      "http://${auth.domain}/public/chat/$chatId/oldmessage",
+      "https://${auth.domain}/public/chat/$chatId/oldmessage",
     );
     final _next = response.data['next'];
 

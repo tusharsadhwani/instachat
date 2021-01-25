@@ -62,5 +62,5 @@ func RunApp() {
 
 	app.Get("/image/:filename", GetImagePresignedURL)
 
-	app.Listen(fmt.Sprintf(":%s", cfg.Port))
+	app.ListenTLS(fmt.Sprintf(":%s", cfg.Port), "./localhost.pem", "./localhost-key.pem")
 }
