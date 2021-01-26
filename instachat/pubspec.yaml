@@ -1,9 +1,9 @@
 name: instachat
-description: A new Flutter project.
+description: A working replica of Instagram DMs and stories.
 
 publish_to: "none"
 
-version: 1.0.0+1
+version: 0.1.0+1
 
 environment:
   sdk: ">=2.7.0 <2.12.0"
