@@ -16,7 +16,7 @@ To deploy your own, you'll need an Amazon S3 bucket, a domain name and a VPS/clo
 
   - Be sure to un-check "Block all public access".
 
-  - Add the following bucket policy, to allow public read access:
+  - Add the following bucket policy, to allow public read access (replace `<bucket name>` with your S3 bucket name):
 
     ```json
     {
@@ -121,7 +121,8 @@ You will need [go](https://golang.org) and [flutter](https://flutter.dev) instal
 
   - Be sure to un-check "Block all public access".
 
-  - Add the following bucket policy, to allow public read access:
+  - Add the following bucket policy, to allow public read access
+    (replace `<bucket name>` with your S3 bucket name):
 
     ```json
     {
