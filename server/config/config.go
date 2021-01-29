@@ -18,6 +18,7 @@ type Config struct {
 	DBName      string
 	DBPort      string
 	PrivateKey  *rsa.PrivateKey
+	GCPClientID string
 	S3Bucket    string
 	S3Region    string
 	S3AccessKey string
@@ -54,6 +55,7 @@ func Init() {
 	DBPassword := getEnvVar("DB_PASSWORD")
 	DBName := getEnvVar("DB_NAME")
 	DBPort := getEnvVar("DB_PORT")
+	GCPClientID := getEnvVar("GCP_CLIENT_ID")
 	S3Bucket := getEnvVar("S3_BUCKET")
 	S3Region := getEnvVar("S3_REGION")
 	S3AccessKey := getEnvVar("S3_ACCESS_KEY")
@@ -92,6 +94,7 @@ func Init() {
 		DBName:      DBName,
 		DBPort:      DBPort,
 		PrivateKey:  privateKey,
+		GCPClientID: GCPClientID,
 		S3Bucket:    S3Bucket,
 		S3Region:    S3Region,
 		S3AccessKey: S3AccessKey,

@@ -63,6 +63,7 @@ class Auth extends ChangeNotifier {
       final auth = await _account.authentication;
       await getJWT(auth.idToken);
     } catch (e) {
+      //TODO: show error dialog
       _state = AuthState.LOGGED_OUT;
       notifyListeners();
     }
@@ -72,15 +73,15 @@ class Auth extends ChangeNotifier {
     _state = AuthState.WAITING;
     notifyListeners();
 
-    _account = await _googleSignIn.signIn();
-    if (account == null) {
+    try {
+      _account = await _googleSignIn.signIn();
+      final auth = await _account.authentication;
+      await getJWT(auth.idToken);
+    } catch (e) {
+      //TODO: show error dialog
       _state = AuthState.LOGGED_OUT;
       notifyListeners();
-      return;
     }
-
-    final auth = await _account.authentication;
-    await getJWT(auth.idToken);
   }
 
   Future<void> signOut() async {
