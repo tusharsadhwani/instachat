@@ -6,32 +6,199 @@ A working replica of Instagram DMs and stories, written in Flutter and Go.
 
 > **Note:** This is currently a work in progress.
 
-## Deploy your own
+## Before you start
 
-To deploy your own, you'll need an Amazon S3 bucket, a domain name and a VPS/cloud server. You can get all of these for free for limited use.
+To run your own instance, you'll need:
 
-### Server
+- a GCP project (for OAuth)
+- an Amazon S3 bucket
+- a domain name
+- a VPS/cloud server
 
-- Create an AWS S3 bucket for media hosting:
+You can get all of these for free for limited use.
 
-  - Be sure to un-check "Block all public access".
+1. Create a GCP Project and setup OAuth:
 
-  - Add the following bucket policy, to allow public read access (replace `<bucket name>` with your S3 bucket name):
+   - Log into [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
 
-    ```json
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "PublicReadGetObject",
-          "Effect": "Allow",
-          "Principal": "*",
-          "Action": "s3:GetObject",
-          "Resource": "arn:aws:s3:::<bucket name>/*"
-        }
-      ]
-    }
+2. Create an AWS S3 bucket for media hosting:
+
+   - Be sure to un-check "Block all public access".
+
+   - Add the following bucket policy, to allow public read access
+     (replace `<bucket name>` with your S3 bucket name):
+
+     ```json
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Sid": "PublicReadGetObject",
+           "Effect": "Allow",
+           "Principal": "*",
+           "Action": "s3:GetObject",
+           "Resource": "arn:aws:s3:::<bucket name>/*"
+         }
+       ]
+     }
+     ```
+
+## Local Development
+
+You will need [go](https://golang.org) and [flutter](https://flutter.dev) installed on your system.
+
+### App
+
+- Clone the repository:
+
+  ```bash
+  git clone https://github.com/tusharsadhwani/instachat
+  ```
+
+- Edit `./instachat/android/app/build.gradle`, change package name from:
+
+  ```gradle
+  defaultConfig {
+        applicationId "com.tusharsadhwani.instachat"
+        ...
+  ```
+
+  to your own package name, eg. `com.yourdomain.instachat`
+
+  ```gradle
+  defaultConfig {
+        applicationId "com.yourdomain.instachat"
+        ...
+  ```
+
+- Log into [Google Cloud Console](https://console.cloud.google.com/)
+
+  - Go to APIs & Services > OAuth consent screen, and:
+
+    - Choose the User Type to be **External**
+    - Add the required fields:
+      - App Name
+      - User Support Email
+      - Application Home Page (eg. `https://mydomain.com`)
+      - Application privacy policy link (eg. `https://mydomain.com/policy`)
+      - Application terms of service link (eg. `https://mydomain.com/terms`)
+      - Authorized domains (set it the same as the domain of above links)
+    - Save and Continue.
+
+  - Go to APIs & Services > Credentials, and:
+
+    - Click Create Credentials > OAuth Client ID
+    - Choose Application type: **Android**
+    - Add the package name (eg. `com.yourdomain.instachat`) and the SHA-1 key
+
+      (use `./gradlew signingReport` command in `./instachat/android/` subdirectory to get the SHA-1 value)
+
+    - Give it any name, and click Create.
+
+    - Click Create Credentials > OAuth Client ID (again)
+    - Choose Application type: **Web**
+    - Give it any name, and click Create.
+
+    - Copy the **Web Application** Client ID
+
+    - Now, create a file: `./instachat/app/src/main/res/values/strings.xml`
+    - Set its contents to be:
+
+      ```xml
+      <?xml version="1.0" encoding="utf-8"?>
+      <resources>
+          <string name="default_web_client_id">XXXXXXXXXXXX-YOUR_GCP_CLIENT_ID.apps.googleusercontent.com</string>
+      </resources>
+      ```
+
+      Replace the dummy client ID with the ID you copied from GCP.
+
+- Edit `./instachat/.env` to set `DOMAIN` as the domain name of your backend, along with your AWS S3 bucket URL.
+
+  (Look at `./instachat/.env.example` for more info)
+
+- In the `./instachat` subdirectory, run:
+
+  ```bash
+  flutter run
+  ```
+
+- To create Release builds of the app for use, run:
+
+  ```bash
+  flutter build apk --target-platform=android-arm64,android-arm,android-x64 --split-per-abi
+  ```
+
+  Created APKs will be present in `./instachat/build/app/outputs/flutter-apk/`
+
+### Backend
+
+- Setup a local SSL Certificate:
+
+  - Install [mkcert](https://github.com/filosottile/mkcert) to generate a self-signed certificate:
+
+  - On Linux, first install `certutil`:
+
+    ```bash
+    sudo apt install libnss3-tools
+        -or-
+    sudo yum install nss-tools
+        -or-
+    sudo pacman -S nss
+        -or-
+    sudo zypper install mozilla-nss-tools
     ```
+
+  - Then install mkcert:
+
+    ```bash
+    git clone https://github.com/filosottile/mkcert
+    cd mkcert
+    go install -ldflags "-X main.Version=$(git describe --tags)"
+    ```
+
+  - Move to the instachat `./server` subdirectory, and install the certificate:
+
+    ```bash
+    mkcert -install
+    mkcert localhost
+    ```
+
+    This will generate `localhost.pem` and `localhost-key.pem` files for your local HTTPS server.
+
+- Create a postgres database for the backend.
+
+- In the `./server` subdirectory, run:
+
+  ```bash
+  go run ./cmd/genkeys
+  ```
+
+  To generate an RSA key pair for the app.
+
+- Edit `./server/.env` to add your database and GCP/AWS credentials.
+
+  (Look at `./server/.env.example` for more info)
+
+- Run the server:
+
+  To get live reloading, use [air](https://github.com/cosmtrek/air):
+
+  ```bash
+  go get -u github.com/cosmtrek/air
+  ```
+
+  > Make sure $(go env GOPATH) is in your PATH.
+
+  Then run the command in `./server` subdirectory:
+
+  ```bash
+  air -c .air.toml
+  ```
+
+  to start the server with HTTPS and hot reload.
+
+## Deploy your own server
 
 - Setup the domain:
 
@@ -78,7 +245,7 @@ To deploy your own, you'll need an Amazon S3 bucket, a domain name and a VPS/clo
 
 - Create a postgres database for the backend.
 
-- Edit `./server/.env` to add your database and AWS credentials.
+- Edit `./server/.env` to add your database and GCP/AWS credentials.
 
   (Look at `./server/.env.example` for more info)
 
@@ -95,129 +262,4 @@ To deploy your own, you'll need an Amazon S3 bucket, a domain name and a VPS/clo
   ```bash
   go build ./cmd/server
   ./server
-  ```
-
-### App
-
-- Edit `./instachat/.env` to set `DOMAIN` as the domain name of your backend, along with your AWS S3 bucket URL.
-
-  (Look at `./instachat/.env.example` for more info)
-
-- In the `./instachat` subdirectory, run:
-
-  ```bash
-  flutter build apk --target-platform=android-arm64,android-arm,android-x64 --split-per-abi
-  ```
-
-Created APKs will be present in `./instachat/build/app/outputs/flutter-apk/`
-
-## Local Development
-
-You will need [go](https://golang.org) and [flutter](https://flutter.dev) installed on your system.
-
-### Backend
-
-- Create an AWS S3 bucket for media hosting:
-
-  - Be sure to un-check "Block all public access".
-
-  - Add the following bucket policy, to allow public read access
-    (replace `<bucket name>` with your S3 bucket name):
-
-    ```json
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "PublicReadGetObject",
-          "Effect": "Allow",
-          "Principal": "*",
-          "Action": "s3:GetObject",
-          "Resource": "arn:aws:s3:::<bucket name>/*"
-        }
-      ]
-    }
-    ```
-
-- Setup a local SSL Certificate:
-
-  - Install [mkcert](https://github.com/filosottile/mkcert) to generate a self-signed certificate:
-
-  - On Linux, first install `certutil`:
-
-    ```bash
-    sudo apt install libnss3-tools
-        -or-
-    sudo yum install nss-tools
-        -or-
-    sudo pacman -S nss
-        -or-
-    sudo zypper install mozilla-nss-tools
-    ```
-
-  - Then install mkcert:
-
-    ```bash
-    git clone https://github.com/filosottile/mkcert
-    cd mkcert
-    go install -ldflags "-X main.Version=$(git describe --tags)"
-    ```
-
-  - Move to the instachat `./server` subdirectory, and install the certificate:
-
-    ```bash
-    mkcert -install
-    mkcert localhost
-    ```
-
-    This will generate `localhost.pem` and `localhost-key.pem` files for your local HTTPS server.
-
-- Create a postgres database for the backend.
-
-- Clone the repository:
-
-  ```bash
-  git clone https://github.com/tusharsadhwani/instachat
-  ```
-
-- In the `./server` subdirectory, run:
-
-  ```bash
-  go run ./cmd/genkeys
-  ```
-
-  To generate an RSA key pair for the app.
-
-- Edit `./server/.env` to add your database and AWS credentials.
-
-  (Look at `./server/.env.example` for more info)
-
-- Run the server:
-
-  To get live reloading, use [air](https://github.com/cosmtrek/air):
-
-  ```bash
-  go get -u github.com/cosmtrek/air
-  ```
-
-  > Make sure $(go env GOPATH) is in your PATH.
-
-  Then run the command in `./server` subdirectory:
-
-  ```bash
-  air -c .air.toml
-  ```
-
-  to start the server with HTTPS and hot reload.
-
-### Frontend
-
-- Edit `./instachat/.env` to set your AWS S3 bucket URL.
-
-  (Look at `./instachat/.env.example` for more info)
-
-- In the `./instachat` subdirectory, run:
-
-  ```bash
-  flutter run
   ```
