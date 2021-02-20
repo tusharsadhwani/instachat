@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/websocket/v2"
 	"github.com/tusharsadhwani/instachat/config"
 
@@ -15,6 +16,7 @@ func RunApp() {
 	cfg := config.GetConfig()
 
 	app := fiber.New()
+	app.Use(cors.New())
 
 	InitWebsocket()
 

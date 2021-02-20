@@ -63,6 +63,7 @@ class Auth extends ChangeNotifier {
       final auth = await _account.authentication;
       await getJWT(auth.idToken);
     } catch (e) {
+      print(e);
       //TODO: show error dialog
       _state = AuthState.LOGGED_OUT;
       notifyListeners();
@@ -78,6 +79,7 @@ class Auth extends ChangeNotifier {
       final auth = await _account.authentication;
       await getJWT(auth.idToken);
     } catch (e) {
+      print(e);
       //TODO: show error dialog
       _state = AuthState.LOGGED_OUT;
       notifyListeners();

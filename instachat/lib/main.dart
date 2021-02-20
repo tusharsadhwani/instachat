@@ -63,6 +63,7 @@ class MyApp extends StatelessWidget {
         height: 1.3,
       ),
     ),
+    fontFamily: 'Roboto',
   );
 
   @override

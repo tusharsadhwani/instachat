@@ -2,11 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:web_socket_channel/html.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import './auth_service.dart';
 import '../models/message.dart';
@@ -38,8 +42,8 @@ class ChatService extends ChangeNotifier {
   int nextCursor = 0;
   bool get allNewerMessagesLoaded => nextCursor == -1;
 
-  WebSocket _ws;
-  WebSocket get ws => _ws;
+  WebSocketChannel _ws;
+  WebSocketChannel get ws => _ws;
 
   bool userSentNewMessage = false;
 
@@ -53,28 +57,30 @@ class ChatService extends ChangeNotifier {
 
   @override
   void dispose() {
-    _ws?.close();
+    _ws?.sink?.close();
     cache.save();
     super.dispose();
   }
 
   Future<void> loadCachedMessages() async {
-    final docDir = await getApplicationDocumentsDirectory();
-    final cacheFile = File(path.join(docDir.path, cacheFilename));
+    if (!kIsWeb) {
+      final docDir = await getApplicationDocumentsDirectory();
+      final cacheFile = File(path.join(docDir.path, cacheFilename));
 
-    if (cacheFile.existsSync()) {
-      final cacheJson = cacheFile.readAsStringSync();
-      final cacheData = jsonDecode(cacheJson);
-      cache = MessageCache.fromMap(cacheData, filename: cacheFilename);
-      _messages = cache.messages.toList();
-      prevCursor = cache.prev;
-      nextCursor = cache.next;
-      notifyListeners();
-    } else {
-      cache = MessageCache(filename: cacheFilename);
-      prevCursor = -1;
-      jumpToLatestMessages();
+      if (cacheFile.existsSync()) {
+        final cacheJson = cacheFile.readAsStringSync();
+        final cacheData = jsonDecode(cacheJson);
+        cache = MessageCache.fromMap(cacheData, filename: cacheFilename);
+        _messages = cache.messages.toList();
+        prevCursor = cache.prev;
+        nextCursor = cache.next;
+        notifyListeners();
+      }
+      return;
     }
+    cache = MessageCache(filename: cacheFilename);
+    prevCursor = -1;
+    jumpToLatestMessages();
   }
 
   Future<void> saveCache() async {
@@ -124,66 +130,68 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> connectWebsocket() async {
-    _ws = await WebSocket.connect(
-      'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
-      headers: auth.headers,
-    );
+    if (kIsWeb) {
+      _ws = HtmlWebSocketChannel.connect(
+        'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
+      );
+    } else {
+      _ws = IOWebSocketChannel.connect(
+          'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
+          headers: auth.headers);
+    }
 
     try {
-      if (_ws?.readyState == WebSocket.open) {
-        _ws.listen(
-          (data) {
-            final update = Update.fromJson(data);
-            userSentNewMessage = false;
+      _ws.stream.listen(
+        (data) {
+          final update = Update.fromJson(data);
+          userSentNewMessage = false;
 
-            switch (update.type) {
-              case UpdateType.MESSAGE:
-                userSentNewMessage = update.message.senderId == auth.user.id;
-                if (allNewerMessagesLoaded) {
-                  _messages.add(update.message);
-                  cache.pushLast(update.message);
-                }
-                break;
-              case UpdateType.LIKE:
-                final message = _messages.firstWhere(
+          switch (update.type) {
+            case UpdateType.MESSAGE:
+              userSentNewMessage = update.message.senderId == auth.user.id;
+              if (allNewerMessagesLoaded) {
+                _messages.add(update.message);
+                cache.pushLast(update.message);
+              }
+              break;
+            case UpdateType.LIKE:
+              final message = _messages.firstWhere(
+                (msg) => msg.id == update.messageId,
+                orElse: () => _oldMessages.firstWhere(
                   (msg) => msg.id == update.messageId,
-                  orElse: () => _oldMessages.firstWhere(
-                    (msg) => msg.id == update.messageId,
-                  ),
-                );
-                if (message != null) {
-                  message.liked = true;
-                  final cachedMsg = cache.messages.firstWhere(
-                    (msg) => msg.id == update.messageId,
-                  );
-                  if (cachedMsg != null) cachedMsg.liked = true;
-                }
-                break;
-              case UpdateType.UNLIKE:
-                final message = _messages.firstWhere(
+                ),
+              );
+              if (message != null) {
+                message.liked = true;
+                final cachedMsg = cache.messages.firstWhere(
                   (msg) => msg.id == update.messageId,
-                  orElse: () => _oldMessages.firstWhere(
-                    (msg) => msg.id == update.messageId,
-                  ),
                 );
-                if (message != null) {
-                  message.liked = false;
-                  final cachedMsg = cache.messages.firstWhere(
-                    (msg) => msg.id == update.messageId,
-                  );
-                  if (cachedMsg != null) cachedMsg.liked = false;
-                }
-                break;
-            }
+                if (cachedMsg != null) cachedMsg.liked = true;
+              }
+              break;
+            case UpdateType.UNLIKE:
+              final message = _messages.firstWhere(
+                (msg) => msg.id == update.messageId,
+                orElse: () => _oldMessages.firstWhere(
+                  (msg) => msg.id == update.messageId,
+                ),
+              );
+              if (message != null) {
+                message.liked = false;
+                final cachedMsg = cache.messages.firstWhere(
+                  (msg) => msg.id == update.messageId,
+                );
+                if (cachedMsg != null) cachedMsg.liked = false;
+              }
+              break;
+          }
 
-            notifyListeners();
-          },
-          onDone: () => print('[+]Done :)'),
-          onError: (err) => print('[!]Error -- ${err.toString()}'),
-          cancelOnError: true,
-        );
-      } else
-        print('[!]Connection Denied');
+          notifyListeners();
+        },
+        onDone: () => print('[+]Done :)'),
+        onError: (err) => print('[!]Error -- ${err.toString()}'),
+        cancelOnError: true,
+      );
     } catch (err) {
       print('err: $err');
     }
@@ -191,17 +199,17 @@ class ChatService extends ChangeNotifier {
 
   void sendMessage(Message message) async {
     final update = Update(type: UpdateType.MESSAGE, message: message);
-    _ws.add(update.toJson());
+    _ws.sink.add(update.toJson());
   }
 
   void like(String messageId) {
     final update = Update(type: UpdateType.LIKE, messageId: messageId);
-    _ws.add(update.toJson());
+    _ws.sink.add(update.toJson());
   }
 
   void unlike(String messageId) {
     final update = Update(type: UpdateType.UNLIKE, messageId: messageId);
-    _ws.add(update.toJson());
+    _ws.sink.add(update.toJson());
   }
 
   Future<PickedFile> pickImage() async {
@@ -245,7 +253,7 @@ class ChatService extends ChangeNotifier {
       imageUrl: imageUrl,
     );
     final update = Update(type: UpdateType.MESSAGE, message: message);
-    _ws.add(update.toJson());
+    _ws.sink.add(update.toJson());
   }
 
   Future<void> jumpToLatestMessages() async {
