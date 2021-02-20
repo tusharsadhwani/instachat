@@ -44,6 +44,11 @@ class MyApp extends StatelessWidget {
         ),
       ),
     ),
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: MaterialStateProperty.all(Colors.white),
+      ),
+    ),
     textTheme: TextTheme(
       headline6: TextStyle(
         fontSize: 18,
