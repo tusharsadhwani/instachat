@@ -37,7 +37,13 @@ class MyApp extends StatelessWidget {
     accentColor: Color.fromRGBO(84, 84, 84, 1),
     scaffoldBackgroundColor: Colors.black,
     appBarTheme: AppBarTheme(color: Color.fromRGBO(36, 36, 36, 1)),
-    buttonColor: Color.fromRGBO(36, 36, 36, 1),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(
+          Color.fromRGBO(36, 36, 36, 1),
+        ),
+      ),
+    ),
     textTheme: TextTheme(
       headline6: TextStyle(
         fontSize: 18,

@@ -53,7 +53,7 @@ class _NewChatPageState extends State<NewChatPage>
       appBar: InstaAppBar(
         title: 'New Chat',
         actions: [
-          FlatButton(
+          TextButton(
             onPressed: () => _signOut(context),
             child: Text('Logout'),
           ),
@@ -169,7 +169,7 @@ class _CreateChatState extends State<CreateChat> {
               },
             ),
             SizedBox(height: 10),
-            RaisedButton(
+            ElevatedButton(
               onPressed: () => createChat(context),
               child: Text('Create Chat'),
             ),
@@ -232,7 +232,7 @@ class _JoinChatState extends State<JoinChat> {
               },
             ),
             SizedBox(height: 10),
-            RaisedButton(
+            ElevatedButton(
               onPressed: () => joinChat(context),
               child: Text('Join Chat'),
             ),

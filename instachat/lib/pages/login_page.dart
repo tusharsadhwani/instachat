@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: InstaAppBar(title: 'Login'),
       body: Center(
-        child: RaisedButton(
+        child: ElevatedButton(
           onPressed: _handleSignIn,
           child: Text('Login'),
         ),
