@@ -136,8 +136,9 @@ class ChatService extends ChangeNotifier {
       );
     } else {
       _ws = IOWebSocketChannel.connect(
-          'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
-          headers: auth.headers);
+        'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
+        headers: auth.headers,
+      );
     }
 
     try {
