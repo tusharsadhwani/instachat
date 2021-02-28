@@ -42,12 +42,12 @@ class ChatService extends ChangeNotifier {
   int nextCursor = 0;
   bool get allNewerMessagesLoaded => nextCursor == -1;
 
-  WebSocketChannel _ws;
+  late WebSocketChannel _ws;
   WebSocketChannel get ws => _ws;
 
   bool userSentNewMessage = false;
 
-  MessageCache cache;
+  late MessageCache cache;
 
   final picker = ImagePicker();
 
@@ -57,7 +57,7 @@ class ChatService extends ChangeNotifier {
 
   @override
   void dispose() {
-    _ws?.sink?.close();
+    _ws.sink.close();
     cache.save();
     super.dispose();
   }
@@ -65,6 +65,8 @@ class ChatService extends ChangeNotifier {
   Future<void> loadCachedMessages() async {
     if (!kIsWeb) {
       final docDir = await getApplicationDocumentsDirectory();
+      if (docDir == null)
+        throw Exception('Could not load cache, documents directory not found');
       final cacheFile = File(path.join(docDir.path, cacheFilename));
 
       if (cacheFile.existsSync()) {
@@ -102,7 +104,7 @@ class ChatService extends ChangeNotifier {
 
     if (!cache.full) moreMessages.forEach((m) => cache.pushFirst(m));
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
       loadingOlderMessages = false;
     });
     notifyListeners();
@@ -123,7 +125,7 @@ class ChatService extends ChangeNotifier {
 
     moreMessages.forEach((m) => cache.pushLast(m));
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
       loadingNewerMessages = false;
     });
     notifyListeners();
@@ -149,40 +151,47 @@ class ChatService extends ChangeNotifier {
 
           switch (update.type) {
             case UpdateType.MESSAGE:
-              userSentNewMessage = update.message.senderId == auth.user.id;
+              final message = update.message;
+              if (message == null) throw Exception('Update message is null');
+
+              userSentNewMessage = message.senderId == auth.user.id;
               if (allNewerMessagesLoaded) {
-                _messages.add(update.message);
-                cache.pushLast(update.message);
+                _messages.add(message);
+                cache.pushLast(message);
               }
               break;
             case UpdateType.LIKE:
-              final message = _messages.firstWhere(
-                (msg) => msg.id == update.messageId,
-                orElse: () => _oldMessages.firstWhere(
+              try {
+                final message = _messages.firstWhere(
                   (msg) => msg.id == update.messageId,
-                ),
-              );
-              if (message != null) {
+                  orElse: () => _oldMessages.firstWhere(
+                    (msg) => msg.id == update.messageId,
+                  ),
+                );
                 message.liked = true;
                 final cachedMsg = cache.messages.firstWhere(
                   (msg) => msg.id == update.messageId,
                 );
-                if (cachedMsg != null) cachedMsg.liked = true;
+                cachedMsg.liked = true;
+              } catch (e) {
+                print('Error: Liked message not found');
               }
               break;
             case UpdateType.UNLIKE:
-              final message = _messages.firstWhere(
-                (msg) => msg.id == update.messageId,
-                orElse: () => _oldMessages.firstWhere(
+              try {
+                final message = _messages.firstWhere(
                   (msg) => msg.id == update.messageId,
-                ),
-              );
-              if (message != null) {
+                  orElse: () => _oldMessages.firstWhere(
+                    (msg) => msg.id == update.messageId,
+                  ),
+                );
                 message.liked = false;
                 final cachedMsg = cache.messages.firstWhere(
                   (msg) => msg.id == update.messageId,
                 );
-                if (cachedMsg != null) cachedMsg.liked = false;
+                cachedMsg.liked = false;
+              } catch (e) {
+                print('Error: Liked message not found');
               }
               break;
           }
@@ -213,7 +222,7 @@ class ChatService extends ChangeNotifier {
     _ws.sink.add(update.toJson());
   }
 
-  Future<PickedFile> pickImage() async {
+  Future<PickedFile?> pickImage() async {
     return picker.getImage(source: ImageSource.gallery, imageQuality: 40);
   }
 
@@ -234,7 +243,7 @@ class ChatService extends ChangeNotifier {
     String uploadedFileName = responseData['filename'];
 
     final uploadResponse = await http.put(
-      signedUrl,
+      Uri.parse(signedUrl),
       headers: {
         HttpHeaders.contentTypeHeader: 'image/jpeg',
       },

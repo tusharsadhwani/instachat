@@ -19,14 +19,14 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
-  Auth auth;
-  ChatService chatService;
-
   bool ready = false;
 
-  MessageBox _messageBox;
-  ScrollController _controller;
-  double _bottomInset;
+  late final auth = Provider.of<Auth>(context, listen: false);
+  late final chatService = ChatService(auth, widget.chat.id);
+  late final _messageBox = MessageBox(chatService);
+
+  late final _controller = ScrollController();
+  double _bottomInset = 0;
 
   bool loadingMoreMessages = false;
 
@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
       _controller.animateTo(
         _controller.position.maxScrollExtent,
         duration: Duration(milliseconds: 200),
@@ -71,23 +71,21 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (!chatService.allNewerMessagesLoaded)
       await chatService.jumpToLatestMessages();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
       _controller.jumpTo(_controller.position.maxScrollExtent);
     });
   }
 
   void initialize() async {
     await chatService.initialize();
-
-    _controller = ScrollController();
-    _controller.addListener(_scrollListener);
-
     await chatService.connectWebsocket();
     chatService.addListener(_updateMessages);
 
+    _controller.addListener(_scrollListener);
+
     setState(() {
       ready = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
         _controller.jumpTo(_controller.position.maxScrollExtent);
         // Manually call scroll listener once, to load newer/older messages
         _scrollListener();
@@ -98,16 +96,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    auth = Provider.of<Auth>(context, listen: false);
-
-    chatService = ChatService(auth, widget.chat.id);
-    _messageBox = MessageBox(chatService);
     initialize();
   }
 
@@ -115,7 +109,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void dispose() {
     _controller.dispose();
     chatService.dispose();
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
@@ -128,9 +122,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   void didChangeMetrics() {
-    final newBottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+    final newBottomInset = WidgetsBinding.instance?.window.viewInsets.bottom;
     if (newBottomInset != _bottomInset) {
-      _bottomInset = newBottomInset;
+      _bottomInset = newBottomInset ?? 0;
       if (isAtBottom) _scrollToBottom();
     }
   }

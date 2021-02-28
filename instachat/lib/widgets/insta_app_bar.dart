@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 
 class InstaAppBar extends StatelessWidget with PreferredSizeWidget {
   @override
-  final Size preferredSize;
+  final Size preferredSize = Size.fromHeight(50.0);
 
-  InstaAppBar({
-    Key key,
-    @required this.title,
-    this.leading,
-    this.actions,
-  })  : preferredSize = Size.fromHeight(50.0),
-        super(key: key);
-
-  final Widget leading;
   final String title;
-  final List<Widget> actions;
+  final Widget? leading;
+  final List<Widget>? actions;
+
+  InstaAppBar({Key? key, required this.title, this.leading, this.actions})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +17,7 @@ class InstaAppBar extends StatelessWidget with PreferredSizeWidget {
       title: Row(
         children: [
           if (leading != null) ...[
-            leading,
+            leading!,
             SizedBox(width: 10),
           ],
           Text(

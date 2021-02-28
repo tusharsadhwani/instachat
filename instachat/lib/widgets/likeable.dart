@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class Likeable extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
   final bool initiallyLiked;
 
-  final void Function(bool newValue) onLikeChanged;
+  final void Function(bool newValue)? onLikeChanged;
 
   const Likeable({
-    Key key,
+    Key? key,
     this.child,
     this.initiallyLiked = false,
     this.onLikeChanged,
@@ -21,13 +21,20 @@ class _LikeableState extends State<Likeable>
     with SingleTickerProviderStateMixin {
   static const _animationDuration = 140;
 
-  AnimationController _animationController;
-  Animation _animation;
+  late final _animationController = AnimationController(
+    vsync: this,
+    value: 0,
+    duration: Duration(milliseconds: _animationDuration),
+  );
+  late final _animation = CurvedAnimation(
+    parent: _animationController,
+    curve: Curves.easeOutQuad,
+  );
+
+  late final void Function(bool newValue) _onLikeChanged =
+      widget.onLikeChanged ?? (_) {};
 
   bool liked = false;
-
-  void Function(bool newValue) _onLikeChanged;
-
   void toggleLike() {
     setState(() {
       liked = !liked;
@@ -41,17 +48,6 @@ class _LikeableState extends State<Likeable>
   @override
   void initState() {
     super.initState();
-    _onLikeChanged = widget.onLikeChanged ?? (_) {};
-
-    _animationController = AnimationController(
-      vsync: this,
-      value: 0,
-      duration: Duration(milliseconds: _animationDuration),
-    );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutQuad,
-    );
 
     if (widget.initiallyLiked) toggleLike();
   }
@@ -90,7 +86,7 @@ class _LikeableState extends State<Likeable>
 class AnimatedHeart extends StatelessWidget {
   final double scale;
 
-  const AnimatedHeart({Key key, this.scale}) : super(key: key);
+  const AnimatedHeart({Key? key, this.scale = 1.0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

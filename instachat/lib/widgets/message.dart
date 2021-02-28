@@ -1,23 +1,23 @@
-import 'package:emojis/emoji.dart';
 import 'package:flutter/material.dart';
 
 import './likeable.dart';
+import '../constants/emoji.dart';
 import '../models/message.dart';
 
 class MessageBubble extends StatelessWidget {
   final Color backgroundColor;
   final String text;
 
-  const MessageBubble(this.text, {@required this.backgroundColor});
+  const MessageBubble(this.text, {required this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).appBarTheme.color,
+          color: Theme.of(context).appBarTheme.color ?? Colors.transparent,
         ),
-        color: backgroundColor ?? Colors.transparent,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Padding(
@@ -34,8 +34,8 @@ class TextMessage extends StatelessWidget {
 
   const TextMessage(
     this.text, {
-    Key key,
-    this.backgroundColor,
+    Key? key,
+    required this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -60,7 +60,7 @@ class ImageMessage extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).appBarTheme.color,
+            color: Theme.of(context).appBarTheme.color ?? Colors.transparent,
           ),
           borderRadius: borderRadius,
         ),
@@ -79,14 +79,14 @@ class ImageMessage extends StatelessWidget {
 class MessageBase extends StatelessWidget {
   const MessageBase(
     this.message, {
-    @required this.liked,
+    required this.liked,
     this.onLikeChanged,
-    Key key,
-    this.backgroundColor,
+    Key? key,
+    this.backgroundColor = Colors.transparent,
   }) : super(key: key);
 
   final bool liked;
-  final void Function(bool newValue) onLikeChanged;
+  final void Function(bool newValue)? onLikeChanged;
   final Message message;
   final Color backgroundColor;
 
@@ -97,9 +97,9 @@ class MessageBase extends StatelessWidget {
       initiallyLiked: liked,
       onLikeChanged: onLikeChanged,
       child: message.imageUrl != null
-          ? ImageMessage(message.imageUrl)
+          ? ImageMessage(message.imageUrl!)
           : TextMessage(
-              message.content,
+              message.content ?? '',
               backgroundColor: backgroundColor,
             ),
     );
@@ -109,13 +109,13 @@ class MessageBase extends StatelessWidget {
 class MessageLeft extends StatelessWidget {
   final Message message;
   final bool liked;
-  final void Function(bool newValue) onLikeChanged;
+  final void Function(bool newValue)? onLikeChanged;
   final bool isFirstMessageFromSender;
 
   const MessageLeft(
     this.message, {
-    @required this.liked,
-    Key key,
+    required this.liked,
+    Key? key,
     this.onLikeChanged,
     this.isFirstMessageFromSender = false,
   }) : super(key: key);
@@ -169,12 +169,12 @@ class MessageLeft extends StatelessWidget {
 class MessageRight extends StatelessWidget {
   final Message message;
   final bool liked;
-  final void Function(bool newValue) onLikeChanged;
+  final void Function(bool newValue)? onLikeChanged;
 
   const MessageRight(
     this.message, {
-    @required this.liked,
-    Key key,
+    required this.liked,
+    Key? key,
     this.onLikeChanged,
   }) : super(key: key);
 
@@ -194,7 +194,8 @@ class MessageRight extends StatelessWidget {
                   message,
                   liked: liked,
                   onLikeChanged: onLikeChanged,
-                  backgroundColor: Theme.of(context).appBarTheme.color,
+                  backgroundColor:
+                      Theme.of(context).appBarTheme.color ?? Colors.transparent,
                 ),
               ),
             ),

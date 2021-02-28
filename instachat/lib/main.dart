@@ -15,7 +15,7 @@ import './services/chats_service.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext context) {
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback = (_, String host, __) {
         if (kReleaseMode) return false;
@@ -101,8 +101,8 @@ class MyApp extends StatelessWidget {
 
 class LoggedInApp extends StatelessWidget {
   const LoggedInApp({
-    Key key,
-    @required this.themeData,
+    Key? key,
+    required this.themeData,
   }) : super(key: key);
 
   final ThemeData themeData;
@@ -132,7 +132,7 @@ class LoggedInApp extends StatelessWidget {
 class LoggedOutApp extends StatefulWidget {
   final ThemeData themeData;
 
-  const LoggedOutApp({Key key, this.themeData}) : super(key: key);
+  const LoggedOutApp({Key? key, required this.themeData}) : super(key: key);
 
   @override
   _LoggedOutAppState createState() => _LoggedOutAppState();

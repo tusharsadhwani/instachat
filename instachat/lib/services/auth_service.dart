@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,21 +27,27 @@ class Auth extends ChangeNotifier {
   final domain = kReleaseMode ? dotenv.env['DOMAIN'] : 'localhost:5555';
   final s3Url = dotenv.env['S3_URL'];
 
-  GoogleSignInAccount _account;
-  GoogleSignInAccount get account => _account;
+  GoogleSignInAccount? _account;
+  GoogleSignInAccount get account {
+    if (_account == null) throw Exception('Account isn\'t initialised');
+    return _account as GoogleSignInAccount;
+  }
+
+  UserData? _user;
+  UserData get user {
+    if (_user == null) throw Exception('User isn\'t initialised');
+    return _user as UserData;
+  }
 
   String _jwt = "";
   String get jwt => _jwt;
   Map<String, dynamic> get headers => {"Authorization": "Bearer $jwt"};
 
-  UserData _user;
-  UserData get user => _user;
-
   AuthState _state = AuthState.WAITING;
   AuthState get state => _state;
 
-  Future<void> getJWT(String idToken) async {
-    log(idToken);
+  Future<void> getJWT(String? idToken) async {
+    print(idToken ?? 'idToken unavailable');
     try {
       final response = await _dio.post("https://$domain/login", data: idToken);
       _jwt = response.data['token'];
@@ -60,7 +64,8 @@ class Auth extends ChangeNotifier {
   Future<void> trySignInSilently() async {
     try {
       _account = await _googleSignIn.signInSilently();
-      final auth = await _account.authentication;
+      if (_account == null) throw Exception('Sign in failed');
+      final auth = await _account!.authentication;
       await getJWT(auth.idToken);
     } catch (e) {
       print(e);
@@ -76,7 +81,8 @@ class Auth extends ChangeNotifier {
 
     try {
       _account = await _googleSignIn.signIn();
-      final auth = await _account.authentication;
+      if (_account == null) throw Exception('Sign in failed');
+      final auth = await _account!.authentication;
       await getJWT(auth.idToken);
     } catch (e) {
       print(e);

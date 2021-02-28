@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:meta/meta.dart';
 
 import './message.dart';
 
@@ -8,11 +7,11 @@ class UpdateType {
 }
 
 class Update {
-  String type;
-  Message message;
-  String messageId;
+  late String type;
+  Message? message;
+  String? messageId;
 
-  Update({@required this.type, this.message, this.messageId});
+  Update({required this.type, this.message, this.messageId});
 
   Update.fromJson(String data) {
     final updateData = jsonDecode(data);

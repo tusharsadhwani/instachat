@@ -13,13 +13,7 @@ class ChatsPage extends StatefulWidget {
 }
 
 class _ChatsPageState extends State<ChatsPage> {
-  ChatsService chatsService;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    chatsService = Provider.of<ChatsService>(context);
-  }
+  late final ChatsService chatsService = Provider.of<ChatsService>(context);
 
   void newChat() async {
     final refresh =

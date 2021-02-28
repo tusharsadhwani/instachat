@@ -6,7 +6,7 @@ import '../pages/chat_page.dart';
 class ChatTile extends StatelessWidget {
   final Chat chat;
 
-  const ChatTile({Key key, this.chat}) : super(key: key);
+  const ChatTile({Key? key, required this.chat}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -14,17 +14,14 @@ class NewChatPage extends StatefulWidget {
 
 class _NewChatPageState extends State<NewChatPage>
     with SingleTickerProviderStateMixin {
-  Auth auth;
-  TabController tabController;
-  FocusNode createFocusNode, joinFocusNode;
+  late final auth = Provider.of<Auth>(context, listen: false);
+  late final TabController tabController =
+      TabController(length: 2, vsync: this);
+  late final createFocusNode = FocusNode(), joinFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
-    createFocusNode = FocusNode();
-    joinFocusNode = FocusNode();
-
     tabController.addListener(() {
       switch (tabController.index) {
         case 0:
@@ -35,12 +32,6 @@ class _NewChatPageState extends State<NewChatPage>
           break;
       }
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    auth = Provider.of<Auth>(context, listen: false);
   }
 
   void _signOut(BuildContext context) {
@@ -94,19 +85,17 @@ class CreateChat extends StatefulWidget {
 
 class _CreateChatState extends State<CreateChat> {
   final createChatForm = GlobalKey<FormState>();
-  String address;
-  String chatName;
-  FocusNode nameNode;
-
-  @override
-  void initState() {
-    super.initState();
-    nameNode = FocusNode();
-  }
+  String address = '';
+  String chatName = '';
+  late final nameNode = FocusNode();
 
   void createChat(context) async {
-    if (!createChatForm.currentState.validate()) return;
-    createChatForm.currentState.save();
+    final formState = createChatForm.currentState;
+    if (formState == null) return;
+    final valid = formState.validate();
+    if (!valid) return;
+
+    formState.save();
 
     Provider.of<ChatsService>(context, listen: false)
         .createChat(address, chatName);
@@ -125,6 +114,7 @@ class _CreateChatState extends State<CreateChat> {
           shrinkWrap: true,
           children: <Widget>[
             TextFormField(
+              initialValue: address,
               autofocus: true,
               focusNode: widget.focusNode,
               decoration: InputDecoration(
@@ -132,7 +122,7 @@ class _CreateChatState extends State<CreateChat> {
                 labelText: "Chat address",
               ),
               validator: (value) {
-                value = value.trim();
+                value = value?.trim() ?? '';
 
                 final spaces = RegExp(r'\s');
                 if (value.length == 0) return "Enter Chat address";
@@ -149,23 +139,25 @@ class _CreateChatState extends State<CreateChat> {
                 return null;
               },
               onSaved: (value) {
-                address = value.trim().toLowerCase();
+                address = value?.trim().toLowerCase() ?? '';
               },
               onFieldSubmitted: (_) => nameNode.requestFocus(),
             ),
             SizedBox(height: 15),
             TextFormField(
+              initialValue: chatName,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: "Chat Name",
               ),
               focusNode: nameNode,
               validator: (value) {
-                if (value.trim().length == 0) return "Enter chat name";
+                value = value?.trim() ?? '';
+                if (value.length == 0) return "Enter chat name";
                 return null;
               },
               onSaved: (value) {
-                chatName = value.trim();
+                chatName = value?.trim() ?? '';
               },
             ),
             SizedBox(height: 10),
@@ -191,11 +183,13 @@ class JoinChat extends StatefulWidget {
 
 class _JoinChatState extends State<JoinChat> {
   var joinChatForm = GlobalKey<FormState>();
-  String address;
+  String address = '';
 
   void joinChat(context) async {
-    if (!joinChatForm.currentState.validate()) return;
-    joinChatForm.currentState.save();
+    final formState = joinChatForm.currentState;
+    if (formState == null) return;
+    if (!formState.validate()) return;
+    formState.save();
 
     Provider.of<ChatsService>(context, listen: false).joinChat(address);
 
@@ -213,13 +207,14 @@ class _JoinChatState extends State<JoinChat> {
           shrinkWrap: true,
           children: <Widget>[
             TextFormField(
-              focusNode: widget.focusNode,
+              initialValue: address,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: "Chat address",
               ),
+              focusNode: widget.focusNode,
               validator: (value) {
-                value = value.trim();
+                value = value?.trim() ?? '';
 
                 final spaces = new RegExp(r'\s');
                 if (spaces.hasMatch(value))
@@ -228,7 +223,7 @@ class _JoinChatState extends State<JoinChat> {
                 return null;
               },
               onSaved: (value) {
-                address = value.trim().toLowerCase();
+                address = value?.trim().toLowerCase() ?? '';
               },
             ),
             SizedBox(height: 10),

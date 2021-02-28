@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 final uuid = Uuid();
@@ -8,14 +7,14 @@ class Message {
   final int index;
   final int senderId;
   final String senderName;
-  final String content;
-  final String imageUrl;
+  final String? content;
+  final String? imageUrl;
 
   bool liked;
 
   Message({
-    @required this.senderId,
-    @required this.senderName,
+    required this.senderId,
+    required this.senderName,
     this.content,
     this.imageUrl,
     this.index = 0,

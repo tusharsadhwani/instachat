@@ -13,15 +13,12 @@ class MessageBox extends StatefulWidget {
 }
 
 class _MessageBoxState extends State<MessageBox> {
-  TextEditingController _messageController;
-  bool textIsEmpty;
+  late final _messageController = TextEditingController();
+  bool textIsEmpty = true;
 
   @override
   void initState() {
     super.initState();
-    _messageController = TextEditingController();
-    textIsEmpty = true;
-
     _messageController.addListener(() {
       final messageText = _messageController.text.trim();
       setState(() => textIsEmpty = messageText == '');
@@ -113,7 +110,7 @@ class _MessageBoxState extends State<MessageBox> {
                     style: Theme.of(context)
                         .textTheme
                         .headline6
-                        .copyWith(color: Colors.blue),
+                        ?.copyWith(color: Colors.blue),
                   ),
                 ),
               ),

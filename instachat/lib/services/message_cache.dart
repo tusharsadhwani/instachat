@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -11,16 +10,16 @@ import '../models/message.dart';
 class MessageCache {
   static const limit = 15;
 
-  Queue<Message> _messages;
+  late final Queue<Message> _messages;
   Queue<Message> get messages => _messages;
 
   String filename;
 
-  MessageCache({@required this.filename}) {
+  MessageCache({required this.filename}) {
     _messages = Queue();
   }
 
-  MessageCache.fromMap(dynamic data, {@required this.filename}) {
+  MessageCache.fromMap(dynamic data, {required this.filename}) {
     _messages = Queue.from(data.map<Message>((m) => Message.fromMap(m)));
   }
 
@@ -62,6 +61,9 @@ class MessageCache {
 
   Future<void> save() async {
     final docDir = await getApplicationDocumentsDirectory();
+    if (docDir == null)
+      throw Exception('Cannot save, documents directory not found');
+
     final cacheFile = File(path.join(docDir.path, filename));
 
     final cacheMessageData = messages.map((m) => m.toMap()).toList();

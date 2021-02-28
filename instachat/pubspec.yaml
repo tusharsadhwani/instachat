@@ -6,21 +6,31 @@ publish_to: "none"
 version: 0.1.0+1
 
 environment:
-  sdk: ">=2.7.0 <2.12.0"
+  sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   dio: ^3.0.10
-  emojis: ^0.9.3
   flutter_dotenv: ^3.1.0
-  google_sign_in: ^4.5.9
-  http: ^0.12.2
-  image_picker: ^0.6.7+21
-  path_provider: ^1.6.27
-  provider: ^4.3.2
-  uuid: ^2.2.0
-  web_socket_channel: ^1.2.0
+  google_sign_in: ^5.0.0-nullsafety
+  http: ^0.13.0
+  image_picker: ^0.7.0
+  path_provider: ^2.0.0-nullsafety.1
+  provider: ^5.0.0-nullsafety.5
+  uuid: ^3.0.0-nullsafety.1
+  web_socket_channel: ^2.0.0
+
+dependency_overrides:
+  dio: # https://github.com/flutterchina/dio/issues/1002
+    git:
+      url: https://github.com/TitanKing/dio
+      ref: null-safety
+      path: dio
+  flutter_dotenv: # https://github.com/java-james/flutter_dotenv/pull/24
+    git:
+      url: https://github.com/ngxingyu/flutter_dotenv
+      ref: main
 
 dev_dependencies:
   flutter_test:
