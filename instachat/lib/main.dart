@@ -129,21 +129,16 @@ class LoggedInApp extends StatelessWidget {
   }
 }
 
-class LoggedOutApp extends StatefulWidget {
+class LoggedOutApp extends StatelessWidget {
   final ThemeData themeData;
 
   const LoggedOutApp({Key key, this.themeData}) : super(key: key);
 
   @override
-  _LoggedOutAppState createState() => _LoggedOutAppState();
-}
-
-class _LoggedOutAppState extends State<LoggedOutApp> {
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'InstaChat',
-      theme: widget.themeData,
+      theme: themeData,
       home: LoginPage(),
     );
   }
