@@ -44,6 +44,7 @@ func RunApp() {
 	app.Use(jwtware.New(jwtware.Config{
 		SigningMethod: "RS256",
 		SigningKey:    cfg.PrivateKey.Public(),
+		TokenLookup:   "query:token,header:Authorization",
 	}))
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
@@ -64,5 +65,8 @@ func RunApp() {
 
 	app.Get("/image/:filename", GetImagePresignedURL)
 
-	app.ListenTLS(fmt.Sprintf(":%s", cfg.Port), "./localhost.pem", "./localhost-key.pem")
+	err := app.ListenTLS(fmt.Sprintf(":%s", cfg.Port), "./localhost.pem", "./localhost-key.pem")
+	if err != nil {
+		fmt.Println(err)
+	}
 }

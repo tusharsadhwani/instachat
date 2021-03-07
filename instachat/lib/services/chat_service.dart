@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -8,8 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:web_socket_channel/html.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import './auth_service.dart';
@@ -55,10 +54,11 @@ class ChatService extends ChangeNotifier {
     await loadCachedMessages();
   }
 
+  //TODO: fix caching
   @override
   void dispose() {
     _ws?.sink?.close();
-    cache.save();
+    // cache.save();
     super.dispose();
   }
 
@@ -84,7 +84,7 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> saveCache() async {
-    await cache.save();
+    // await cache.save();
   }
 
   Future<void> loadOlderMessages() async {
@@ -100,7 +100,7 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _oldMessages.addAll(moreMessages);
 
-    if (!cache.full) moreMessages.forEach((m) => cache.pushFirst(m));
+    // if (!cache.full) moreMessages.forEach((m) => cache.pushFirst(m));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingOlderMessages = false;
@@ -121,7 +121,7 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _messages.addAll(moreMessages);
 
-    moreMessages.forEach((m) => cache.pushLast(m));
+    // moreMessages.forEach((m) => cache.pushLast(m));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingNewerMessages = false;
@@ -130,16 +130,9 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> connectWebsocket() async {
-    if (kIsWeb) {
-      _ws = HtmlWebSocketChannel.connect(
-        'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
-      );
-    } else {
-      _ws = IOWebSocketChannel.connect(
-        'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId',
-        headers: auth.headers,
-      );
-    }
+    final websocketUrl =
+        'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId?token=${auth.jwt}';
+    _ws = WebSocketChannel.connect(Uri.parse(websocketUrl));
 
     try {
       _ws.stream.listen(
@@ -152,7 +145,7 @@ class ChatService extends ChangeNotifier {
               userSentNewMessage = update.message.senderId == auth.user.id;
               if (allNewerMessagesLoaded) {
                 _messages.add(update.message);
-                cache.pushLast(update.message);
+                // cache.pushLast(update.message);
               }
               break;
             case UpdateType.LIKE:
@@ -164,10 +157,10 @@ class ChatService extends ChangeNotifier {
               );
               if (message != null) {
                 message.liked = true;
-                final cachedMsg = cache.messages.firstWhere(
-                  (msg) => msg.id == update.messageId,
-                );
-                if (cachedMsg != null) cachedMsg.liked = true;
+                // final cachedMsg = cache.messages.firstWhere(
+                //   (msg) => msg.id == update.messageId,
+                // );
+                // if (cachedMsg != null) cachedMsg.liked = true;
               }
               break;
             case UpdateType.UNLIKE:
@@ -179,10 +172,10 @@ class ChatService extends ChangeNotifier {
               );
               if (message != null) {
                 message.liked = false;
-                final cachedMsg = cache.messages.firstWhere(
-                  (msg) => msg.id == update.messageId,
-                );
-                if (cachedMsg != null) cachedMsg.liked = false;
+                // final cachedMsg = cache.messages.firstWhere(
+                //   (msg) => msg.id == update.messageId,
+                // );
+                // if (cachedMsg != null) cachedMsg.liked = false;
               }
               break;
           }
@@ -234,7 +227,7 @@ class ChatService extends ChangeNotifier {
     String uploadedFileName = responseData['filename'];
 
     final uploadResponse = await http.put(
-      signedUrl,
+      Uri.parse(signedUrl),
       headers: {
         HttpHeaders.contentTypeHeader: 'image/jpeg',
       },

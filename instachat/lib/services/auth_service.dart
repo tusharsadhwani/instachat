@@ -34,7 +34,8 @@ class Auth extends ChangeNotifier {
 
   String _jwt = "";
   String get jwt => _jwt;
-  Map<String, dynamic> get headers => {"Authorization": "Bearer $jwt"};
+  String get bearer => "Bearer $_jwt";
+  Map<String, dynamic> get headers => {"Authorization": bearer};
 
   UserData _user;
   UserData get user => _user;

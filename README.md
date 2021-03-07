@@ -152,6 +152,7 @@ You will need [go](https://golang.org) and [flutter](https://flutter.dev) instal
   - Then install mkcert:
 
     ```bash
+    cd /tmp
     git clone https://github.com/filosottile/mkcert
     cd mkcert
     go install -ldflags "-X main.Version=$(git describe --tags)"
