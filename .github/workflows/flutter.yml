@@ -27,7 +27,7 @@ jobs:
           S3_URL=https://instachat-images.s3.amazonaws.com
           EOF
 
-          sed -i 's/YOUR_GOOGLE_SIGN_IN_OAUTH_CLIENT_ID.apps.googleusercontent.com/${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}' ./web/index.html
+          sed -i 's/YOUR_GOOGLE_SIGN_IN_OAUTH_CLIENT_ID.apps.googleusercontent.com/${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}/' ./web/index.html
           flutter build web
           echo "www.instachat.live" >> ./build/web/CNAME
 
