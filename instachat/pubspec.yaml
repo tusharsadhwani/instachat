@@ -32,14 +32,14 @@ flutter:
   assets:
     - .env
 
-  fonts:
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto/Roboto-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Roboto/Roboto-Italic.ttf
-          style: italic
-    - family: Noto Color Emoji
-      fonts:
-        - asset: assets/fonts/NotoColorEmoji.ttf
+  # fonts:
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: assets/fonts/Roboto/Roboto-Regular.ttf
+  #       - asset: assets/fonts/Roboto/Roboto-Bold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/Roboto/Roboto-Italic.ttf
+  #         style: italic
+  # - family: Noto Color Emoji
+  #   fonts:
+  #     - asset: assets/fonts/NotoColorEmoji.ttf

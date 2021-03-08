@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
         fontFamilyFallback: ['Noto Color Emoji'],
       ),
     ),
-    fontFamily: 'Roboto',
+    // fontFamily: 'Roboto',
   );
 
   @override
