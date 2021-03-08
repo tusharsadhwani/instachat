@@ -16,7 +16,7 @@ const RESOURCES = {
 "assets/FontManifest.json": "cc8b604bb9c715996eb77eda1859f1f0",
 "index.html": "d9510c78dfabe0d7d59e0241a9126bc7",
 "/": "d9510c78dfabe0d7d59e0241a9126bc7",
-"main.dart.js": "ad2406613069b25b44f4ec02ed1dd390",
+"main.dart.js": "57525f1a2408d125212d84e7c27a0b71",
 "version.json": "253fd39db19c4565e977ef29cc14ac5d",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796"
 };
