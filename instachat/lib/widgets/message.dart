@@ -41,7 +41,7 @@ class TextMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (emojiRegex.allMatches(text).length == text.characters.length)
-      return Text(text, style: TextStyle(fontSize: 28));
+      return Text(text, style: Theme.of(context).textTheme.headline2);
 
     return MessageBubble(text, backgroundColor: backgroundColor);
   }
@@ -144,10 +144,7 @@ class MessageLeft extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 15, bottom: 5),
                       child: Text(
                         message.senderName,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: Theme.of(context).textTheme.subtitle2,
                       ),
                     ),
                   MessageBase(

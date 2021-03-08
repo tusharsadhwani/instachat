@@ -109,7 +109,7 @@ class AnimatedHeart extends StatelessWidget {
             Positioned(
               child: Text(
                 '❤️',
-                style: TextStyle(fontSize: 18),
+                style: Theme.of(context).textTheme.headline4,
               ),
             ),
           ],

@@ -23,11 +23,11 @@ class ChatTile extends StatelessWidget {
         ),
         title: Text(
           chat.name,
-          style: TextStyle(fontSize: 14),
+          style: Theme.of(context).textTheme.headline5,
         ),
         subtitle: Text(
           'Liked a message',
-          style: TextStyle(fontSize: 14),
+          style: Theme.of(context).textTheme.headline5,
         ),
       ),
     );

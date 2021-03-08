@@ -112,7 +112,7 @@ class _MessageBoxState extends State<MessageBox> {
                     'Send',
                     style: Theme.of(context)
                         .textTheme
-                        .headline6
+                        .headline3
                         .copyWith(color: Colors.blue),
                   ),
                 ),

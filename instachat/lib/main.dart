@@ -50,17 +50,37 @@ class MyApp extends StatelessWidget {
       ),
     ),
     textTheme: TextTheme(
-      headline6: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w500,
-      ),
       bodyText1: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,
+        fontFamilyFallback: ['Noto Color Emoji'],
       ),
       bodyText2: TextStyle(
         fontSize: 16,
         height: 1.3,
+        fontFamilyFallback: ['Noto Color Emoji'],
+      ),
+      headline2: TextStyle(
+        fontSize: 28,
+        fontFamilyFallback: ['Noto Color Emoji'],
+      ),
+      headline3: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w500,
+        fontFamilyFallback: ['Noto Color Emoji'],
+      ),
+      headline4: TextStyle(
+        fontSize: 18,
+        fontFamilyFallback: ['Noto Color Emoji'],
+      ),
+      headline5: TextStyle(
+        fontSize: 14,
+        fontFamilyFallback: ['Noto Color Emoji'],
+      ),
+      subtitle2: TextStyle(
+        fontSize: 12,
+        color: Colors.grey,
+        fontFamilyFallback: ['Noto Color Emoji'],
       ),
     ),
     fontFamily: 'Roboto',
