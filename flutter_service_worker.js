@@ -12,7 +12,7 @@ const RESOURCES = {
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
 "index.html": "d9510c78dfabe0d7d59e0241a9126bc7",
 "/": "d9510c78dfabe0d7d59e0241a9126bc7",
-"main.dart.js": "900735d7ec5fb70837e2e7875721ea60",
+"main.dart.js": "b6329f415376b51732fae77f862c9f67",
 "version.json": "253fd39db19c4565e977ef29cc14ac5d",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796"
 };
