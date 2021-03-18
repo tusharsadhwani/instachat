@@ -13,17 +13,27 @@ import (
 
 // Config object
 type Config struct {
-	DBUser      string
-	DBPassword  string
-	DBName      string
-	DBPort      string
-	PrivateKey  *rsa.PrivateKey
+	// What port the app runs on
+	Port string
+
+	// Tells if app is running in test mode
+	Testing bool
+
+	// Postgres parameters
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBPort     string
+
+	// RSA Private key for JWT tokens
+	PrivateKey *rsa.PrivateKey
+
 	GCPClientID string
+
 	S3Bucket    string
 	S3Region    string
 	S3AccessKey string
 	S3SecretKey string
-	Port        string
 }
 
 var config *Config
@@ -51,18 +61,22 @@ func Init() {
 		log.Fatalln("Error loading .env file")
 	}
 
+	goEnv, _ := os.LookupEnv("GO_ENV")
+	testing := goEnv == "TESTING"
+
+	port := getEnvVar("PORT")
+
 	DBUser := getEnvVar("DB_USER")
 	DBPassword := getEnvVar("DB_PASSWORD")
 	DBName := getEnvVar("DB_NAME")
 	DBPort := getEnvVar("DB_PORT")
+
 	GCPClientID := getEnvVar("GCP_CLIENT_ID")
+
 	S3Bucket := getEnvVar("S3_BUCKET")
 	S3Region := getEnvVar("S3_REGION")
 	S3AccessKey := getEnvVar("S3_ACCESS_KEY")
 	S3SecretKey := getEnvVar("S3_SECRET_KEY")
-	port := getEnvVar("PORT")
-
-	var privateKey *rsa.PrivateKey
 
 	privKeyBytes, err := ioutil.ReadFile("config/keys/private.key")
 	if err != nil {
@@ -83,12 +97,14 @@ func Init() {
 			log.Fatalln("Unable to parse RSA private key")
 		}
 	}
-	var ok bool
-	if privateKey, ok = parsedKey.(*rsa.PrivateKey); !ok {
+	privateKey, ok := parsedKey.(*rsa.PrivateKey)
+	if !ok {
 		log.Fatalln("Unable to parse RSA private key")
 	}
 
 	config = &Config{
+		Testing:     testing,
+		Port:        port,
 		DBUser:      DBUser,
 		DBPassword:  DBPassword,
 		DBName:      DBName,
@@ -99,6 +115,5 @@ func Init() {
 		S3Region:    S3Region,
 		S3AccessKey: S3AccessKey,
 		S3SecretKey: S3SecretKey,
-		Port:        port,
 	}
 }

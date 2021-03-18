@@ -14,6 +14,9 @@ import (
 // RunApp runs the server
 func RunApp() {
 	cfg := config.GetConfig()
+	if cfg.Testing {
+		fmt.Println("NOTE: App is running in test mode.")
+	}
 
 	app := fiber.New()
 	app.Use(cors.New())
@@ -41,11 +44,18 @@ func RunApp() {
 
 	app.Post("/login", LoginGoogle)
 
-	app.Use(jwtware.New(jwtware.Config{
-		SigningMethod: "RS256",
-		SigningKey:    cfg.PrivateKey.Public(),
-		TokenLookup:   "query:token,header:Authorization",
-	}))
+	// Don't require authentication in test mode
+	if cfg.Testing {
+		app.Use(TestingAuthProvider)
+	} else {
+		app.Use(jwtware.New(jwtware.Config{
+			SigningMethod: "RS256",
+			SigningKey:    cfg.PrivateKey.Public(),
+			TokenLookup:   "query:token,header:Authorization",
+		}))
+	}
+
+	app.Get("/test", Test)
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
