@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"log"
+	"path"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -11,12 +13,9 @@ import (
 	jwtware "github.com/gofiber/jwt/v2"
 )
 
-// RunApp runs the server
-func RunApp() {
+// App returns the fiber.App which runs the server
+func App() *fiber.App {
 	cfg := config.GetConfig()
-	if cfg.Testing {
-		fmt.Println("NOTE: App is running in test mode.")
-	}
 
 	app := fiber.New()
 	app.Use(cors.New())
@@ -75,8 +74,23 @@ func RunApp() {
 
 	app.Get("/image/:filename", GetImagePresignedURL)
 
-	err := app.ListenTLS(fmt.Sprintf(":%s", cfg.Port), "./localhost.pem", "./localhost-key.pem")
+	return app
+}
+
+// RunApp runs the server
+func RunApp() {
+	app := App()
+	cfg := config.GetConfig()
+
+	if cfg.Testing {
+		fmt.Println("NOTE: App is running in test mode.")
+	}
+	err := app.ListenTLS(
+		fmt.Sprintf(":%s", cfg.Port),
+		path.Join(cfg.RootPath, "localhost.pem"),
+		path.Join(cfg.RootPath, "localhost-key.pem"),
+	)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 	}
 }

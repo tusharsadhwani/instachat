@@ -4,15 +4,20 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 )
 
 // Config object
 type Config struct {
+	// Absolute path of root directory
+	RootPath string
+
 	// What port the app runs on
 	Port string
 
@@ -56,13 +61,28 @@ func getEnvVar(varname string) string {
 
 //Init initializes the config object
 func Init() {
-	err := godotenv.Load()
+	goEnv, _ := os.LookupEnv("GO_ENV")
+	fmt.Println(goEnv)
+	testing := goEnv == "TESTING"
+
+	var (
+		rootPath string
+		err      error
+	)
+	if testing {
+		rootPath, err = filepath.Abs("..")
+	} else {
+		rootPath, err = filepath.Abs(".")
+	}
+
+	if err != nil {
+		log.Fatalln("Weird error")
+	}
+
+	err = godotenv.Load(filepath.Join(rootPath, ".env"))
 	if err != nil {
 		log.Fatalln("Error loading .env file")
 	}
-
-	goEnv, _ := os.LookupEnv("GO_ENV")
-	testing := goEnv == "TESTING"
 
 	port := getEnvVar("PORT")
 
@@ -78,7 +98,7 @@ func Init() {
 	S3AccessKey := getEnvVar("S3_ACCESS_KEY")
 	S3SecretKey := getEnvVar("S3_SECRET_KEY")
 
-	privKeyBytes, err := ioutil.ReadFile("config/keys/private.key")
+	privKeyBytes, err := ioutil.ReadFile(filepath.Join(rootPath, "config/keys/private.key"))
 	if err != nil {
 		log.Fatalln("No private key file found. Generate it by running genkeys")
 	}
@@ -103,6 +123,7 @@ func Init() {
 	}
 
 	config = &Config{
+		RootPath:    rootPath,
 		Testing:     testing,
 		Port:        port,
 		DBUser:      DBUser,
