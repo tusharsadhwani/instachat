@@ -6,13 +6,13 @@ const RESOURCES = {
   "manifest.json": "b0aa4e7ee7bf12be57927204f8474ac2",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"assets/NOTICES": "f812ac3c57505a99622ccabe9aaaf749",
+"assets/NOTICES": "2523108f5577b7f5ad210829e8e5bf82",
 "assets/fonts/MaterialIcons-Regular.otf": "1288c9e28052e028aba623321f7826ac",
 "assets/AssetManifest.json": "16b49a9c02d3552cceeefadef0883e97",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
 "index.html": "d9510c78dfabe0d7d59e0241a9126bc7",
 "/": "d9510c78dfabe0d7d59e0241a9126bc7",
-"main.dart.js": "b6329f415376b51732fae77f862c9f67",
+"main.dart.js": "7559205b685a67f3d8ac344505ba9568",
 "version.json": "253fd39db19c4565e977ef29cc14ac5d",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796"
 };
@@ -32,7 +32,7 @@ self.addEventListener("install", (event) => {
   return event.waitUntil(
     caches.open(TEMP).then((cache) => {
       return cache.addAll(
-        CORE.map((value) => new Request(value + '?revision=' + RESOURCES[value], {'cache': 'reload'})));
+        CORE.map((value) => new Request(value, {'cache': 'reload'})));
     })
   );
 });
