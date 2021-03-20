@@ -6,7 +6,11 @@ A working replica of Instagram DMs and stories, written in Flutter and Go.
 
 > **Note:** This is currently a work in progress.
 
-## Before you start
+## Deploy your own
+
+You will need [go](https://golang.org) and [flutter](https://flutter.dev) installed on your system.
+
+### Before you start
 
 To run your own instance, you'll need:
 
@@ -42,6 +46,82 @@ You can get all of these for free for limited use.
        ]
      }
      ```
+
+- Edit `./instachat/.env` to set `DOMAIN` as the domain name of your backend, along with your AWS S3 bucket URL.
+
+  (Look at `./instachat/.env.example` for more info)
+
+- Create a release build of the app for use:
+
+  ```bash
+  flutter build apk --target-platform=android-arm64,android-arm,android-x64 --split-per-abi
+  ```
+
+  Created APKs will be present in `./instachat/build/app/outputs/flutter-apk/`
+
+- Setup the backend domain:
+
+  - Get a domain name for the backend, free domain names are available on [freenom](https://freenom.com) for example.
+
+  - Point the domain/subdomain name (eg. `mybackend.site` or `api.instachat-server.net`) to the IP address of your VPS/cloud server, by adding an `A` DNS record, with host of `<your.domain>` and value of the IP address.
+
+  - It can take a few minutes for the DNS records to be updated, you can use [dnschecker](https://dnschecker.org) to check the DNS records on your address.
+
+- Add the following nginx configuration on the server (replace `<your.domain>` with your domain name):
+
+  ```nginx
+  server {
+      server_name <your.domain>;
+
+      location / {
+          proxy_pass http://localhost:5555;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "Upgrade";
+          proxy_set_header Host $host;
+      }
+  }
+  ```
+
+  Then restart and test nginx with:
+
+  ```bash
+  sudo systemctl restart nginx
+  sudo nginx -t
+  ```
+
+- Setup an SSL Certificate for the backend:
+
+  - Install [certbot](https://certbot.eff.org/instructions) on your server, on Ubuntu it's just `sudo snap install --classic certbot`
+
+  - Run `sudo certbot --nginx` to install your SSL certificate.
+
+- Clone the repository on the server:
+
+  ```bash
+  git clone https://github.com/tusharsadhwani/instachat
+  ```
+
+- Create a postgres database for the backend.
+
+- Edit `./server/.env` to add your database and GCP/AWS credentials.
+
+  (Look at `./server/.env.example` for more info)
+
+- In the `./server` subdirectory, run:
+
+  ```bash
+  go run ./cmd/genkeys
+  ```
+
+  To generate an RSA key pair for the app.
+
+- Start the server:
+
+  ```bash
+  go build ./cmd/server
+  ./server
+  ```
 
 ## Local Development
 
@@ -199,68 +279,12 @@ You will need [go](https://golang.org) and [flutter](https://flutter.dev) instal
 
   to start the server with HTTPS and hot reload.
 
-## Deploy your own server
+## Testing
 
-- Setup the domain:
+To run tests:
 
-  - Get a domain name for the backend, free domain names are available on [freenom](https://freenom.com) for example.
-
-  - Point the domain/subdomain name (eg. `mybackend.site` or `api.instachat-server.net`) to the IP address of your VPS/cloud server, by adding an `A` DNS record, with host of `<your.domain>` and value of the IP address.
-
-  - It can take a few minutes for the DNS records to be updated, you can use [dnschecker](https://dnschecker.org) to check the DNS records on your address.
-
-- Add the following nginx configuration on the server (replace `<your.domain>` with your domain name):
-
-  ```nginx
-  server {
-      server_name <your.domain>;
-
-      location / {
-          proxy_pass http://localhost:5555;
-          proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "Upgrade";
-          proxy_set_header Host $host;
-      }
-  }
-  ```
-
-  Then restart and test nginx with:
+- In the `./server` subfolder, run:
 
   ```bash
-  sudo systemctl restart nginx
-  sudo nginx -t
-  ```
-
-- Setup an SSL Certificate for the backend:
-
-  - Install [certbot](https://certbot.eff.org/instructions) on your server, on Ubuntu it's just `sudo snap install --classic certbot`
-
-  - Run `sudo certbot --nginx` to install your SSL certificate.
-
-- Clone the repository on the server:
-
-  ```bash
-  git clone https://github.com/tusharsadhwani/instachat
-  ```
-
-- Create a postgres database for the backend.
-
-- Edit `./server/.env` to add your database and GCP/AWS credentials.
-
-  (Look at `./server/.env.example` for more info)
-
-- In the `./server` subdirectory, run:
-
-  ```bash
-  go run ./cmd/genkeys
-  ```
-
-  To generate an RSA key pair for the app.
-
-- Start the server:
-
-  ```bash
-  go build ./cmd/server
-  ./server
+  go test ./tests
   ```
