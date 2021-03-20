@@ -82,9 +82,6 @@ func RunApp() {
 	app := App()
 	cfg := config.GetConfig()
 
-	if cfg.Testing {
-		fmt.Println("NOTE: App is running in test mode.")
-	}
 	err := app.ListenTLS(
 		fmt.Sprintf(":%s", cfg.Port),
 		path.Join(cfg.RootPath, "localhost.pem"),

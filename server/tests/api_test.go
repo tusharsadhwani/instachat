@@ -3,6 +3,7 @@ package tests
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -11,15 +12,20 @@ import (
 	"github.com/tusharsadhwani/instachat/database"
 )
 
-// TestApi runs api tests
-func TestApi(t *testing.T) {
+func TestMain(m *testing.M) {
+	os.Setenv("GO_ENV", "TESTING")
 	config.Init()
 	database.Init()
-	app := api.App()
 	go api.RunApp()
 	time.Sleep(2 * time.Second)
 
-	// Run tests here
+	m.Run()
+
+	app := api.App()
+	app.Shutdown()
+}
+
+func TestHelloWorld(t *testing.T) {
 	resp, err := http.Get("https://localhost:5555")
 	if err != nil {
 		t.Error("Unable to make request")
@@ -28,6 +34,4 @@ func TestApi(t *testing.T) {
 	if string(body) != "Hello, World 👋!" {
 		t.Error("Failed hello world test.")
 	}
-
-	app.Shutdown()
 }

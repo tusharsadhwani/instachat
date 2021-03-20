@@ -62,8 +62,10 @@ func getEnvVar(varname string) string {
 //Init initializes the config object
 func Init() {
 	goEnv, _ := os.LookupEnv("GO_ENV")
-	fmt.Println(goEnv)
 	testing := goEnv == "TESTING"
+	if testing {
+		fmt.Println("NOTE: App is running in test mode.")
+	}
 
 	var (
 		rootPath string
