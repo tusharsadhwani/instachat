@@ -15,7 +15,6 @@ require (
 	github.com/rhnvrm/simples3 v0.6.1
 	github.com/savsgio/gotils v0.0.0-20200909101946-939aa3fc74fb // indirect
 	github.com/valyala/fasthttp v1.19.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	google.golang.org/api v0.36.0
 	gorm.io/driver/postgres v1.0.5
