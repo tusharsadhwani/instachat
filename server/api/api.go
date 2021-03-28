@@ -4,20 +4,33 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/websocket/v2"
 	"github.com/tusharsadhwani/instachat/config"
+	"github.com/tusharsadhwani/instachat/database"
 
 	jwtware "github.com/gofiber/jwt/v2"
 )
 
-// App returns the fiber.App which runs the server
-func App() *fiber.App {
+var app *fiber.App
+
+func GetApp() *fiber.App {
+	return app
+}
+
+// Init creates the fiber.App which runs the server
+func Init() *fiber.App {
+	config.Init()
+	database.Init()
+
 	cfg := config.GetConfig()
 
-	app := fiber.New()
+	app = fiber.New(fiber.Config{
+		ReadTimeout: time.Second * 5,
+	})
 	app.Use(cors.New())
 
 	InitWebsocket()
@@ -79,7 +92,6 @@ func App() *fiber.App {
 
 // RunApp runs the server
 func RunApp() {
-	app := App()
 	cfg := config.GetConfig()
 
 	err := app.ListenTLS(

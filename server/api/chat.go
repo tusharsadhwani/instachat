@@ -108,7 +108,7 @@ func CreateChat(c *fiber.Ctx) error {
 	return c.JSON(chat)
 }
 
-// JoinChat creates a new chat
+// JoinChat adds you into a chat
 func JoinChat(c *fiber.Ctx) error {
 	db := database.GetDB()
 

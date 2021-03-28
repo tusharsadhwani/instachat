@@ -7,6 +7,7 @@ import (
 
 func TestingAuthProvider(c *fiber.Ctx) error {
 	user := jwt.Token{Claims: jwt.MapClaims{
+		"id":    123.,
 		"sub":   "123",
 		"name":  "Test user",
 		"email": "test@example.com",

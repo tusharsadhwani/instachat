@@ -90,8 +90,13 @@ func Init() {
 
 	DBUser := getEnvVar("DB_USER")
 	DBPassword := getEnvVar("DB_PASSWORD")
-	DBName := getEnvVar("DB_NAME")
 	DBPort := getEnvVar("DB_PORT")
+	var DBName string
+	if testing {
+		DBName = getEnvVar("TEST_DB_NAME")
+	} else {
+		DBName = getEnvVar("DB_NAME")
+	}
 
 	GCPClientID := getEnvVar("GCP_CLIENT_ID")
 

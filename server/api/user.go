@@ -79,6 +79,7 @@ func LoginGoogle(c *fiber.Ctx) error {
 
 	var user User
 	db.Where(&models.DBUser{GoogleID: &bodyParams.sub}).Find(&user)
+	//TODO: check for errors instead of relying on zero value
 	if user.Userid == 0 {
 		// User doesn't already exist in DB
 		dbuser := models.DBUser{
@@ -86,6 +87,7 @@ func LoginGoogle(c *fiber.Ctx) error {
 			GoogleID: &bodyParams.sub,
 		}
 
+		//TODO: bruh moment. remove this loop
 		for {
 			userQuery := db.Create(&dbuser)
 			if userQuery.Error == nil {
