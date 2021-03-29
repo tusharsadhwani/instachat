@@ -29,7 +29,8 @@ func Init() *fiber.App {
 	cfg := config.GetConfig()
 
 	app = fiber.New(fiber.Config{
-		ReadTimeout: time.Second * 5,
+		ReadTimeout:      time.Second * 5,
+		DisableKeepalive: cfg.Testing,
 	})
 	app.Use(cors.New())
 
@@ -76,7 +77,6 @@ func Init() *fiber.App {
 		}
 		return fiber.ErrUpgradeRequired
 	})
-
 	app.Get("/ws/:id/chat/:chatid", websocket.New(WebsocketUpdates))
 
 	app.Get("/user/:id/chat", GetUserChats)
@@ -84,6 +84,7 @@ func Init() *fiber.App {
 
 	app.Post("/chat", CreateChat)
 	app.Post("/chat/:address", JoinChat)
+	app.Delete("/chat/:address", DeleteChat)
 
 	app.Get("/image/:filename", GetImagePresignedURL)
 

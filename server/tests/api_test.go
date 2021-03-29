@@ -6,22 +6,21 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/tusharsadhwani/instachat/api"
-	"github.com/tusharsadhwani/instachat/database"
-	"github.com/tusharsadhwani/instachat/models"
 )
 
 func TestMain(m *testing.M) {
 	os.Setenv("GO_ENV", "TESTING")
 	api.Init()
-	go api.RunApp()
-	time.Sleep(2 * time.Second) //TODO: remove
+	InitTestDB()
 
-	m.Run() //TODO: app.Shutdown() hangs forever
+	go api.RunApp()
+	m.Run()
+
+	app := api.GetApp()
+	app.Shutdown()
 }
 
 func TestHelloWorld(t *testing.T) {
@@ -30,50 +29,57 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
-	if string(body) != "Hello, World 👋!" {
-		t.Fatal("Failed hello world test.")
+	raw, _ := io.ReadAll(resp.Body)
+	output := string(raw)
+	expected := "Hello, World 👋!"
+	if output != expected {
+		t.Fatalf("Expected %#v, got %#v", expected, output)
 	}
 }
 
 func TestDatabase(t *testing.T) {
-	db := database.GetDB()
-	db.Exec("TRUNCATE chats CASCADE")
-	db.Exec("TRUNCATE users CASCADE")
+	t.Run("empty chats in the beginning", func(t *testing.T) {
+		resp, err := HttpGetJson("https://localhost:5555/public/chat")
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		var chats []api.Chat
+		json.Unmarshal(resp, &chats)
+		if len(chats) != 0 {
+			t.Fatalf("Expected %#v, got %#v", []api.Chat{}, resp)
+		}
+	})
 
-	stringPtr := func(s string) *string {
-		return &s
-	}
-	dbuser := models.DBUser{
-		Name:     stringPtr("Test"),
-		GoogleID: stringPtr("123"),
-	}
-	db.Create(&dbuser)
+	t.Run("create a chat", func(t *testing.T) {
+		newChat := api.Chat{
+			Name:    "Test Chat",
+			Address: "test",
+		}
+		resp, err := HttpPostJson("https://localhost:5555/chat", newChat)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		var respChat api.Chat
+		json.Unmarshal(resp, &respChat)
+		if respChat.Name != newChat.Name || respChat.Address != newChat.Address {
+			t.Fatalf("Expected %#v, got %#v", newChat, respChat)
+		}
+	})
 
-	resp, err := HttpGetJson("https://localhost:5555/public/chat")
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-	chats := make([]api.Chat, 0)
-	json.Unmarshal(resp, &chats)
-	if len(chats) != 0 {
-		t.Fatalf("Expected %#v, got %#v", []api.Chat{}, resp)
-	}
-	newChat := api.Chat{
-		Name:    "Test Chat",
-		Address: "test",
-	}
-	chatStr, _ := json.Marshal(newChat)
-	newChatReader := strings.NewReader(string(chatStr))
-	resp, err = HttpPostJson("https://localhost:5555/chat", newChatReader)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-	var respChat api.Chat
-	json.Unmarshal(resp, &respChat)
-	fmt.Printf("%#v\n", newChat)
-	fmt.Printf("%#v\n", respChat)
-	if respChat.Name != newChat.Name || respChat.Address != newChat.Address {
-		t.Fatalf("Expected %#v, got %#v", newChat, respChat)
-	}
+	t.Run("delete a chat", func(t *testing.T) {
+		resp, err := HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s", "test"))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		fmt.Println("Response is:", string(resp))
+		resp, err = HttpGetJson("https://localhost:5555/public/chat")
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		var chats []api.Chat
+		json.Unmarshal(resp, &chats)
+		if len(chats) != 0 {
+			t.Fatalf("Expected %#v, got %#v", []api.Chat{}, resp)
+		}
+	})
 }
