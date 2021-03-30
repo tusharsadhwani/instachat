@@ -8,19 +8,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tusharsadhwani/instachat/api"
 	. "github.com/tusharsadhwani/instachat/testutils"
 )
 
 func TestMain(m *testing.M) {
 	os.Setenv("GO_ENV", "TESTING")
-	api.Init()
+	Init()
 	InitTestDB()
 
-	go api.RunApp()
+	go RunApp()
 	m.Run()
 
-	app := api.GetApp()
+	app := GetApp()
 	app.Shutdown()
 }
 
@@ -44,15 +43,15 @@ func TestDatabase(t *testing.T) {
 		if err != nil {
 			t.Fatal(err.Error())
 		}
-		var chats []api.Chat
+		var chats []Chat
 		json.Unmarshal(resp, &chats)
 		if len(chats) != 0 {
-			t.Fatalf("Expected %#v, got %#v", []api.Chat{}, resp)
+			t.Fatalf("Expected %#v, got %#v", []Chat{}, resp)
 		}
 	})
 
 	t.Run("create a chat and get all chats and chat by id", func(t *testing.T) {
-		newChat := api.Chat{
+		newChat := Chat{
 			Name:    "Test Chat",
 			Address: "test",
 		}
@@ -60,7 +59,7 @@ func TestDatabase(t *testing.T) {
 		if err != nil {
 			t.Fatal(err.Error())
 		}
-		var respChat api.Chat
+		var respChat Chat
 		json.Unmarshal(resp, &respChat)
 		if respChat.Name != newChat.Name || respChat.Address != newChat.Address {
 			t.Fatalf("Expected %#v, got %#v", newChat, respChat)
@@ -94,10 +93,10 @@ func TestDatabase(t *testing.T) {
 		if err != nil {
 			t.Fatal(err.Error())
 		}
-		var chats []api.Chat
+		var chats []Chat
 		json.Unmarshal(resp, &chats)
 		if len(chats) != 0 {
-			t.Fatalf("Expected %#v, got %#v", []api.Chat{}, resp)
+			t.Fatalf("Expected %#v, got %#v", []Chat{}, resp)
 		}
 	})
 }
