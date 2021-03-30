@@ -41,7 +41,7 @@ func GetChatByID(c *fiber.Ctx) error {
 	}
 
 	var chat Chat
-	db.Where(&models.DBChat{Chatid: id}).Find(&chat)
+	db.Where(&models.DBChat{Chatid: &id}).Find(&chat)
 	if chat.Chatid == 0 {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", id))
 	}

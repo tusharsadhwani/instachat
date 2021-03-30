@@ -1,4 +1,4 @@
-package tests
+package testutils
 
 import (
 	"encoding/json"
@@ -18,7 +18,8 @@ func HttpGetJson(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error code %v: %v", resp.StatusCode, resp.Status)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("error code %v: %s", resp.StatusCode, body)
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
