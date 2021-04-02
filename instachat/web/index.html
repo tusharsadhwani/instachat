@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html style="height: 100%">
   <head>
     <!--
     If you are serving your web app in a path other than the root, change the
@@ -35,11 +35,33 @@
     <title>InstaChat</title>
     <link rel="manifest" href="manifest.json" />
   </head>
-  <body>
+  <body
+    style="
+      margin: 0;
+      height: 100%;
+      background-color: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: sans-serif;
+    "
+  >
+    <p style="font-size: 5vmin">InstaChat loading<span id="dots">...</span></p>
+
     <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
     <script>
+      var dots = document.getElementById("dots");
+      function animateDots() {
+        var text = dots.textContent;
+        if (text.length >= 3) text = "";
+        text += ".";
+        dots.textContent = text;
+      }
+      setInterval(animateDots, 700);
+
       if ("serviceWorker" in navigator) {
         window.addEventListener("flutter-first-frame", function () {
           navigator.serviceWorker.register("flutter_service_worker.js");
