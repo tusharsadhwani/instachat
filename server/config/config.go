@@ -71,14 +71,18 @@ func Init() {
 		rootPath string
 		err      error
 	)
-	if testing {
-		rootPath, err = filepath.Abs("..")
-	} else {
-		rootPath, err = filepath.Abs(".")
+
+	currentPath, err := filepath.Abs(".")
+	if err != nil {
+		log.Fatalln("Unable to read current folder:", err)
 	}
 
-	if err != nil {
-		log.Fatalln("Weird error")
+	// When running tests, current folder can be one of the subpackages instead of root
+	folder := filepath.Base(currentPath)
+	if folder == "server" {
+		rootPath = currentPath
+	} else {
+		rootPath = filepath.Dir(currentPath)
 	}
 
 	err = godotenv.Load(filepath.Join(rootPath, ".env"))
