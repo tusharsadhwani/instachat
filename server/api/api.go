@@ -28,9 +28,14 @@ func Init() *fiber.App {
 
 	cfg := config.GetConfig()
 
+	var readTimeout time.Duration
+	if cfg.Testing {
+		readTimeout = time.Millisecond * 500
+	} else {
+		readTimeout = time.Second * 10
+	}
 	app = fiber.New(fiber.Config{
-		ReadTimeout:      time.Second * 5,
-		DisableKeepalive: cfg.Testing,
+		ReadTimeout: readTimeout,
 	})
 	app.Use(cors.New())
 
@@ -43,6 +48,7 @@ func Init() *fiber.App {
 	public := app.Group("/public")
 
 	public.Get("/chat", GetChats)
+	public.Get("/chat/@:address", GetChatByAddress)
 	public.Get("/chat/:id", GetChatByID)
 	public.Get("/chat/:id/message/:cursor?", GetPaginatedChatMessages)
 	public.Get("/chat/:id/oldmessage/:cursor?", GetOlderChatMessages)

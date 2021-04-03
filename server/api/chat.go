@@ -49,6 +49,20 @@ func GetChatByID(c *fiber.Ctx) error {
 	return c.JSON(chat)
 }
 
+func GetChatByAddress(c *fiber.Ctx) error {
+	db := database.GetDB()
+
+	address := c.Params("address")
+
+	var chat Chat
+	db.Where(&models.DBChat{Address: &address}).Find(&chat)
+	if chat.Chatid == 0 {
+		return c.Status(404).SendString(fmt.Sprintf("No Chat found with address: %v", address))
+	}
+
+	return c.JSON(chat)
+}
+
 // CreateChat creates a new chat
 func CreateChat(c *fiber.Ctx) error {
 	userToken := c.Locals("user").(*jwt.Token)

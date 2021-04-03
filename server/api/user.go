@@ -66,15 +66,13 @@ func LoginGoogle(c *fiber.Ctx) error {
 	}
 
 	type BodyParams struct {
-		sub   string
-		email string
-		name  string
+		sub  string
+		name string
 	}
 
 	bodyParams := BodyParams{
-		sub:   idTokenMap.Claims["sub"].(string),
-		name:  idTokenMap.Claims["name"].(string),
-		email: idTokenMap.Claims["email"].(string),
+		sub:  idTokenMap.Claims["sub"].(string),
+		name: idTokenMap.Claims["name"].(string),
 	}
 
 	var user User

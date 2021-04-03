@@ -6,9 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/tusharsadhwani/instachat/database"
-	"github.com/tusharsadhwani/instachat/models"
 )
 
 func HttpGetJson(url string) ([]byte, error) {
@@ -68,20 +65,4 @@ func HttpPostJson(url string, reqBody interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
-}
-
-func InitTestDB() {
-	db := database.GetDB()
-	db.Exec("TRUNCATE chats CASCADE")
-	db.Exec("TRUNCATE users CASCADE")
-
-	stringPtr := func(s string) *string {
-		return &s
-	}
-	dbuser := models.DBUser{
-		Name:     stringPtr("Test"),
-		GoogleID: stringPtr("123"),
-	}
-	db.Create(&dbuser)
-
 }

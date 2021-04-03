@@ -9,6 +9,7 @@ require (
 	github.com/gofiber/jwt/v2 v2.1.0
 	github.com/gofiber/websocket/v2 v2.0.1
 	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jinzhu/copier v0.0.0-20201025035756-632e723a6687
 	github.com/joho/godotenv v1.3.0
 	github.com/klauspost/compress v1.11.7 // indirect

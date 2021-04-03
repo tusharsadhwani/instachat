@@ -3,15 +3,26 @@ package api
 import (
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	"github.com/tusharsadhwani/instachat/constants"
 )
+
+var TestUser User = User{
+	Userid:   constants.TestUserID,
+	GoogleID: constants.TestUserGoogleID,
+	Name:     constants.TestChatName,
+}
+
+var TestChat Chat = Chat{
+	Name:    constants.TestChatName,
+	Address: constants.TestChatAddress,
+}
 
 func TestingAuthProvider(c *fiber.Ctx) error {
 	user := jwt.Token{Claims: jwt.MapClaims{
-		"id":    123.,
-		"sub":   "123",
-		"name":  "Test user",
-		"email": "test@example.com",
+		"sub":  constants.TestUserGoogleID,
+		"name": constants.TestUserName,
 	}}
+
 	c.Locals("user", &user)
 	return c.Next()
 }

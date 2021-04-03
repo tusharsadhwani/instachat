@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/tusharsadhwani/instachat/config"
+	"github.com/tusharsadhwani/instachat/constants"
 	"github.com/tusharsadhwani/instachat/models"
 )
 
@@ -30,4 +31,20 @@ func Init() {
 	}
 
 	db.AutoMigrate(&models.DBChat{}, &models.DBMessage{}, &models.DBUser{}, &models.DBLike{})
+
+	if cfg.Testing {
+		SetupTestDB()
+	}
+}
+
+func SetupTestDB() {
+	db := GetDB()
+	db.Exec("TRUNCATE chats CASCADE")
+	db.Exec("TRUNCATE users CASCADE")
+
+	dbuser := models.DBUser{
+		Name:     &constants.TestUserName,
+		GoogleID: &constants.TestUserGoogleID,
+	}
+	db.Create(&dbuser)
 }
