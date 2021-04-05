@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers.dart';
 import '../services/auth_service.dart';
 import '../services/chats_service.dart';
 import '../widgets/insta_app_bar.dart';
@@ -108,8 +109,12 @@ class _CreateChatState extends State<CreateChat> {
     if (!createChatForm.currentState.validate()) return;
     createChatForm.currentState.save();
 
-    Provider.of<ChatsService>(context, listen: false)
+    final error = await Provider.of<ChatsService>(context, listen: false)
         .createChat(address, chatName);
+    if (error != null) {
+      showAlert(context, error);
+      return;
+    }
 
     Navigator.of(context).pop(true);
   }
@@ -197,7 +202,12 @@ class _JoinChatState extends State<JoinChat> {
     if (!joinChatForm.currentState.validate()) return;
     joinChatForm.currentState.save();
 
-    Provider.of<ChatsService>(context, listen: false).joinChat(address);
+    final error = await Provider.of<ChatsService>(context, listen: false)
+        .joinChat(address);
+    if (error != null) {
+      showAlert(context, error);
+      return;
+    }
 
     Navigator.of(context).pop(true);
   }

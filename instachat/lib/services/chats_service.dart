@@ -28,23 +28,33 @@ class ChatsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> createChat(String address, String name) async {
-    await dio.post(
-      "https://${auth.domain}/chat",
-      options: authOptions,
-      data: {
-        'address': address,
-        'name': name,
-      },
-    );
+  Future<String> createChat(String address, String name) async {
+    try {
+      await dio.post(
+        "https://${auth.domain}/chat",
+        options: authOptions,
+        data: {
+          'address': address,
+          'name': name,
+        },
+      );
+    } on DioError catch (e) {
+      return e.response.data;
+    }
     updateChats();
+    return null;
   }
 
-  Future<void> joinChat(String address) async {
-    await dio.post(
-      "https://${auth.domain}/chat/$address",
-      options: authOptions,
-    );
+  Future<String> joinChat(String address) async {
+    try {
+      await dio.post(
+        "https://${auth.domain}/chat/$address",
+        options: authOptions,
+      );
+    } on DioError catch (e) {
+      return e.response.data;
+    }
     updateChats();
+    return null;
   }
 }
