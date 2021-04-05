@@ -60,10 +60,11 @@
         text += ".";
         dots.textContent = text;
       }
-      setInterval(animateDots, 700);
+      const timer = setInterval(animateDots, 700);
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("flutter-first-frame", function () {
+          clearInterval(timer);
           navigator.serviceWorker.register("flutter_service_worker.js");
         });
       }
