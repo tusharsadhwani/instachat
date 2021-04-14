@@ -233,12 +233,12 @@ func SaveMessage(chatid int, userid int, msg *Message) (Message, error) {
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
 	if dbchat.Chatid == nil {
-		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
+		return Message{}, fmt.Errorf("no Chat found with id: %v", chatid)
 	}
 	var dbuser models.DBUser
 	db.Where(&models.DBUser{Userid: &userid}).Find(&dbuser)
 	if dbuser.Userid == nil {
-		return Message{}, fmt.Errorf("No User found with id: %v", userid)
+		return Message{}, fmt.Errorf("no User found with id: %v", userid)
 	}
 
 	var dbmessage models.DBMessage
@@ -262,18 +262,18 @@ func LikeMessage(chatid int, likerid int, messageID string) error {
 	var dbuser models.DBUser
 	db.Where(&models.DBUser{Userid: &likerid}).Find(&dbuser)
 	if dbuser.Userid == nil {
-		return fmt.Errorf("No User found with id: %v", likerid)
+		return fmt.Errorf("no User found with id: %v", likerid)
 	}
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
 	if dbuser.Userid == nil {
-		return fmt.Errorf("No Chat found with id: %v", chatid)
+		return fmt.Errorf("no Chat found with id: %v", chatid)
 	}
 	var dbmessage models.DBMessage
 	db.Where(&models.DBMessage{UUID: &messageID}).Find(&dbmessage)
 
 	if dbmessage.ID == 0 {
-		return fmt.Errorf("No Message found with uuid: %v", messageID)
+		return fmt.Errorf("no Message found with uuid: %v", messageID)
 	}
 
 	var dblike models.DBLike
@@ -291,18 +291,18 @@ func UnlikeMessage(chatid int, likerid int, messageID string) error {
 	var dbuser models.DBUser
 	db.Where(&models.DBUser{Userid: &likerid}).Find(&dbuser)
 	if dbuser.Userid == nil {
-		return fmt.Errorf("No User found with id: %v", likerid)
+		return fmt.Errorf("no User found with id: %v", likerid)
 	}
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
 	if dbuser.Userid == nil {
-		return fmt.Errorf("No Chat found with id: %v", chatid)
+		return fmt.Errorf("no Chat found with id: %v", chatid)
 	}
 	var dbmessage models.DBMessage
 	db.Where(&models.DBMessage{UUID: &messageID}).Find(&dbmessage)
 
 	if dbmessage.ID == 0 {
-		return fmt.Errorf("No Message found with uuid: %v", messageID)
+		return fmt.Errorf("no Message found with uuid: %v", messageID)
 	}
 
 	var dblike models.DBLike

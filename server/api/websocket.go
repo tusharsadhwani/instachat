@@ -61,6 +61,7 @@ func WebsocketUpdates(c *websocket.Conn) {
 		var params WebsocketParams
 		json.Unmarshal(msg, &params)
 
+		//TODO: error handling
 		switch params.Type {
 		case "MESSAGE":
 			savedMsg, _ := SaveMessage(chatid, userid, params.Message)
