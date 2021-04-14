@@ -9,12 +9,7 @@ import (
 var TestUser User = User{
 	Userid:   constants.TestUserID,
 	GoogleID: constants.TestUserGoogleID,
-	Name:     constants.TestChatName,
-}
-
-var TestChat Chat = Chat{
-	Name:    constants.TestChatName,
-	Address: constants.TestChatAddress,
+	Name:     constants.TestUserName,
 }
 
 func TestingAuthProvider(c *fiber.Ctx) error {

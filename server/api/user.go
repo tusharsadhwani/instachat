@@ -46,7 +46,7 @@ func GetUserByID(c *fiber.Ctx) error {
 	}
 
 	var user User
-	db.Where(&models.DBUser{Userid: id}).Find(&user)
+	db.Where(&models.DBUser{Userid: &id}).Find(&user)
 	if user.Userid == 0 {
 		return c.Status(404).SendString(fmt.Sprintf("No User found with id: %v", id))
 	}

@@ -35,27 +35,20 @@ func TestHelloWorld(t *testing.T) {
 }
 
 func TestDatabase(t *testing.T) {
-	t.Run("empty chats in the beginning", func(t *testing.T) {
-		resp, err := HttpGetJson("https://localhost:5555/public/chat")
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-		var chats []api.Chat
-		json.Unmarshal(resp, &chats)
-		if len(chats) != 0 {
-			t.Fatalf("Expected %#v, got %#v", []api.Chat{}, chats)
-		}
-	})
+	testChat := api.Chat{
+		Name:    "Test Chat",
+		Address: "dbtestchat",
+	}
 
 	t.Run("create a chat and get all chats and chat by id", func(t *testing.T) {
-		resp, err := HttpPostJson("https://localhost:5555/chat", api.TestChat)
+		resp, err := HttpPostJson("https://localhost:5555/chat", testChat)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 		var respChat api.Chat
 		json.Unmarshal(resp, &respChat)
-		if respChat.Name != api.TestChat.Name || respChat.Address != api.TestChat.Address {
-			t.Fatalf("Expected %#v, got %#v", api.TestChat, respChat)
+		if respChat.Name != testChat.Name || respChat.Address != testChat.Address {
+			t.Fatalf("Expected %#v, got %#v", testChat, respChat)
 		}
 
 		url := fmt.Sprintf("https://localhost:5555/public/chat/%d", respChat.Chatid)
@@ -64,19 +57,33 @@ func TestDatabase(t *testing.T) {
 			t.Fatal(err.Error())
 		}
 		json.Unmarshal(resp, &respChat)
-		if respChat.Name != api.TestChat.Name || respChat.Address != api.TestChat.Address {
-			t.Fatalf("Expected %#v, got %#v", api.TestChat, respChat)
+		if respChat.Name != testChat.Name || respChat.Address != testChat.Address {
+			t.Fatalf("Expected %#v, got %#v", testChat, respChat)
 		}
 	})
 
 	t.Run("chat id 0 test", func(t *testing.T) {
-		_, err := HttpGetJson("https://localhost:5555/public/chat/0")
+		tempChat := api.Chat{
+			Address: "chatid0test",
+			Name:    "Temp Chat",
+		}
+		_, err := HttpPostJson("https://localhost:5555/chat", tempChat)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		_, err = HttpGetJson("https://localhost:5555/public/chat/0")
 		if err == nil {
 			t.Fatal("Expected error 404, got nil")
 		}
 		expected := "error code 404: No Chat found with id: 0"
 		if err.Error() != expected {
 			t.Fatalf("Expected '%v', got '%v'", expected, err)
+		}
+
+		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s", tempChat.Address))
+		if err != nil {
+			t.Fatal(err.Error())
 		}
 	})
 
@@ -99,13 +106,11 @@ func TestDatabase(t *testing.T) {
 		if err != nil {
 			t.Fatal(err.Error())
 		}
-		//TODO: fetching chat by id somehow still works after deletion. re-add this test
-		//
-		// resp, err = HttpGetJson(fmt.Sprintf("https://localhost:5555/public/chat/%d", respChat.Chatid))
-		// fmt.Printf("%s", resp)
-		// if err == nil {
-		// 	t.Fatal("Expected error, found nil")
-		// }
+
+		_, err = HttpGetJson(fmt.Sprintf("https://localhost:5555/public/chat/%d", respChat.Chatid))
+		if err == nil {
+			t.Fatal("Expected error, found nil")
+		}
 
 		resp, err = HttpGetJson("https://localhost:5555/public/chat")
 		if err != nil {
@@ -120,8 +125,17 @@ func TestDatabase(t *testing.T) {
 }
 
 func TestWebsockets(t *testing.T) {
+	testChat := api.Chat{
+		Name:    "Test Chat",
+		Address: "wstestchat",
+	}
+	_, err := HttpPostJson("https://localhost:5555/chat", testChat)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
 	t.Run("connect to websocket", func(t *testing.T) {
-		url := fmt.Sprintf("https://localhost:5555/public/chat/@%s", api.TestChat.Address)
+		url := fmt.Sprintf("https://localhost:5555/public/chat/@%s", testChat.Address)
 		resp, err := HttpGetJson(url)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -141,7 +155,8 @@ func TestWebsockets(t *testing.T) {
 			Message: &api.Message{
 				UUID:   "123456",
 				Chatid: &respChat.Chatid,
-				Userid: &api.TestUser.Userid, Text: &msgText,
+				Userid: &api.TestUser.Userid,
+				Text:   &msgText,
 			},
 		}
 		msgBytes, _ := json.Marshal(msg)

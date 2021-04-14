@@ -97,7 +97,7 @@ func GetChatMessages(c *fiber.Ctx) error {
 
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
-	if dbchat.ID == 0 {
+	if dbchat.Chatid == nil {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
 	}
 
@@ -122,7 +122,7 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
-	if dbchat.ID == 0 {
+	if dbchat.Chatid == nil {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
 	}
 
@@ -181,7 +181,7 @@ func GetOlderChatMessages(c *fiber.Ctx) error {
 
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
-	if dbchat.ID == 0 {
+	if dbchat.Chatid == nil {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
 	}
 
@@ -232,19 +232,19 @@ func SaveMessage(chatid int, userid int, msg *Message) (Message, error) {
 
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
-	if dbchat.ID == 0 {
+	if dbchat.Chatid == nil {
 		return Message{}, fmt.Errorf("No Chat found with id: %v", chatid)
 	}
 	var dbuser models.DBUser
-	db.Where(&models.DBUser{Userid: userid}).Find(&dbuser)
-	if dbuser.ID == 0 {
+	db.Where(&models.DBUser{Userid: &userid}).Find(&dbuser)
+	if dbuser.Userid == nil {
 		return Message{}, fmt.Errorf("No User found with id: %v", userid)
 	}
 
 	var dbmessage models.DBMessage
 	copier.Copy(&dbmessage, &msg)
 	dbmessage.Chatid = dbchat.Chatid
-	dbmessage.Userid = &dbuser.Userid
+	dbmessage.Userid = dbuser.Userid
 	result := db.Create(&dbmessage)
 	if result.Error != nil {
 		return Message{}, result.Error
@@ -260,13 +260,13 @@ func LikeMessage(chatid int, likerid int, messageID string) error {
 	db := database.GetDB()
 
 	var dbuser models.DBUser
-	db.Where(&models.DBUser{Userid: likerid}).Find(&dbuser)
-	if dbuser.ID == 0 {
+	db.Where(&models.DBUser{Userid: &likerid}).Find(&dbuser)
+	if dbuser.Userid == nil {
 		return fmt.Errorf("No User found with id: %v", likerid)
 	}
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
-	if dbuser.ID == 0 {
+	if dbuser.Userid == nil {
 		return fmt.Errorf("No Chat found with id: %v", chatid)
 	}
 	var dbmessage models.DBMessage
@@ -289,13 +289,13 @@ func UnlikeMessage(chatid int, likerid int, messageID string) error {
 	db := database.GetDB()
 
 	var dbuser models.DBUser
-	db.Where(&models.DBUser{Userid: likerid}).Find(&dbuser)
-	if dbuser.ID == 0 {
+	db.Where(&models.DBUser{Userid: &likerid}).Find(&dbuser)
+	if dbuser.Userid == nil {
 		return fmt.Errorf("No User found with id: %v", likerid)
 	}
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Chatid: &chatid}).Find(&dbchat)
-	if dbuser.ID == 0 {
+	if dbuser.Userid == nil {
 		return fmt.Errorf("No Chat found with id: %v", chatid)
 	}
 	var dbmessage models.DBMessage

@@ -25,6 +25,6 @@ func GetUserFromToken(token *jwt.Token) models.DBUser {
 	userID := int(userIDfloat)
 
 	var dbuser models.DBUser
-	db.Where(&models.DBUser{Userid: userID}).Find(&dbuser)
+	db.Where(&models.DBUser{Userid: &userID}).Find(&dbuser)
 	return dbuser
 }

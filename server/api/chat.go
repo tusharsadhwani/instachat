@@ -97,9 +97,9 @@ func CreateChat(c *fiber.Ctx) error {
 
 	var existingChat models.DBChat
 	db.Where(&models.DBChat{Address: &params.Address}).Find(&existingChat)
-	if existingChat.ID != 0 {
+	if existingChat.Chatid != nil {
 		return c.Status(400).SendString(
-			fmt.Sprintf("Chat with address %v already exists", *existingChat.Address),
+			fmt.Sprintf("Chat with address %v already exists", params.Address),
 		)
 	}
 
@@ -131,7 +131,7 @@ func JoinChat(c *fiber.Ctx) error {
 
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Address: &address}).Find(&dbchat)
-	if dbchat.ID == 0 {
+	if dbchat.Chatid == nil {
 		return c.Status(400).SendString(
 			fmt.Sprintf("No chat found with address %v", address),
 		)
@@ -158,21 +158,19 @@ func DeleteChat(c *fiber.Ctx) error {
 
 	var dbchat models.DBChat
 	db.Where(&models.DBChat{Address: &address}).Find(&dbchat)
-	if dbchat.ID == 0 {
+	if dbchat.Chatid == nil {
 		return c.Status(400).SendString(
 			fmt.Sprintf("No chat found with address %v", address),
 		)
 	}
 
-	// TODO: add chats cascade
-	//
-	// userToken := c.Locals("user").(*jwt.Token)
-	// dbuser := util.GetUserFromToken(userToken)
+	userToken := c.Locals("user").(*jwt.Token)
+	dbuser := util.GetUserFromToken(userToken)
 
-	// err := db.Model(&dbuser).Association("Chats").Delete(&dbchat)
-	// if err != nil {
-	// 	return c.Status(503).SendString(err.Error())
-	// }
+	err := db.Model(&dbuser).Association("Chats").Delete(&dbchat)
+	if err != nil {
+		return c.Status(503).SendString(err.Error())
+	}
 	query := db.Delete(&dbchat)
 	if query.Error != nil {
 		return c.Status(503).SendString(query.Error.Error())
