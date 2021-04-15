@@ -159,8 +159,6 @@ func TestWebsockets(t *testing.T) {
 				Text:   &msgText,
 			},
 		}
-		msgBytes, _ := json.Marshal(msg)
-		msgString := string(msgBytes)
 
 		if err = conn.WriteJSON(msg); err != nil {
 			t.Fatal(err.Error())
@@ -170,9 +168,45 @@ func TestWebsockets(t *testing.T) {
 			t.Fatal(err.Error())
 		}
 		recvBytes, _ := json.Marshal(recv)
+		var recvMsg api.WebsocketParams
+		json.Unmarshal(recvBytes, &recvMsg)
+
+		if recvMsg.Message.ID == 0 {
+			t.Fatal("Received message id 0")
+		}
+		msg.Message.ID = recvMsg.Message.ID
+
+		msgBytes, _ := json.Marshal(msg)
+		msgString := string(msgBytes)
 		recvString := string(recvBytes)
 		if recvString != msgString {
-			t.Fatalf("Expected %#v, got %#v", msgString, recvString)
+			t.Fatalf("Expected %q, got %q", msgString, recvString)
+		}
+
+		resp, err = HttpGetJson(fmt.Sprintf("https://localhost:5555/public/chat/%d/message", respChat.Chatid))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		var respMessagePage struct {
+			Messages []api.Message
+			Next     int
+		}
+
+		err = json.Unmarshal(resp, &respMessagePage)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		if len(respMessagePage.Messages) == 0 {
+			t.Fatalf("Expected 1 message, got 0")
+		}
+		respMessage := respMessagePage.Messages[0]
+		if respMessage.Text == nil {
+			t.Fatalf("Message text: expected %q, got nil", *msg.Message.Text)
+		}
+		if *respMessage.Text != *msg.Message.Text {
+			t.Fatalf("Message text: expected %q, got %q", *msg.Message.Text, *respMessage.Text)
 		}
 	})
 }

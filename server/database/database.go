@@ -39,10 +39,13 @@ func Init() {
 
 func SetupTestDB() {
 	db := GetDB()
-	db.Exec("TRUNCATE chats CASCADE")
-	db.Exec("TRUNCATE users CASCADE")
+	db.Exec("TRUNCATE chats RESTART IDENTITY CASCADE")
+	db.Exec("TRUNCATE users RESTART IDENTITY CASCADE")
+	db.Exec("TRUNCATE messages RESTART IDENTITY CASCADE")
+	db.Exec("TRUNCATE likes RESTART IDENTITY CASCADE")
 
 	dbuser := models.DBUser{
+		Userid:   &constants.TestUserID,
 		Name:     &constants.TestUserName,
 		GoogleID: &constants.TestUserGoogleID,
 	}
