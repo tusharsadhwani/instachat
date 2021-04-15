@@ -74,7 +74,7 @@ func Init() *fiber.App {
 		}))
 	}
 
-	app.Get("/test", Test)
+	app.Get("/test", TestLogin)
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
@@ -89,6 +89,7 @@ func Init() *fiber.App {
 	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/chat", CreateChat)
+	//TODO: move these to /chat/@:address
 	app.Post("/chat/:address", JoinChat)
 	app.Delete("/chat/:address", DeleteChat)
 

@@ -251,7 +251,13 @@ func SaveMessage(chatid int, userid int, msg *Message) (Message, error) {
 	}
 
 	var message Message
-	db.Where(&models.DBMessage{UUID: dbmessage.UUID}).First(&message)
+	db.Where(
+		&models.DBMessage{
+			Chatid: dbmessage.Chatid,
+			Userid: dbmessage.Userid,
+			UUID:   dbmessage.UUID,
+		},
+	).First(&message)
 	return message, nil
 }
 
