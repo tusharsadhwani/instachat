@@ -86,6 +86,7 @@ func Init() *fiber.App {
 	app.Get("/ws/:id/chat/:chatid", websocket.New(WebsocketUpdates))
 
 	app.Get("/user/:id/chat", GetUserChats)
+	app.Get("/user/:id/created", GetUserCreatedChats)
 	app.Get("/user/:id/message", GetUserMessages)
 
 	app.Post("/chat", CreateChat)

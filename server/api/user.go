@@ -149,3 +149,16 @@ func GetUserChats(c *fiber.Ctx) error {
 
 	return c.JSON(chats)
 }
+
+// GetUserCreatedChats gets all chats made by the user
+func GetUserCreatedChats(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+
+	dbuser := util.GetUserFromToken(userToken)
+
+	db := database.GetDB()
+	var chats []Chat
+	db.Model(&dbuser).Association("CreatedChats").Find(&chats)
+
+	return c.JSON(chats)
+}

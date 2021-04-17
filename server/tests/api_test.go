@@ -60,13 +60,13 @@ func TestLogin(t *testing.T) {
 	})
 }
 
-func TestDatabase(t *testing.T) {
+func TestChats(t *testing.T) {
 	testChat := api.Chat{
 		Name:    "Test Chat",
 		Address: "dbtestchat",
 	}
 
-	t.Run("create a chat and get all chats and chat by id", func(t *testing.T) {
+	t.Run("create a chat and get chat by id", func(t *testing.T) {
 		resp, err := HttpPostJson("https://localhost:5555/chat", testChat)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -146,6 +146,61 @@ func TestDatabase(t *testing.T) {
 		json.Unmarshal(resp, &chats)
 		if len(chats) != 1 {
 			t.Fatalf("Expected 1 test chat to exist after deletion, found %d", len(chats))
+		}
+	})
+}
+
+func TestUsers(t *testing.T) {
+	userOneChat := api.Chat{
+		Name:    "Test User 1's Chat",
+		Address: "user1chat",
+	}
+	userTwoChat := api.Chat{
+		Name:    "Test User 2's Chat",
+		Address: "user2chat",
+	}
+
+	t.Run("create chat with user 1", func(t *testing.T) {
+		resp, err := HttpPostJson("https://localhost:5555/chat", userOneChat)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		var respChat api.Chat
+		json.Unmarshal(resp, &respChat)
+		if respChat.Name != userOneChat.Name || respChat.Address != userOneChat.Address {
+			t.Fatalf("Expected %#v, got %#v", userOneChat, respChat)
+		}
+		if respChat.Creatorid != api.TestUser.Userid {
+			t.Fatalf("Expected creator id %d, got %d", api.TestUser.Userid, respChat.Creatorid)
+		}
+	})
+
+	t.Run("create and delete chat with user 2", func(t *testing.T) {
+		resp, err := HttpPostJson("https://localhost:5555/chat?testid=2", userTwoChat)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		var respChat api.Chat
+		json.Unmarshal(resp, &respChat)
+		if respChat.Name != userTwoChat.Name || respChat.Address != userTwoChat.Address {
+			t.Fatalf("Expected %#v, got %#v", userTwoChat, respChat)
+		}
+		if respChat.Creatorid != api.TestUser2.Userid {
+			t.Fatalf("Expected creator id %d, got %d", api.TestUser2.Userid, respChat.Creatorid)
+		}
+
+		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s", userTwoChat.Address))
+		if err == nil {
+			t.Fatal("Expected error, got nil")
+		}
+		expected := "error code 403: 403 Forbidden"
+		if err.Error() != expected {
+			t.Fatalf("Expected %q ,got %q", expected, err)
+		}
+
+		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s?testid=2", userTwoChat.Address))
+		if err != nil {
+			t.Fatal(err)
 		}
 	})
 }

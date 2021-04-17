@@ -28,8 +28,9 @@ func TestingAuthProvider(c *fiber.Ctx) error {
 	}
 
 	user := jwt.Token{Claims: jwt.MapClaims{
-		"sub":  userStruct.GoogleID,
+		"id":   float64(userStruct.Userid),
 		"name": userStruct.Name,
+		"sub":  userStruct.GoogleID,
 	}}
 
 	c.Locals("user", &user)

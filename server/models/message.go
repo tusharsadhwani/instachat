@@ -8,7 +8,7 @@ type DBMessage struct {
 	Userid   *int    `gorm:"not null"`
 	Text     *string
 	ImageURL *string
-	Likes    []DBLike `gorm:"foreignKey:Messageid;references:UUID"`
+	Likes    []DBLike `gorm:"foreignKey:Messageid;references:UUID"` //TODO: should reference ID
 }
 
 // TableName for DBChat

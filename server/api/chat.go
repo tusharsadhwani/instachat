@@ -15,9 +15,10 @@ import (
 
 // Chat is what the API will use to represent DBChat
 type Chat struct {
-	Chatid  int    `json:"id"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
+	Chatid    int    `json:"id"`
+	Name      string `json:"name"`
+	Address   string `json:"address"`
+	Creatorid int    `json:"creatorId"`
 }
 
 // GetChats gets all chats
@@ -105,6 +106,8 @@ func CreateChat(c *fiber.Ctx) error {
 
 	var dbchat models.DBChat
 	copier.Copy(&dbchat, &params)
+
+	dbchat.Creatorid = dbuser.Userid
 	//TODO: bruh moment #2. Remove this
 	for {
 		chatQuery := db.Create(&dbchat)
@@ -150,7 +153,7 @@ func JoinChat(c *fiber.Ctx) error {
 	return c.JSON(chat)
 }
 
-// DeleteChat deletes a chat
+// DeleteChat deletes a chat, if user is the creator
 func DeleteChat(c *fiber.Ctx) error {
 	db := database.GetDB()
 
@@ -167,6 +170,10 @@ func DeleteChat(c *fiber.Ctx) error {
 	userToken := c.Locals("user").(*jwt.Token)
 	dbuser := util.GetUserFromToken(userToken)
 
+	if *dbchat.Creatorid != *dbuser.Userid {
+		return c.Status(403).SendString("You are not the chat's creator")
+	}
+
 	err := db.Model(&dbuser).Association("Chats").Delete(&dbchat)
 	if err != nil {
 		return c.Status(503).SendString(err.Error())
@@ -176,6 +183,5 @@ func DeleteChat(c *fiber.Ctx) error {
 		return c.Status(503).SendString(query.Error.Error())
 	}
 
-	db.Delete(&dbchat)
 	return c.SendString("deleted succesfully")
 }
