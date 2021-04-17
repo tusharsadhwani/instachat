@@ -30,8 +30,34 @@ func TestHelloWorld(t *testing.T) {
 	output := string(resp)
 	expected := "Hello, World 👋!"
 	if output != expected {
-		t.Fatalf("Expected %#v, got %#v", expected, output)
+		t.Fatalf("Expected %q, got %q", expected, output)
 	}
+}
+
+func TestLogin(t *testing.T) {
+	t.Run("login test user", func(t *testing.T) {
+		resp, err := HttpGetJson("https://localhost:5555/test")
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		output := string(resp)
+		expected := fmt.Sprintf("Welcome %s", api.TestUser.Name)
+		if output != expected {
+			t.Fatalf("Expected %q, got %q", expected, output)
+		}
+	})
+
+	t.Run("login test user 2", func(t *testing.T) {
+		resp, err := HttpGetJson("https://localhost:5555/test?testid=2")
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		output := string(resp)
+		expected := fmt.Sprintf("Welcome %s", api.TestUser2.Name)
+		if output != expected {
+			t.Fatalf("Expected %q, got %q", expected, output)
+		}
+	})
 }
 
 func TestDatabase(t *testing.T) {
