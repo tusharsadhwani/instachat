@@ -47,6 +47,8 @@ func WebsocketUpdates(c *websocket.Conn) {
 	if chats[chatid] == nil {
 		chats[chatid] = make(Chatroom)
 	}
+	// TODO: if you're connected to the same chat from same account
+	// on different device, it'll stop receiving messages
 	chats[chatid][userid] = ChatMember{id: userid, conn: c}
 
 	var (
