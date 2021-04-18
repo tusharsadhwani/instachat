@@ -2,10 +2,14 @@ package testutils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/websocket"
+	"github.com/tusharsadhwani/instachat/api"
 )
 
 func HttpGetJson(url string) ([]byte, error) {
@@ -65,4 +69,78 @@ func HttpPostJson(url string, reqBody interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
+}
+
+func WSSendAndVerify(
+	conn *websocket.Conn,
+	msg api.WebsocketParams,
+	user api.User,
+	chat api.Chat,
+) (*api.WebsocketParams, error) {
+	if err := conn.WriteJSON(msg); err != nil {
+		return nil, err
+	}
+	var recv api.WebsocketParams
+	if err := conn.ReadJSON(&recv); err != nil {
+		return nil, err
+	}
+	recvBytes, _ := json.Marshal(recv)
+	var recvMsg api.WebsocketParams
+	json.Unmarshal(recvBytes, &recvMsg)
+
+	if recvMsg.Message.ID == 0 {
+		return nil, errors.New("received message id 0")
+	}
+	fmt.Println("Message ID is ", recvMsg.Message.ID)
+	msg.Message.ID = recvMsg.Message.ID
+
+	msgBytes, _ := json.Marshal(msg)
+	msgString := string(msgBytes)
+	recvString := string(recvBytes)
+	if recvString != msgString {
+		return nil, fmt.Errorf("expected %q, got %q", msgString, recvString)
+	}
+
+	url := fmt.Sprintf("https://localhost:5555/public/chat/%d/message/%d", chat.Chatid, recv.Message.ID)
+	resp, err := HttpGetJson(url)
+	if err != nil {
+		return nil, err
+	}
+
+	var respMessagePage struct {
+		Messages []api.Message
+		Next     int
+	}
+
+	err = json.Unmarshal(resp, &respMessagePage)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(respMessagePage.Messages) == 0 {
+		return nil, fmt.Errorf("expected messages, got empty list")
+	}
+	respMessage := respMessagePage.Messages[0]
+	if respMessage.Text == nil {
+		return nil, fmt.Errorf("message text: expected %q, got nil", *msg.Message.Text)
+	}
+
+	respBytes, err := json.Marshal(respMessage)
+	if err != nil {
+		return nil, err
+	}
+	respString := string(respBytes)
+
+	msg.Message.ID = respMessage.ID
+	msgBytes, err = json.Marshal(msg.Message)
+	if err != nil {
+		return nil, err
+	}
+	msgString = string(msgBytes)
+
+	if respString != msgString {
+		return nil, fmt.Errorf("expected message %q, got %q", msgString, respString)
+	}
+
+	return &recv, nil
 }
