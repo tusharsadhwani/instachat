@@ -243,6 +243,7 @@ func SaveMessage(chatid int, userid int, msg *Message) (Message, error) {
 
 	var dbmessage models.DBMessage
 	copier.Copy(&dbmessage, &msg)
+	dbmessage.ID = 0 // will be decided by the database
 	dbmessage.Chatid = dbchat.Chatid
 	dbmessage.Userid = dbuser.Userid
 	result := db.Create(&dbmessage)
