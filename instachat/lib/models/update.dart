@@ -10,7 +10,7 @@ class UpdateType {
 class Update {
   String type;
   Message message;
-  String messageId;
+  String messageId; //TODO: make int
 
   Update({@required this.type, this.message, this.messageId});
 

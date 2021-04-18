@@ -28,7 +28,7 @@ func InitWebsocket() {
 type WebsocketParams struct {
 	Type      string   `json:"type"`
 	Message   *Message `json:"message"`
-	MessageID *string  `json:"messageId"`
+	MessageID *string  `json:"messageId"` //TODO: make int
 }
 
 // WebsocketUpdates receives all websocket updates in a chatroom

@@ -4,8 +4,8 @@ import 'package:uuid/uuid.dart';
 final uuid = Uuid();
 
 class Message {
-  final String id;
-  final int index;
+  final String id; //TODO: rename to uuid
+  final int index; //TODO: rename to id
   final int senderId;
   final String senderName;
   final String content;
@@ -41,7 +41,6 @@ class Message {
       'id': index,
       'uuid': id,
       'userid': senderId,
-      //TODO: add chat id and get rid of uuid
       'text': content,
       'liked': liked,
       'imageUrl': imageUrl,
