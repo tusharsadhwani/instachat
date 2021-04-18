@@ -12,6 +12,9 @@ import (
 	"github.com/tusharsadhwani/instachat/api"
 )
 
+var Domain = "https://localhost:5555"
+var WSDomain = "wss://localhost:5555"
+
 func HttpGetJson(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -71,7 +74,7 @@ func HttpPostJson(url string, reqBody interface{}) ([]byte, error) {
 	return body, nil
 }
 
-func WSSendAndVerify(
+func WSSendMessageAndVerify(
 	conn *websocket.Conn,
 	msg api.WebsocketParams,
 	user api.User,
@@ -100,7 +103,7 @@ func WSSendAndVerify(
 		return nil, fmt.Errorf("expected %q, got %q", msgString, recvString)
 	}
 
-	url := fmt.Sprintf("https://localhost:5555/public/chat/%d/message/%d", chat.Chatid, recv.Message.ID)
+	url := fmt.Sprintf("%s/public/chat/%d/message/%d", Domain, chat.Chatid, recv.Message.ID)
 	resp, err := HttpGetJson(url)
 	if err != nil {
 		return nil, err

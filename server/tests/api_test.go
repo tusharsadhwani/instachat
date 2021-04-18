@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestHelloWorld(t *testing.T) {
-	resp, err := HttpGetJson("https://localhost:5555")
+	resp, err := HttpGetJson(Domain)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -38,7 +38,7 @@ func TestHelloWorld(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	t.Run("login test user", func(t *testing.T) {
-		resp, err := HttpGetJson("https://localhost:5555/test")
+		resp, err := HttpGetJson(fmt.Sprintf("%s/test", Domain))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -50,7 +50,7 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("login test user 2", func(t *testing.T) {
-		resp, err := HttpGetJson("https://localhost:5555/test?testid=2")
+		resp, err := HttpGetJson(fmt.Sprintf("%s/test?testid=2", Domain))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -69,7 +69,7 @@ func TestChats(t *testing.T) {
 	}
 
 	t.Run("create a chat and get chat by id", func(t *testing.T) {
-		resp, err := HttpPostJson("https://localhost:5555/chat", testChat)
+		resp, err := HttpPostJson(fmt.Sprintf("%s/chat", Domain), testChat)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -79,7 +79,7 @@ func TestChats(t *testing.T) {
 			t.Fatalf("Expected %#v, got %#v", testChat, respChat)
 		}
 
-		url := fmt.Sprintf("https://localhost:5555/public/chat/%d", respChat.Chatid)
+		url := fmt.Sprintf("%s/public/chat/%d", Domain, respChat.Chatid)
 		resp, err = HttpGetJson(url)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -95,12 +95,12 @@ func TestChats(t *testing.T) {
 			Address: "chatid0test",
 			Name:    "Temp Chat",
 		}
-		_, err := HttpPostJson("https://localhost:5555/chat", tempChat)
+		_, err := HttpPostJson(fmt.Sprintf("%s/chat", Domain), tempChat)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
-		_, err = HttpGetJson("https://localhost:5555/public/chat/0")
+		_, err = HttpGetJson(fmt.Sprintf("%s/public/chat/0", Domain))
 		if err == nil {
 			t.Fatal("Expected error 404, got nil")
 		}
@@ -109,7 +109,7 @@ func TestChats(t *testing.T) {
 			t.Fatalf("Expected '%v', got '%v'", expected, err)
 		}
 
-		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s", tempChat.Address))
+		_, err = HttpDeleteJson(fmt.Sprintf("%s/chat/%s", Domain, tempChat.Address))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -120,7 +120,7 @@ func TestChats(t *testing.T) {
 			Address: "deleteme",
 			Name:    "Delete Me",
 		}
-		resp, err := HttpPostJson("https://localhost:5555/chat", deletionChat)
+		resp, err := HttpPostJson(fmt.Sprintf("%s/chat", Domain), deletionChat)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -130,17 +130,17 @@ func TestChats(t *testing.T) {
 			t.Fatalf("Expected %#v, got %#v", deletionChat, respChat)
 		}
 
-		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s", deletionChat.Address))
+		_, err = HttpDeleteJson(fmt.Sprintf("%s/chat/%s", Domain, deletionChat.Address))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
-		_, err = HttpGetJson(fmt.Sprintf("https://localhost:5555/public/chat/%d", respChat.Chatid))
+		_, err = HttpGetJson(fmt.Sprintf("%s/public/chat/%d", Domain, respChat.Chatid))
 		if err == nil {
 			t.Fatal("Expected error, found nil")
 		}
 
-		resp, err = HttpGetJson("https://localhost:5555/public/chat")
+		resp, err = HttpGetJson(fmt.Sprintf("%s/public/chat", Domain))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -163,7 +163,7 @@ func TestUsers(t *testing.T) {
 	}
 
 	t.Run("create chat with user 1", func(t *testing.T) {
-		resp, err := HttpPostJson("https://localhost:5555/chat", userOneChat)
+		resp, err := HttpPostJson(fmt.Sprintf("%s/chat", Domain), userOneChat)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -178,7 +178,7 @@ func TestUsers(t *testing.T) {
 	})
 
 	t.Run("create and delete chat with user 2", func(t *testing.T) {
-		resp, err := HttpPostJson("https://localhost:5555/chat?testid=2", userTwoChat)
+		resp, err := HttpPostJson(fmt.Sprintf("%s/chat?testid=2", Domain), userTwoChat)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -191,7 +191,7 @@ func TestUsers(t *testing.T) {
 			t.Fatalf("Expected creator id %d, got %d", api.TestUser2.Userid, respChat.Creatorid)
 		}
 
-		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s", userTwoChat.Address))
+		_, err = HttpDeleteJson(fmt.Sprintf("%s/chat/%s", Domain, userTwoChat.Address))
 		if err == nil {
 			t.Fatal("Expected error, got nil")
 		}
@@ -200,7 +200,7 @@ func TestUsers(t *testing.T) {
 			t.Fatalf("Expected %q ,got %q", expected, err)
 		}
 
-		_, err = HttpDeleteJson(fmt.Sprintf("https://localhost:5555/chat/%s?testid=2", userTwoChat.Address))
+		_, err = HttpDeleteJson(fmt.Sprintf("%s/chat/%s?testid=2", Domain, userTwoChat.Address))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -212,12 +212,12 @@ func TestWebsockets(t *testing.T) {
 		Name:    "Test Chat",
 		Address: "wstestchat",
 	}
-	_, err := HttpPostJson("https://localhost:5555/chat", testChat)
+	_, err := HttpPostJson(fmt.Sprintf("%s/chat", Domain), testChat)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
-	url := fmt.Sprintf("https://localhost:5555/public/chat/@%s", testChat.Address)
+	url := fmt.Sprintf("%s/public/chat/@%s", Domain, testChat.Address)
 	resp, err := HttpGetJson(url)
 	if err != nil {
 		t.Fatal(err.Error())
@@ -226,7 +226,7 @@ func TestWebsockets(t *testing.T) {
 	json.Unmarshal(resp, &respChat)
 
 	t.Run("send a couple messages", func(t *testing.T) {
-		url := fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d", api.TestUser.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -246,7 +246,7 @@ func TestWebsockets(t *testing.T) {
 				Text:   &msgText,
 			},
 		}
-		_, err = WSSendAndVerify(conn, msg, testUser, respChat)
+		_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -261,18 +261,14 @@ func TestWebsockets(t *testing.T) {
 				Text:   &msgText,
 			},
 		}
-		_, err = WSSendAndVerify(conn, msg, testUser, respChat)
+		_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("send message with second user", func(t *testing.T) {
-		url := fmt.Sprintf(
-			"wss://localhost:5555/ws/%d/chat/%d?testid=2",
-			api.TestUser2.Userid,
-			respChat.Chatid,
-		)
+		url := fmt.Sprintf("%s/ws/%d/chat/%d?testid=2", WSDomain, api.TestUser2.Userid, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -291,7 +287,7 @@ func TestWebsockets(t *testing.T) {
 				Text:   &msgText,
 			},
 		}
-		_, err = WSSendAndVerify(conn, msg, testUser, respChat)
+		_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -311,7 +307,7 @@ func TestWebsockets(t *testing.T) {
 			},
 		}
 
-		url := fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d", api.TestUser.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -319,7 +315,7 @@ func TestWebsockets(t *testing.T) {
 		defer conn.Close()
 		defer conn.WriteMessage(websocket.CloseMessage, nil)
 
-		url2 := fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d?testid=2", api.TestUser2.Userid, respChat.Chatid)
+		url2 := fmt.Sprintf("%s/ws/%d/chat/%d?testid=2", WSDomain, api.TestUser2.Userid, respChat.Chatid)
 		conn2, _, err := websocket.DefaultDialer.Dial(url2, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -327,7 +323,7 @@ func TestWebsockets(t *testing.T) {
 		defer conn2.Close()
 		defer conn2.WriteMessage(websocket.CloseMessage, nil)
 
-		recvMsg, err := WSSendAndVerify(conn, msg, testUser, respChat)
+		recvMsg, err := WSSendMessageAndVerify(conn, msg, testUser, respChat)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -347,7 +343,7 @@ func TestWebsockets(t *testing.T) {
 	})
 
 	t.Run("like a message", func(t *testing.T) {
-		url = fmt.Sprintf("https://localhost:5555/public/chat/%d/message", respChat.Chatid)
+		url = fmt.Sprintf("%s/public/chat/%d/message", Domain, respChat.Chatid)
 		resp, err := HttpGetJson(url)
 		if err != nil {
 			t.Fatal(err)
@@ -364,14 +360,14 @@ func TestWebsockets(t *testing.T) {
 			MessageID: &messageID,
 		}
 
-		url := fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d", api.TestUser.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 		defer conn.Close()
 		defer conn.WriteMessage(websocket.CloseMessage, nil)
-		url = fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d?testid=2", api.TestUser2.Userid, respChat.Chatid)
+		url = fmt.Sprintf("%s/ws/%d/chat/%d?testid=2", WSDomain, api.TestUser2.Userid, respChat.Chatid)
 		conn2, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
