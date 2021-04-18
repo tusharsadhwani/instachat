@@ -20,8 +20,8 @@ var TestUser2 User = User{
 func TestingAuthProvider(c *fiber.Ctx) error {
 	var userStruct User
 
-	altUser := c.Query("testid")
-	if altUser == "2" {
+	testID := c.Query("testid")
+	if testID == "2" {
 		userStruct = TestUser2
 	} else {
 		userStruct = TestUser
