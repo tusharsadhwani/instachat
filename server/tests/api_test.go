@@ -227,7 +227,7 @@ func TestWebsockets(t *testing.T) {
 	json.Unmarshal(resp, &respChat)
 
 	t.Run("send a couple messages", func(t *testing.T) {
-		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -269,7 +269,7 @@ func TestWebsockets(t *testing.T) {
 	})
 
 	t.Run("send message with second user", func(t *testing.T) {
-		url := fmt.Sprintf("%s/ws/%d/chat/%d?testid=2", WSDomain, api.TestUser2.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -308,7 +308,7 @@ func TestWebsockets(t *testing.T) {
 			},
 		}
 
-		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -316,7 +316,7 @@ func TestWebsockets(t *testing.T) {
 		defer conn.Close()
 		defer conn.WriteMessage(websocket.CloseMessage, nil)
 
-		url2 := fmt.Sprintf("%s/ws/%d/chat/%d?testid=2", WSDomain, api.TestUser2.Userid, respChat.Chatid)
+		url2 := fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, respChat.Chatid)
 		conn2, _, err := websocket.DefaultDialer.Dial(url2, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -370,14 +370,14 @@ func TestWebsockets(t *testing.T) {
 			MessageID: &message.UUID,
 		}
 
-		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 		defer conn.Close()
 		defer conn.WriteMessage(websocket.CloseMessage, nil)
-		url = fmt.Sprintf("%s/ws/%d/chat/%d?testid=2", WSDomain, api.TestUser2.Userid, respChat.Chatid)
+		url = fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, respChat.Chatid)
 		conn2, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())

@@ -19,9 +19,8 @@ class ChatsService extends ChangeNotifier {
   }
 
   Future<void> updateChats() async {
-    final userId = auth.user.id;
     final response = await dio.get(
-      "https://${auth.domain}/user/$userId/chat",
+      "https://${auth.domain}/user/chat",
       options: authOptions,
     );
     _chats = response.data.map<Chat>((c) => Chat.fromMap(c)).toList();

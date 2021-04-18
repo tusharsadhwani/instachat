@@ -130,7 +130,7 @@ class ChatService extends ChangeNotifier {
 
   Future<void> connectWebsocket() async {
     final websocketUrl =
-        'wss://${auth.domain}/ws/${auth.user.id}/chat/$chatId?token=${auth.jwt}';
+        'wss://${auth.domain}/ws/chat/$chatId?token=${auth.jwt}';
     _ws = WebSocketChannel.connect(Uri.parse(websocketUrl));
 
     try {

@@ -5,8 +5,10 @@ import (
 	"log"
 	"strconv"
 
+	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/websocket/v2"
 	"github.com/tusharsadhwani/instachat/constants"
+	"github.com/tusharsadhwani/instachat/util"
 )
 
 // ChatMember describes the data of a member in a chatroom
@@ -34,11 +36,10 @@ type WebsocketParams struct {
 
 // WebsocketUpdates receives all websocket updates in a chatroom
 func WebsocketUpdates(c *websocket.Conn) {
-	//TODO: do we really need to ask for userid? also check if it's the same user
-	userid, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		log.Fatalln(err)
-	}
+	userToken := c.Locals("user").(*jwt.Token)
+	dbuser := util.GetUserFromToken(userToken)
+	userid := *dbuser.Userid
+
 	//TODO: verify person exists in the chat and so on
 	chatid, err := strconv.Atoi(c.Params("chatid"))
 	if err != nil {
