@@ -91,7 +91,6 @@ func WSSendAndVerify(
 	if recvMsg.Message.ID == 0 {
 		return nil, errors.New("received message id 0")
 	}
-	fmt.Println("Message ID is ", recvMsg.Message.ID)
 	msg.Message.ID = recvMsg.Message.ID
 
 	msgBytes, _ := json.Marshal(msg)
