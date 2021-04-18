@@ -33,10 +33,12 @@ type WebsocketParams struct {
 
 // WebsocketUpdates receives all websocket updates in a chatroom
 func WebsocketUpdates(c *websocket.Conn) {
+	//TODO: do we really need to ask for userid? also check if it's the same user
 	userid, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		log.Fatalln(err)
 	}
+	//TODO: verify person exists in the chat and so on
 	chatid, err := strconv.Atoi(c.Params("chatid"))
 	if err != nil {
 		log.Fatalln(err)

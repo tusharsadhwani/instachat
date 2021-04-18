@@ -100,6 +100,7 @@ class MyApp extends StatelessWidget {
         builder: (_, auth, __) {
           switch (auth.state) {
             case AuthState.LOGGED_IN:
+              // TODO: move this provider to ChatsPage
               return ChangeNotifierProvider(
                 create: (_) => ChatsService(auth),
                 child: LoggedInApp(themeData: themeData),

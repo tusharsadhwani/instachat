@@ -83,6 +83,8 @@ func Init() *fiber.App {
 		}
 		return fiber.ErrUpgradeRequired
 	})
+
+	//TODO: remove :id from these 4.
 	app.Get("/ws/:id/chat/:chatid", websocket.New(WebsocketUpdates))
 
 	app.Get("/user/:id/chat", GetUserChats)

@@ -13,12 +13,12 @@ import (
 // Message is what the API will use to represent DBMessage
 type Message struct {
 	ID       int     `json:"id"`
-	UUID     string  `json:"uuid"`
+	UUID     string  `json:"uuid"` //TODO: make *string
 	Chatid   *int    `json:"chatid"`
 	Userid   *int    `json:"userid"`
 	Text     *string `json:"text"`
 	ImageURL *string `json:"imageUrl"`
-	// Likes  []Like `json:"likes"`
+	// Likes  []Like `json:"likes"` //TODO: replace Liked
 	Liked bool `json:"liked"`
 }
 
