@@ -354,10 +354,19 @@ func TestWebsockets(t *testing.T) {
 			Next     int
 		}
 		json.Unmarshal(resp, &respMessagePage)
-		messageID := strconv.Itoa(respMessagePage.Messages[0].ID)
+		if len(respMessagePage.Messages) == 0 {
+			t.Fatal("expected messages, got empty list")
+		}
+		messageIndex := rand.Intn(len(respMessagePage.Messages))
+		message := respMessagePage.Messages[messageIndex]
+		if message.Liked {
+			t.Fatal("Expected message to not already be liked")
+		}
+
+		messageID := strconv.Itoa(message.ID)
 		msg := api.WebsocketParams{
-			Type:      "Like",
-			MessageID: &messageID,
+			Type:      "LIKE",
+			MessageID: &message.UUID,
 		}
 
 		url := fmt.Sprintf("%s/ws/%d/chat/%d", WSDomain, api.TestUser.Userid, respChat.Chatid)
@@ -399,6 +408,20 @@ func TestWebsockets(t *testing.T) {
 		recv2String := string(recv2Bytes)
 		if recvString != recv2String {
 			t.Fatalf("expected %q, got %q", recvString, recv2String)
+		}
+
+		url = fmt.Sprintf("%s/public/chat/%d/message/%s", Domain, respChat.Chatid, messageID)
+		resp, err = HttpGetJson(url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		json.Unmarshal(resp, &respMessagePage)
+		if len(respMessagePage.Messages) == 0 {
+			t.Fatal("expected messages, got empty list")
+		}
+		message = respMessagePage.Messages[0]
+		if !message.Liked {
+			t.Fatal("Expected message to be liked, but it isn't")
 		}
 	})
 }
