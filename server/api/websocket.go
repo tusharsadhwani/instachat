@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/websocket/v2"
+	"github.com/tusharsadhwani/instachat/constants"
 )
 
 // ChatMember describes the data of a member in a chatroom
@@ -67,13 +68,13 @@ func WebsocketUpdates(c *websocket.Conn) {
 
 		//TODO: error handling
 		switch params.Type {
-		case "MESSAGE":
+		case constants.NewMessage:
 			savedMsg, _ := SaveMessage(chatid, userid, params.Message)
 			params.Message.ID = savedMsg.ID
 			msg, _ = json.Marshal(params)
-		case "LIKE":
+		case constants.MessageLiked:
 			LikeMessage(chatid, userid, *params.MessageID)
-		case "UNLIKE":
+		case constants.MessageUnliked:
 			UnlikeMessage(chatid, userid, *params.MessageID)
 		}
 

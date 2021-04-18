@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/tusharsadhwani/instachat/api"
+	"github.com/tusharsadhwani/instachat/constants"
 	. "github.com/tusharsadhwani/instachat/testutils"
 )
 
@@ -238,7 +239,7 @@ func TestWebsockets(t *testing.T) {
 
 		msgText := "henlo"
 		msg := api.WebsocketParams{
-			Type: "MESSAGE",
+			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
 				Chatid: &respChat.Chatid,
@@ -253,7 +254,7 @@ func TestWebsockets(t *testing.T) {
 
 		msgText = "Non id pariatur dolor id Lorem ex enim proident cillum eiusmod exercitation. Laboris ut adipisicing qui minim fugiat id cupidatat velit aliquip esse commodo consequat. Excepteur deserunt duis cupidatat mollit commodo labore incididunt. Eu reprehenderit nisi commodo occaecat velit. Consequat ex officia dolor cillum exercitation incididunt occaecat ea. Culpa est veniam eiusmod aute ad adipisicing duis veniam commodo mollit exercitation dolor incididunt et."
 		msg = api.WebsocketParams{
-			Type: "MESSAGE",
+			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
 				Chatid: &respChat.Chatid,
@@ -279,7 +280,7 @@ func TestWebsockets(t *testing.T) {
 		testUser := api.TestUser2
 		msgText := ":D"
 		msg := api.WebsocketParams{
-			Type: "MESSAGE",
+			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
 				Chatid: &respChat.Chatid,
@@ -298,7 +299,7 @@ func TestWebsockets(t *testing.T) {
 		msgText := "Eiusmod et veniam nulla fugiat in voluptate ullamco magna sit excepteur ex anim nulla."
 
 		msg := api.WebsocketParams{
-			Type: "MESSAGE",
+			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
 				Chatid: &respChat.Chatid,
@@ -365,7 +366,7 @@ func TestWebsockets(t *testing.T) {
 
 		messageID := strconv.Itoa(message.ID)
 		msg := api.WebsocketParams{
-			Type:      "LIKE",
+			Type:      constants.MessageLiked,
 			MessageID: &message.UUID,
 		}
 
