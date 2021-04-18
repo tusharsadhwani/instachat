@@ -348,6 +348,23 @@ func TestWebsockets(t *testing.T) {
 		})
 
 		t.Run("like a message", func(t *testing.T) {
+			url = fmt.Sprintf("https://localhost:5555/public/chat/%d/message", respChat.Chatid)
+			resp, err := HttpGetJson(url)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var respMessagePage struct {
+				Messages []api.Message
+				Next     int
+			}
+			json.Unmarshal(resp, &respMessagePage)
+			messageID := strconv.Itoa(respMessagePage.Messages[0].ID)
+			msg := api.WebsocketParams{
+				Type:      "Like",
+				MessageID: &messageID,
+			}
+
 			url := fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d", api.TestUser.Userid, respChat.Chatid)
 			conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 			if err != nil {
@@ -355,26 +372,38 @@ func TestWebsockets(t *testing.T) {
 			}
 			defer conn.Close()
 			defer conn.WriteMessage(websocket.CloseMessage, nil)
-
-			testUser := api.TestUser2
-
-			url = fmt.Sprintf("https://localhost:5555/public/chat/%d/message", respChat.Chatid)
-			resp, err := HttpGetJson(url)
+			url = fmt.Sprintf("wss://localhost:5555/ws/%d/chat/%d?testid=2", api.TestUser2.Userid, respChat.Chatid)
+			conn2, _, err := websocket.DefaultDialer.Dial(url, nil)
 			if err != nil {
+				t.Fatal(err.Error())
+			}
+			defer conn2.Close()
+			defer conn2.WriteMessage(websocket.CloseMessage, nil)
+
+			if err := conn.WriteJSON(msg); err != nil {
 				t.Fatal(err)
 			}
-			var messages []api.Message
-			json.Unmarshal(resp, &messages)
-
-			messageID := strconv.Itoa(messages[0].ID)
-
-			msg := api.WebsocketParams{
-				Type:      "Like",
-				MessageID: &messageID,
-			}
-			_, err = WSSendAndVerify(conn, msg, testUser, respChat)
-			if err != nil {
+			var recv api.WebsocketParams
+			if err := conn.ReadJSON(&recv); err != nil {
 				t.Fatal(err)
+			}
+
+			msgBytes, _ := json.Marshal(msg)
+			msgString := string(msgBytes)
+			recvBytes, _ := json.Marshal(recv)
+			recvString := string(recvBytes)
+			if msgString != recvString {
+				t.Fatalf("expected %q, got %q", msgString, recvString)
+			}
+
+			var recv2 api.WebsocketParams
+			if err := conn2.ReadJSON(&recv2); err != nil {
+				t.Fatal(err)
+			}
+			recv2Bytes, _ := json.Marshal(recv2)
+			recv2String := string(recv2Bytes)
+			if recvString != recv2String {
+				t.Fatalf("expected %q, got %q", recvString, recv2String)
 			}
 		})
 	})
