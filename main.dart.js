@@ -63697,7 +63697,7 @@ return P.S($async$v7,r)},
 Ae:function(){var s=0,r=P.T(t.H),q=[],p=this,o,n,m
 var $async$Ae=P.O(function(a,b){if(a===1)return P.Q(b,r)
 while(true)switch(s){case 0:m=p.b
-m=A.apS(P.mW("wss://"+H.b(m.c)+"/ws/"+H.b(m.r.a)+"/chat/"+H.b(p.a)+"?token="+H.b(m.f)),null)
+m=A.apS(P.mW("wss://"+H.b(m.c)+"/ws/chat/"+H.b(p.a)+"?token="+H.b(m.f)),null)
 p.ch=m
 try{m=m.f.gy5()
 m.ghv(m).c6(0,new R.Qg(p),!0,new R.Qh(),new R.Qi())}catch(l){o=H.W(l)
@@ -63840,15 +63840,13 @@ if(s.gk(s)>15)r.a.lp()
 return null},
 $S:415}
 V.jN.prototype={
-ki:function(){var s=0,r=P.T(t.H),q=this,p,o,n,m
+ki:function(){var s=0,r=P.T(t.H),q=this,p,o
 var $async$ki=P.O(function(a,b){if(a===1)return P.Q(b,r)
-while(true)switch(s){case 0:p=q.b
-o=p.r.a
-n=J
-m=J
+while(true)switch(s){case 0:p=J
+o=J
 s=2
-return P.U(q.a.vS(0,"https://"+H.b(p.c)+"/user/"+H.b(o)+"/chat",q.c,t.z),$async$ki)
-case 2:q.d=n.AB(m.ns(b.a,new V.Qr(),t.S2))
+return P.U(q.a.vS(0,"https://"+H.b(q.b.c)+"/user/chat",q.c,t.z),$async$ki)
+case 2:q.d=p.AB(o.ns(b.a,new V.Qr(),t.S2))
 q.aT()
 return P.R(null,r)}})
 return P.S($async$ki,r)},
