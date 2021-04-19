@@ -11,15 +11,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  dio: ^4.0.0-beta6
+  dio: ^4.0.0
   emojis: ^0.9.3
   flutter_dotenv: ^3.1.0
-  google_sign_in: ^5.0.0
-  http: ^0.13.0
-  image_picker: ^0.7.2
+  google_sign_in: ^5.0.2
+  http: ^0.13.1
+  image_picker: ^0.7.4
   path_provider: ^2.0.1
   provider: ^5.0.0
-  uuid: ^3.0.1
+  uuid: ^3.0.4
   web_socket_channel: ^2.0.0
 
 dev_dependencies:
@@ -31,15 +31,3 @@ flutter:
 
   assets:
     - .env
-
-  # fonts:
-  #   - family: Roboto
-  #     fonts:
-  #       - asset: assets/fonts/Roboto/Roboto-Regular.ttf
-  #       - asset: assets/fonts/Roboto/Roboto-Bold.ttf
-  #         weight: 700
-  #       - asset: assets/fonts/Roboto/Roboto-Italic.ttf
-  #         style: italic
-  # - family: Noto Color Emoji
-  #   fonts:
-  #     - asset: assets/fonts/NotoColorEmoji.ttf
