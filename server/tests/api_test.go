@@ -225,9 +225,11 @@ func TestWebsockets(t *testing.T) {
 	}
 	var respChat api.Chat
 	json.Unmarshal(resp, &respChat)
+	testChat.Chatid = respChat.Chatid
+	testChat.Creatorid = respChat.Creatorid
 
 	t.Run("send a couple messages", func(t *testing.T) {
-		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, testChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -242,12 +244,12 @@ func TestWebsockets(t *testing.T) {
 			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
-				Chatid: &respChat.Chatid,
+				Chatid: &testChat.Chatid,
 				Userid: &testUser.Userid,
 				Text:   &msgText,
 			},
 		}
-		_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
+		_, err = WSSendMessageAndVerify(conn, msg, testUser, testChat)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -257,19 +259,19 @@ func TestWebsockets(t *testing.T) {
 			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
-				Chatid: &respChat.Chatid,
+				Chatid: &testChat.Chatid,
 				Userid: &testUser.Userid,
 				Text:   &msgText,
 			},
 		}
-		_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
+		_, err = WSSendMessageAndVerify(conn, msg, testUser, testChat)
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("send message with second user", func(t *testing.T) {
-		url := fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, testChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -283,12 +285,12 @@ func TestWebsockets(t *testing.T) {
 			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
-				Chatid: &respChat.Chatid,
+				Chatid: &testChat.Chatid,
 				Userid: &testUser.Userid,
 				Text:   &msgText,
 			},
 		}
-		_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
+		_, err = WSSendMessageAndVerify(conn, msg, testUser, testChat)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -302,13 +304,13 @@ func TestWebsockets(t *testing.T) {
 			Type: constants.NewMessage,
 			Message: &api.Message{
 				UUID:   fmt.Sprintf("%d", rand.Uint64()),
-				Chatid: &respChat.Chatid,
+				Chatid: &testChat.Chatid,
 				Userid: &testUser.Userid,
 				Text:   &msgText,
 			},
 		}
 
-		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, testChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -316,7 +318,7 @@ func TestWebsockets(t *testing.T) {
 		defer conn.Close()
 		defer conn.WriteMessage(websocket.CloseMessage, nil)
 
-		url2 := fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, respChat.Chatid)
+		url2 := fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, testChat.Chatid)
 		conn2, _, err := websocket.DefaultDialer.Dial(url2, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -324,7 +326,7 @@ func TestWebsockets(t *testing.T) {
 		defer conn2.Close()
 		defer conn2.WriteMessage(websocket.CloseMessage, nil)
 
-		recvMsg, err := WSSendMessageAndVerify(conn, msg, testUser, respChat)
+		recvMsg, err := WSSendMessageAndVerify(conn, msg, testUser, testChat)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -344,7 +346,7 @@ func TestWebsockets(t *testing.T) {
 	})
 
 	t.Run("like a message", func(t *testing.T) {
-		url = fmt.Sprintf("%s/public/chat/%d/message", Domain, respChat.Chatid)
+		url = fmt.Sprintf("%s/public/chat/%d/message", Domain, testChat.Chatid)
 		resp, err := HttpGetJson(url)
 		if err != nil {
 			t.Fatal(err)
@@ -370,14 +372,14 @@ func TestWebsockets(t *testing.T) {
 			MessageID: &message.UUID,
 		}
 
-		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, testChat.Chatid)
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 		defer conn.Close()
 		defer conn.WriteMessage(websocket.CloseMessage, nil)
-		url = fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, respChat.Chatid)
+		url = fmt.Sprintf("%s/ws/chat/%d?testid=2", WSDomain, testChat.Chatid)
 		conn2, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -411,7 +413,7 @@ func TestWebsockets(t *testing.T) {
 			t.Fatalf("expected %q, got %q", recvString, recv2String)
 		}
 
-		url = fmt.Sprintf("%s/public/chat/%d/message/%s", Domain, respChat.Chatid, messageID)
+		url = fmt.Sprintf("%s/public/chat/%d/message/%s", Domain, testChat.Chatid, messageID)
 		resp, err = HttpGetJson(url)
 		if err != nil {
 			t.Fatal(err)
