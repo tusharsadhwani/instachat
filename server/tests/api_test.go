@@ -429,8 +429,126 @@ func TestWebsockets(t *testing.T) {
 	})
 }
 
+func TestPagination(t *testing.T) {
+	testChat := api.Chat{
+		Name:    "Test Chat - Pagination",
+		Address: "paginationtestchat",
+	}
+	_, err := HttpPostJson(fmt.Sprintf("%s/chat", Domain), testChat)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	url := fmt.Sprintf("%s/public/chat/@%s", Domain, testChat.Address)
+	resp, err := HttpGetJson(url)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	var respChat api.Chat
+	json.Unmarshal(resp, &respChat)
+	testChat.Chatid = respChat.Chatid
+	testChat.Creatorid = respChat.Creatorid
+
+	min := func(x, y int) int {
+		if x < y {
+			return x
+		}
+		return y
+	}
+
+	totalMessages := 80
+	maxPageSize := constants.PageSize
+
+	generateMsg := func(i int) string {
+		return fmt.Sprintf("This is message %d", i+1)
+	}
+	generateReverseMsg := func(i int) string {
+		return fmt.Sprintf("This is message %d", totalMessages-i)
+	}
+
+	t.Run("send a bunch of messages", func(t *testing.T) {
+		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
+		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		defer conn.Close()
+		defer conn.WriteMessage(websocket.CloseMessage, nil)
+
+		testUser := api.TestUser
+
+		for i := 0; i < totalMessages; i++ {
+			msgText := generateMsg(i)
+			msg := api.WebsocketParams{
+				Type: constants.NewMessage,
+				Message: &api.Message{
+					UUID:   fmt.Sprintf("%d", rand.Uint64()),
+					Chatid: &respChat.Chatid,
+					Userid: &testUser.Userid,
+					Text:   &msgText,
+				},
+			}
+			_, err = WSSendMessageAndVerify(conn, msg, testUser, respChat)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+
+	paginationCheck := func(t *testing.T, endpoint string, initialNextPtr int, msgGenerator func(int) string) {
+		msgIndex := 0
+		nextPtr := initialNextPtr
+
+		for msgIndex < totalMessages {
+			leftMessages := totalMessages - msgIndex
+			url := fmt.Sprintf("%s/public/chat/%d/%s/%d", Domain, testChat.Chatid, endpoint, nextPtr)
+			resp, err := HttpGetJson(url)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var respMessagePage struct {
+				Messages []api.Message
+				Next     int
+			}
+
+			err = json.Unmarshal(resp, &respMessagePage)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			msgCount := len(respMessagePage.Messages)
+			expectedMsgCount := min(maxPageSize, leftMessages)
+			if msgCount != expectedMsgCount {
+				t.Fatalf("expected %d messages, got %d", expectedMsgCount, msgCount)
+			}
+
+			for _, msg := range respMessagePage.Messages {
+				if msg.Text == nil {
+					t.Fatalf("expected message text, got nil")
+				}
+				expected := msgGenerator(msgIndex)
+				if *msg.Text != expected {
+					t.Fatalf("Message text: expected %q, got %q", expected, *msg.Text)
+				}
+				msgIndex++
+			}
+
+			nextPtr = respMessagePage.Next
+		}
+	}
+
+	t.Run("check pagination", func(t *testing.T) {
+		paginationCheck(t, "message", 0, generateMsg)
+	})
+
+	t.Run("check reverse pagination", func(t *testing.T) {
+		paginationCheck(t, "oldmessage", 1_000_000, generateReverseMsg)
+	})
+}
+
 // TODO: Unlike
 // TODO: Reject sent messages if user not in group
 // TODO: Join Group
-// TODO: Message pagination
 // TODO: Presigned URLs and image uploads
+// TODO: Parallelize the tests that can run in parallel

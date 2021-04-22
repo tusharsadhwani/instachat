@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
+	"github.com/tusharsadhwani/instachat/constants"
 	"github.com/tusharsadhwani/instachat/database"
 	"github.com/tusharsadhwani/instachat/models"
 )
@@ -110,7 +111,7 @@ func GetChatMessages(c *fiber.Ctx) error {
 
 // GetPaginatedChatMessages gets a page of messages in a chat
 func GetPaginatedChatMessages(c *fiber.Ctx) error {
-	pageSize := 30
+	pageSize := constants.PageSize
 
 	db := database.GetDB()
 
@@ -144,7 +145,7 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 	if cursor != 0 {
 		query = query.Where("id >= ?", cursor)
 	}
-	query.Limit(pageSize).Find(&dbmessages)
+	query.Order("id asc").Limit(pageSize).Find(&dbmessages)
 
 	messages := fetchMessagesWithLikes(dbmessages)
 
@@ -169,7 +170,7 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 
 // GetOlderChatMessages gets a page of older messages in a chat
 func GetOlderChatMessages(c *fiber.Ctx) error {
-	pageSize := 30
+	pageSize := constants.PageSize
 
 	db := database.GetDB()
 
@@ -200,9 +201,7 @@ func GetOlderChatMessages(c *fiber.Ctx) error {
 
 	var dbmessages []models.DBMessage
 	query := db.Where("chatid = ?", chatid)
-	if cursor != 0 {
-		query = query.Where("id <= ?", cursor)
-	}
+	query = query.Where("id <= ?", cursor)
 	query.Order("id desc").Limit(pageSize).Find(&dbmessages)
 
 	messages := fetchMessagesWithLikes(dbmessages)
