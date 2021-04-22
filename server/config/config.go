@@ -24,6 +24,9 @@ type Config struct {
 	// Tells if app is running in test mode
 	Testing bool
 
+	// Switch to disable database flushing during testing
+	NoDBFlush bool
+
 	// Postgres parameters
 	DBUser     string
 	DBPassword string
@@ -65,6 +68,11 @@ func Init() {
 	testing := goEnv == "TESTING"
 	if testing {
 		fmt.Println("NOTE: App is running in test mode.")
+	}
+	_, noFlushPresent := os.LookupEnv("NOFLUSH")
+	noDBFlush := false
+	if noFlushPresent {
+		noDBFlush = true
 	}
 
 	var (
@@ -136,6 +144,7 @@ func Init() {
 	config = &Config{
 		RootPath:    rootPath,
 		Testing:     testing,
+		NoDBFlush:   noDBFlush,
 		Port:        port,
 		DBUser:      DBUser,
 		DBPassword:  DBPassword,

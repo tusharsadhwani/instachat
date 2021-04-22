@@ -32,7 +32,7 @@ func Init() {
 
 	db.AutoMigrate(&models.DBChat{}, &models.DBMessage{}, &models.DBUser{}, &models.DBLike{})
 
-	if cfg.Testing {
+	if cfg.Testing && !cfg.NoDBFlush {
 		SetupTestDB()
 	}
 }
