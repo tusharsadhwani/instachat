@@ -449,6 +449,16 @@ func TestPagination(t *testing.T) {
 	testChat.Chatid = respChat.Chatid
 	testChat.Creatorid = respChat.Creatorid
 
+	url = fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
+	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer conn.Close()
+	defer conn.WriteMessage(websocket.CloseMessage, nil)
+
+	testUser := api.TestUser
+
 	min := func(x, y int) int {
 		if x < y {
 			return x
@@ -467,16 +477,6 @@ func TestPagination(t *testing.T) {
 	}
 
 	t.Run("send a bunch of messages", func(t *testing.T) {
-		url := fmt.Sprintf("%s/ws/chat/%d", WSDomain, respChat.Chatid)
-		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-		defer conn.Close()
-		defer conn.WriteMessage(websocket.CloseMessage, nil)
-
-		testUser := api.TestUser
-
 		for i := 0; i < totalMessages; i++ {
 			msgText := generateMsg(i)
 			msg := api.WebsocketParams{
@@ -545,10 +545,63 @@ func TestPagination(t *testing.T) {
 	t.Run("check reverse pagination", func(t *testing.T) {
 		paginationCheck(t, "oldmessage", 1_000_000, generateReverseMsg)
 	})
+
+	t.Run("check next pointer at end of messages", func(t *testing.T) {
+		msgText := "This is currently the latest message."
+		msg := api.WebsocketParams{
+			Type: constants.NewMessage,
+			Message: &api.Message{
+				UUID:   fmt.Sprintf("%d", rand.Uint64()),
+				Chatid: &respChat.Chatid,
+				Userid: &testUser.Userid,
+				Text:   &msgText,
+			},
+		}
+		recv, err := WSSendMessageAndVerify(conn, msg, testUser, respChat)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if recv.Message == nil {
+			t.Fatal("Expected message, got nil")
+		}
+		latestMsgID := recv.Message.ID
+
+		url := fmt.Sprintf("%s/public/chat/%d/message/%d", Domain, testChat.Chatid, latestMsgID)
+		resp, err := HttpGetJson(url)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var respMessagePage struct {
+			Messages []api.Message
+			Next     int
+		}
+		err = json.Unmarshal(resp, &respMessagePage)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		msgCount := len(respMessagePage.Messages)
+		if msgCount != 1 {
+			t.Fatalf("Expected 1 msg in response, got %d", msgCount)
+		}
+
+		recvMsg := respMessagePage.Messages[0]
+		if recvMsg.Text == nil {
+			t.Fatalf("Message text: expected %q, got nil", msgText)
+		}
+		if *recvMsg.Text != msgText {
+			t.Fatalf("Message text: expected %q, got %q", msgText, *recvMsg.Text)
+		}
+
+		if respMessagePage.Next != -1 {
+			t.Fatalf("Next ptr: expected -1, got %d", respMessagePage.Next)
+		}
+	})
 }
 
 // TODO: Unlike
 // TODO: Reject sent messages if user not in group
 // TODO: Join Group
 // TODO: Presigned URLs and image uploads
-// TODO: Parallelize the tests that can run in parallel

@@ -145,22 +145,20 @@ func GetPaginatedChatMessages(c *fiber.Ctx) error {
 	if cursor != 0 {
 		query = query.Where("id >= ?", cursor)
 	}
-	query.Order("id asc").Limit(pageSize).Find(&dbmessages)
+	query.Order("id asc").Limit(pageSize + 1).Find(&dbmessages)
+
+	var nextCursor int
+
+	if len(dbmessages) < pageSize+1 {
+		// We have no more results after current page, i.e. this is the last page
+		nextCursor = -1
+	} else {
+		dbmessages = dbmessages[:pageSize]
+		lastMessage := dbmessages[pageSize-1]
+		nextCursor = int(lastMessage.ID) + 1
+	}
 
 	messages := fetchMessagesWithLikes(dbmessages)
-
-	if len(messages) == 0 {
-		return c.JSON(fiber.Map{
-			"messages": []Message{},
-			"next":     -1,
-		})
-	}
-
-	lastMessage := messages[len(messages)-1]
-	nextCursor := lastMessage.ID + 1
-	if nextCursor == 0 {
-		nextCursor = -1
-	}
 
 	return c.JSON(fiber.Map{
 		"messages": messages,
@@ -202,22 +200,20 @@ func GetOlderChatMessages(c *fiber.Ctx) error {
 	var dbmessages []models.DBMessage
 	query := db.Where("chatid = ?", chatid)
 	query = query.Where("id <= ?", cursor)
-	query.Order("id desc").Limit(pageSize).Find(&dbmessages)
+	query.Order("id desc").Limit(pageSize + 1).Find(&dbmessages)
+
+	var nextCursor int
+
+	if len(dbmessages) < pageSize+1 {
+		// We have no more results after current page, i.e. this is the last page
+		nextCursor = -1
+	} else {
+		dbmessages = dbmessages[:pageSize]
+		lastMessage := dbmessages[pageSize-1]
+		nextCursor = int(lastMessage.ID) - 1
+	}
 
 	messages := fetchMessagesWithLikes(dbmessages)
-
-	if len(messages) == 0 {
-		return c.JSON(fiber.Map{
-			"messages": []Message{},
-			"next":     -1,
-		})
-	}
-
-	lastMessage := messages[len(messages)-1]
-	nextCursor := lastMessage.ID - 1
-	if nextCursor == 0 {
-		nextCursor = -1
-	}
 
 	return c.JSON(fiber.Map{
 		"messages": messages,
