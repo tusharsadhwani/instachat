@@ -151,6 +151,9 @@ You will need [go](https://golang.org) and [flutter](https://flutter.dev) instal
         ...
   ```
 
+<!-- TODO: move this content somewhere more sensible.
+Maybe move the common AWS and GCP instructions to their own specific blocks -->
+
 - Log into [Google Cloud Console](https://console.cloud.google.com/)
 
   - Go to APIs & Services > OAuth consent screen, and:
@@ -197,11 +200,20 @@ You will need [go](https://golang.org) and [flutter](https://flutter.dev) instal
 
   (Look at `./instachat/.env.example` for more info)
 
-- In the `./instachat` subdirectory, run:
+- In the `./instachat` subdirectory, run the following:
 
-  ```bash
-  flutter run
-  ```
+  - Web:
+
+    ```bash
+    flutter run --web-port 5000 --web-renderer html
+    ```
+
+  - Android:
+
+    ```bash
+    adb reverse tcp:5555 tcp:5555
+    flutter run
+    ```
 
 - To create Release builds of the app for use, run:
 
