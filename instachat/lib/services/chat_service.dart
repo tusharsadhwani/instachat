@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import './auth_service.dart';
@@ -62,22 +60,16 @@ class ChatService extends ChangeNotifier {
   }
 
   Future<void> loadCachedMessages() async {
-    if (!kIsWeb) {
-      final docDir = await getApplicationDocumentsDirectory();
-      final cacheFile = File(path.join(docDir.path, cacheFilename));
-
-      if (cacheFile.existsSync()) {
-        final cacheJson = cacheFile.readAsStringSync();
-        final cacheData = jsonDecode(cacheJson);
-        cache = MessageCache.fromMap(cacheData, filename: cacheFilename);
-        _messages = cache.messages.toList();
-        prevCursor = cache.prev;
-        nextCursor = cache.next;
-        return;
-      }
-    }
     cache = MessageCache(filename: cacheFilename);
-    prevCursor = -1;
+    await cache.initialize();
+
+    _messages = cache.messages.toList();
+    prevCursor = cache.prev;
+    nextCursor = cache.next;
+
+    if (_messages.isEmpty) {
+      jumpToLatestMessages();
+    }
   }
 
   Future<void> saveCache() async {

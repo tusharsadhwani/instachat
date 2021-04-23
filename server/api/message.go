@@ -184,22 +184,20 @@ func GetOlderChatMessages(c *fiber.Ctx) error {
 		return c.Status(404).SendString(fmt.Sprintf("No Chat found with id: %v", chatid))
 	}
 
+	query := db.Where("chatid = ?", chatid)
+
 	cursorStr := c.Params("cursor")
-	var cursor int
-	if cursorStr == "" {
-		cursor = 0
-	} else {
-		cursor, err = strconv.Atoi(cursorStr)
-	}
-	if err != nil {
-		return c.Status(400).SendString(
-			fmt.Sprintf("Invalid cursor value: %v", cursorStr),
-		)
+	if cursorStr != "" {
+		cursor, err := strconv.Atoi(cursorStr)
+		if err != nil {
+			return c.Status(400).SendString(
+				fmt.Sprintf("Invalid cursor value: %v", cursorStr),
+			)
+		}
+		query = query.Where("id <= ?", cursor)
 	}
 
 	var dbmessages []models.DBMessage
-	query := db.Where("chatid = ?", chatid)
-	query = query.Where("id <= ?", cursor)
 	query.Order("id desc").Limit(pageSize + 1).Find(&dbmessages)
 
 	var nextCursor int

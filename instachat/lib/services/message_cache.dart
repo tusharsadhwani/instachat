@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -16,12 +17,25 @@ class MessageCache {
 
   String filename;
 
-  MessageCache({@required this.filename}) {
-    _messages = Queue();
-  }
+  MessageCache({@required this.filename});
 
-  MessageCache.fromMap(dynamic data, {@required this.filename}) {
-    _messages = Queue.from(data.map<Message>((m) => Message.fromMap(m)));
+  Future<void> initialize() async {
+    if (kIsWeb) {
+      _messages = Queue();
+      return;
+    }
+
+    final docDir = await getApplicationDocumentsDirectory();
+    final cacheFile = File(path.join(docDir.path, this.filename));
+
+    if (!cacheFile.existsSync()) {
+      _messages = Queue();
+      return;
+    }
+
+    final cacheJson = cacheFile.readAsStringSync();
+    final cacheData = jsonDecode(cacheJson);
+    _messages = Queue.from(cacheData.map<Message>((m) => Message.fromMap(m)));
   }
 
   bool get isEmpty => messages.isEmpty;
@@ -37,11 +51,11 @@ class MessageCache {
   }
 
   int get prev {
-    return top == 1 ? -1 : top - 1;
+    if (messages.isEmpty) return -1;
+    return top - 1;
   }
 
   int get next {
-    if (messages.isEmpty) return -1;
     return bottom + 1;
   }
 
@@ -61,6 +75,8 @@ class MessageCache {
   }
 
   Future<void> save() async {
+    if (kIsWeb) return;
+
     final docDir = await getApplicationDocumentsDirectory();
     final cacheFile = File(path.join(docDir.path, filename));
 

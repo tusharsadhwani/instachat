@@ -495,13 +495,13 @@ func TestPagination(t *testing.T) {
 		}
 	})
 
-	paginationCheck := func(t *testing.T, endpoint string, initialNextPtr int, msgGenerator func(int) string) {
+	paginationCheck := func(t *testing.T, endpoint string, msgGenerator func(int) string) {
 		msgIndex := 0
-		nextPtr := initialNextPtr
+		nextCursor := ""
 
 		for msgIndex < totalMessages {
 			leftMessages := totalMessages - msgIndex
-			url := fmt.Sprintf("%s/public/chat/%d/%s/%d", Domain, testChat.Chatid, endpoint, nextPtr)
+			url := fmt.Sprintf("%s/public/chat/%d/%s/%s", Domain, testChat.Chatid, endpoint, nextCursor)
 			resp, err := HttpGetJson(url)
 			if err != nil {
 				t.Fatal(err)
@@ -534,16 +534,16 @@ func TestPagination(t *testing.T) {
 				msgIndex++
 			}
 
-			nextPtr = respMessagePage.Next
+			nextCursor = fmt.Sprint(respMessagePage.Next)
 		}
 	}
 
 	t.Run("check pagination", func(t *testing.T) {
-		paginationCheck(t, "message", 0, generateMsg)
+		paginationCheck(t, "message", generateMsg)
 	})
 
 	t.Run("check reverse pagination", func(t *testing.T) {
-		paginationCheck(t, "oldmessage", 1_000_000, generateReverseMsg)
+		paginationCheck(t, "oldmessage", generateReverseMsg)
 	})
 
 	t.Run("check next pointer at end of messages", func(t *testing.T) {
@@ -596,7 +596,7 @@ func TestPagination(t *testing.T) {
 		}
 
 		if respMessagePage.Next != -1 {
-			t.Fatalf("Next ptr: expected -1, got %d", respMessagePage.Next)
+			t.Fatalf("Next cursor: expected -1, got %d", respMessagePage.Next)
 		}
 	})
 }
