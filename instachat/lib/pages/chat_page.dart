@@ -45,6 +45,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   void _scrollListener() {
+    if (!ready) return;
+
     if (isAtTop &&
         !chatService.loadingOlderMessages &&
         !chatService.allOlderMessagesLoaded) {
@@ -78,10 +80,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void initialize() async {
     await chatService.initialize();
-
-    _controller = ScrollController();
-    _controller.addListener(_scrollListener);
-
     await chatService.connectWebsocket();
     chatService.addListener(_updateMessages);
 
@@ -99,6 +97,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    _controller = ScrollController();
+    _controller.addListener(_scrollListener);
   }
 
   @override
@@ -163,7 +164,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                     (_, i) {
                       if (i == chatService.oldMessages.length) {
                         if (chatService.allOlderMessagesLoaded)
-                          return Center(child: Text("All messages loaded"));
+                          return SizedBox.shrink();
                         else
                           return Center(child: CircularProgressIndicator());
                       }
@@ -183,7 +184,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                     (_, i) {
                       if (i == chatService.messages.length) {
                         if (chatService.allNewerMessagesLoaded)
-                          return Center(child: Text("All messages loaded"));
+                          return SizedBox.shrink();
                         else
                           return Center(child: CircularProgressIndicator());
                       }

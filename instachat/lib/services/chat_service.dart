@@ -51,13 +51,13 @@ class ChatService extends ChangeNotifier {
 
   Future<void> initialize() async {
     await loadCachedMessages();
+    notifyListeners();
   }
 
-  //TODO: fix caching
   @override
   void dispose() {
     _ws?.sink?.close();
-    // cache.save();
+    cache.save();
     super.dispose();
   }
 
@@ -73,17 +73,15 @@ class ChatService extends ChangeNotifier {
         _messages = cache.messages.toList();
         prevCursor = cache.prev;
         nextCursor = cache.next;
-        notifyListeners();
+        return;
       }
-      return;
     }
     cache = MessageCache(filename: cacheFilename);
     prevCursor = -1;
-    jumpToLatestMessages();
   }
 
   Future<void> saveCache() async {
-    // await cache.save();
+    await cache.save();
   }
 
   Future<void> loadOlderMessages() async {
@@ -99,7 +97,7 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _oldMessages.addAll(moreMessages);
 
-    // if (!cache.full) moreMessages.forEach((m) => cache.pushFirst(m));
+    if (!cache.full) moreMessages.forEach((m) => cache.pushFirst(m));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingOlderMessages = false;
@@ -120,7 +118,7 @@ class ChatService extends ChangeNotifier {
         messageData.map<Message>((m) => Message.fromMap(m)).toList();
     _messages.addAll(moreMessages);
 
-    // moreMessages.forEach((m) => cache.pushLast(m));
+    moreMessages.forEach((m) => cache.pushLast(m));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadingNewerMessages = false;
@@ -144,7 +142,7 @@ class ChatService extends ChangeNotifier {
               userSentNewMessage = update.message.senderId == auth.user.id;
               if (allNewerMessagesLoaded) {
                 _messages.add(update.message);
-                // cache.pushLast(update.message);
+                cache.pushLast(update.message);
               }
               break;
             case UpdateType.LIKE:
@@ -156,10 +154,10 @@ class ChatService extends ChangeNotifier {
               );
               if (message != null) {
                 message.liked = true;
-                // final cachedMsg = cache.messages.firstWhere(
-                //   (msg) => msg.id == update.messageId,
-                // );
-                // if (cachedMsg != null) cachedMsg.liked = true;
+                final cachedMsg = cache.messages.firstWhere(
+                  (msg) => msg.id == update.messageId,
+                );
+                if (cachedMsg != null) cachedMsg.liked = true;
               }
               break;
             case UpdateType.UNLIKE:
@@ -171,10 +169,10 @@ class ChatService extends ChangeNotifier {
               );
               if (message != null) {
                 message.liked = false;
-                // final cachedMsg = cache.messages.firstWhere(
-                //   (msg) => msg.id == update.messageId,
-                // );
-                // if (cachedMsg != null) cachedMsg.liked = false;
+                final cachedMsg = cache.messages.firstWhere(
+                  (msg) => msg.id == update.messageId,
+                );
+                if (cachedMsg != null) cachedMsg.liked = false;
               }
               break;
           }
