@@ -4,16 +4,16 @@ const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
   "version.json": "253fd39db19c4565e977ef29cc14ac5d",
-"icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
-"icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"manifest.json": "b0aa4e7ee7bf12be57927204f8474ac2",
-"main.dart.js": "5da1b5e8cef88e806df737e4d4ae0fe1",
-"assets/NOTICES": "53e29bbe2ce15ba26206dc08dd15bed3",
-"assets/fonts/MaterialIcons-Regular.otf": "1288c9e28052e028aba623321f7826ac",
-"assets/AssetManifest.json": "16b49a9c02d3552cceeefadef0883e97",
-"assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
+"main.dart.js": "3e8f98f17bf1f75ad08ba80f1a35e304",
 "index.html": "0abd324ff4e6308d183db90eee706799",
-"/": "0abd324ff4e6308d183db90eee706799"
+"/": "0abd324ff4e6308d183db90eee706799",
+"assets/AssetManifest.json": "16b49a9c02d3552cceeefadef0883e97",
+"assets/NOTICES": "43f1cf5bae913e081f5f2b868dba28c2",
+"assets/fonts/MaterialIcons-Regular.otf": "4e6447691c9509f7acdbf8a931a85ca1",
+"assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
+"icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
+"icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
+"manifest.json": "b0aa4e7ee7bf12be57927204f8474ac2"
 };
 
 // The application shell files that are downloaded before a service worker can
@@ -31,7 +31,7 @@ self.addEventListener("install", (event) => {
   return event.waitUntil(
     caches.open(TEMP).then((cache) => {
       return cache.addAll(
-        CORE.map((value) => new Request(value + '?revision=' + RESOURCES[value], {'cache': 'reload'})));
+        CORE.map((value) => new Request(value, {'cache': 'reload'})));
     })
   );
 });
